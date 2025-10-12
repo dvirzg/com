@@ -7,13 +7,10 @@ const About = () => {
         </h1>
         <div className="space-y-4">
           <p className="text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            I'm Dvir, a developer passionate about building meaningful products
-            that make a difference. I focus on creating clean, efficient solutions
-            to complex problems.
+            I'm Dvir, this will have my about me.
           </p>
           <p className="text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            When I'm not coding, you'll find me exploring new technologies,
-            reading, or working on personal projects that push my boundaries.
+            It could contain info about my background, my interests, my goals, etc.
           </p>
         </div>
       </div>

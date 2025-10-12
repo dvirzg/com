@@ -15,7 +15,7 @@ const Home = () => {
             Hi, I'm Dvir
           </h1>
           <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400">
-            I'm a software engineer passionate about building great products.
+            Welcome to my personal website.
           </p>
         </motion.div>
 
