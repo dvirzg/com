@@ -33,10 +33,10 @@ const ScrollArrow = () => {
 
 const Home = () => {
   return (
-    <div className="h-screen overflow-y-scroll snap-y snap-mandatory bg-white dark:bg-black transition-colors">
+    <div className="h-screen overflow-y-scroll bg-white dark:bg-black transition-colors">
       {/* Hero Section */}
       <motion.div 
-        className="h-screen flex flex-col items-center justify-center px-6 snap-start snap-always"
+        className="h-screen flex flex-col items-center justify-center px-6"
         style={{ position: 'relative' }}
       >
         <motion.div
@@ -57,7 +57,7 @@ const Home = () => {
       </motion.div>
 
       {/* Content Section */}
-      <div className="h-screen flex flex-col items-center justify-start px-6 snap-start snap-always pt-30">
+      <div className="h-screen flex flex-col items-center justify-start px-6 pt-30">
         <div className="text-left max-w-4xl w-full">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-zinc-900 dark:text-white">
             About Me

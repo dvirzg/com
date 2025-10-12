@@ -67,7 +67,7 @@ const Navbar = () => {
                 {isActive(tab.path) && (
                   <motion.div
                     layoutId="active-underline"
-                    className="absolute bottom-0 left-0 h-0.5 bg-white z-20"
+                    className="absolute bottom-0 left-0 h-0.5 bg-zinc-900 dark:bg-white z-20"
                     transition={{ type: 'spring', duration: 0.3, bounce: 0 }}
                     style={{ width: '100%' }}
                   />
