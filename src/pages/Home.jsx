@@ -70,7 +70,27 @@ const Home = () => {
             Let's Connect
           </h3>
           <p className="text-lg text-zinc-600 dark:text-zinc-300">
-            ...
+            Email me at{' '}
+            <a href="mailto:dvirzagury@gmail.com" className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity" style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}>
+              dvirzagury@gmail.com
+            </a>
+            {' '}
+            or{' '}
+            <a href="mailto:dzagury@uwaterloo.ca" className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity" style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}>
+              dzagury@uwaterloo.ca
+            </a>
+            .<br />
+            Or connect with me on{' '}
+            <a
+              href="https://www.dvirzg.com/linkedin"
+              className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity"
+              style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              LinkedIn
+            </a>
+            .
           </p>
         </div>
       </div>
