@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 
-const Block = ({ content, onChange, onEnter, onDelete, onNavigate, isLast, isSelected, onSelect }) => {
+const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, onSelect, isTitle }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
@@ -42,9 +42,17 @@ const Block = ({ content, onChange, onEnter, onDelete, onNavigate, isLast, isSel
     }
   }
 
-  const handleBlur = () => {
-    setIsEditing(false)
+  const finishEditing = () => {
     onChange(text)
+    setIsEditing(false)
+  }
+
+  const handleBlur = (e) => {
+    // Don't blur if clicking the add button
+    if (e?.relatedTarget?.classList?.contains('add-block-btn')) {
+      return
+    }
+    finishEditing()
   }
 
   const handleChange = (e) => {
@@ -55,9 +63,11 @@ const Block = ({ content, onChange, onEnter, onDelete, onNavigate, isLast, isSel
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      onChange(text)
-      setIsEditing(false)
-      onEnter()
+      finishEditing()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      finishEditing()
+      blockRef.current?.focus()
     } else if (e.key === 'Backspace' && text === '' && !isLast) {
       e.preventDefault()
       onDelete()
@@ -87,11 +97,17 @@ const Block = ({ content, onChange, onEnter, onDelete, onNavigate, isLast, isSel
     }
   }
 
+  const handleAddClick = (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    onAddBelow()
+  }
+
   return (
     <div
       ref={blockRef}
       tabIndex={0}
-      className={`relative group outline-none ${isSelected ? 'ring-2 ring-zinc-300 dark:ring-zinc-700 rounded' : ''}`}
+      className={`relative group outline-none transition-colors ${isSelected ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onKeyDown={handleBlockKeyDown}
@@ -109,25 +125,33 @@ const Block = ({ content, onChange, onEnter, onDelete, onNavigate, isLast, isSel
       )}
 
       {isEditing ? (
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyDown={handleKeyDown}
-          className="w-full px-3 py-2 pr-10 bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none border-l-2 border-zinc-400 dark:border-zinc-600 font-mono text-sm resize-none overflow-hidden"
-          placeholder="Type markdown..."
-          rows={1}
-        />
+        <div className="relative">
+          {isTitle && (
+            <div className="absolute -top-5 left-3 text-xs text-zinc-500 dark:text-zinc-500">
+              Title
+            </div>
+          )}
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="w-full px-3 py-2 pr-10 bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none border-l-2 border-zinc-400 dark:border-zinc-600 font-mono text-sm resize-none overflow-hidden"
+            placeholder={isTitle ? "## Your note title" : "Type markdown..."}
+            rows={1}
+          />
+        </div>
       ) : (
         <div
           onClick={handleClick}
-          className="w-full px-3 py-2 pr-10 min-h-[40px] cursor-text hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors prose prose-zinc dark:prose-invert max-w-none prose-headings:mt-0 prose-headings:mb-0 prose-p:my-0"
+          className="w-full px-3 py-2 pr-10 min-h-[40px] cursor-text hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors"
         >
           {text ? (
             <ReactMarkdown
               remarkPlugins={[remarkMath]}
               rehypePlugins={[rehypeKatex]}
+              className="prose prose-zinc dark:prose-invert max-w-none prose-headings:mt-0 prose-headings:mb-2 prose-p:my-0"
               components={{
                 h1: ({ children }) => <h1 className="text-3xl font-bold">{children}</h1>,
                 h2: ({ children }) => <h2 className="text-2xl font-bold">{children}</h2>,
@@ -138,8 +162,23 @@ const Block = ({ content, onChange, onEnter, onDelete, onNavigate, isLast, isSel
               {text}
             </ReactMarkdown>
           ) : (
-            <span className="text-zinc-400 dark:text-zinc-600 text-sm">Click to add content...</span>
+            <span className="text-zinc-400 dark:text-zinc-600 text-sm">
+              {isTitle ? 'Click to add title...' : 'Click to add content...'}
+            </span>
           )}
+        </div>
+      )}
+
+      {(isEditing || (isSelected && !isEditing) || isLast) && (
+        <div className="flex justify-center py-2">
+          <button
+            onClick={handleAddClick}
+            onMouseDown={(e) => e.preventDefault()}
+            className="add-block-btn flex items-center gap-1 px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition-colors"
+          >
+            <Plus size={12} />
+            <span>New block</span>
+          </button>
         </div>
       )}
     </div>
@@ -153,27 +192,33 @@ const NotionEditor = ({ initialContent, onChange }) => {
   })
   const [selectedIndex, setSelectedIndex] = useState(null)
 
-  useEffect(() => {
-    onChange(blocks.join('\n\n'))
-  }, [blocks, onChange])
-
   const handleBlockChange = (index, newContent) => {
-    const newBlocks = [...blocks]
-    newBlocks[index] = newContent
-    setBlocks(newBlocks)
+    setBlocks(prevBlocks => {
+      const newBlocks = [...prevBlocks]
+      newBlocks[index] = newContent
+      // Call onChange immediately with the new content
+      onChange(newBlocks.join('\n\n'))
+      return newBlocks
+    })
   }
 
-  const handleEnter = (index) => {
-    const newBlocks = [...blocks]
-    newBlocks.splice(index + 1, 0, '')
-    setBlocks(newBlocks)
+  const addNewBlockAfter = (index) => {
+    setBlocks(prevBlocks => {
+      const newBlocks = [...prevBlocks]
+      newBlocks.splice(index + 1, 0, '')
+      onChange(newBlocks.join('\n\n'))
+      return newBlocks
+    })
     setSelectedIndex(index + 1)
   }
 
   const handleDelete = (index) => {
     if (blocks.length === 1) return
-    const newBlocks = blocks.filter((_, i) => i !== index)
-    setBlocks(newBlocks)
+    setBlocks(prevBlocks => {
+      const newBlocks = prevBlocks.filter((_, i) => i !== index)
+      onChange(newBlocks.join('\n\n'))
+      return newBlocks
+    })
     setSelectedIndex(index > 0 ? index - 1 : 0)
   }
 
@@ -192,12 +237,13 @@ const NotionEditor = ({ initialContent, onChange }) => {
           key={index}
           content={block}
           onChange={(newContent) => handleBlockChange(index, newContent)}
-          onEnter={() => handleEnter(index)}
           onDelete={() => handleDelete(index)}
           onNavigate={(direction) => handleNavigate(index, direction)}
+          onAddBelow={() => addNewBlockAfter(index)}
           onSelect={() => setSelectedIndex(index)}
           isSelected={selectedIndex === index}
-          isLast={blocks.length === 1}
+          isLast={index === blocks.length - 1}
+          isTitle={index === 0 && block.startsWith('##')}
         />
       ))}
     </div>

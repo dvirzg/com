@@ -26,8 +26,12 @@ export const AuthProvider = ({ children }) => {
     await supabase.auth.signOut()
   }
 
+  const isAdmin = () => {
+    return user?.user_metadata?.is_admin === true
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signOut, isAdmin }}>
       {children}
     </AuthContext.Provider>
   )

@@ -6,6 +6,12 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Center display math */
+  .katex-display {
+    text-align: center !important;
+    margin: 1rem 0 !important;
+  }
 }
 
 @variant dark (&:where(.dark, .dark *));

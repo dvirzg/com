@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
@@ -12,6 +12,10 @@ const Editor = () => {
   const { refetch } = useNotes()
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const handleContentChange = useCallback((newContent) => {
+    setContent(newContent)
+  }, [])
 
   if (!user) {
     navigate('/login')
@@ -80,7 +84,7 @@ const Editor = () => {
       </div>
 
       <div className="pt-24 px-6 pb-12">
-        <NotionEditor initialContent={content} onChange={setContent} />
+        <NotionEditor initialContent={content} onChange={handleContentChange} />
       </div>
     </div>
   )
