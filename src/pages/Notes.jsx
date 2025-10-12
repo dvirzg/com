@@ -23,9 +23,13 @@ const Notes = () => {
       const { error } = await deleteNote(deleteDialog.noteId)
       if (error) {
         alert('Failed to delete note: ' + error.message)
+      } else {
+        // Force a refetch to ensure UI updates
+        refetch()
       }
+      // Close dialog after processing
+      setDeleteDialog({ isOpen: false, noteId: null, noteTitle: '' })
     }
-    setDeleteDialog({ isOpen: false, noteId: null, noteTitle: '' })
   }
 
   const handleDeleteCancel = () => {
