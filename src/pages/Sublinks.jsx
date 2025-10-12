@@ -143,20 +143,15 @@ const Sublinks = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 px-6 pb-12">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen pt-24 px-6 pb-12 bg-white dark:bg-black transition-colors">
+      <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-              Sublinks Management
-            </h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
-              Manage URL redirects for your website
-            </p>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+            Sublinks
+          </h1>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-80 rounded-lg transition-opacity"
           >
             <Plus size={18} />
             Add Sublink
@@ -164,10 +159,10 @@ const Sublinks = () => {
         </div>
 
         {showAddForm && (
-          <div className="mb-6 p-6 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <div className="mb-6 p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800/50">
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">
                   Type
                 </label>
                 <div className="flex gap-3">
@@ -202,8 +197,8 @@ const Sublinks = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                  Slug (e.g., "resume")
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">
+                  Slug
                 </label>
                 <input
                   type="text"
@@ -211,19 +206,19 @@ const Sublinks = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, slug: e.target.value })
                   }
-                  placeholder={formData.type === 'pdf' ? 'resume' : 'linkedin'}
-                  className="w-full px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
+                  placeholder={formData.type === 'pdf' ? 'resume' : 'sublink'}
+                  className="w-full px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                   required
                 />
-                <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                   Will redirect from: {window.location.origin}/{formData.slug}
                 </p>
               </div>
 
               {formData.type === 'url' ? (
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                    Destination URL
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">
+                    Destination
                   </label>
                   <input
                     type="url"
@@ -231,14 +226,14 @@ const Sublinks = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, url: e.target.value })
                     }
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    className="w-full px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
+                    placeholder="https://website/slug"
+                    className="w-full px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                     required
                   />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">
                     Upload PDF
                   </label>
                   <div className="relative">
@@ -252,7 +247,7 @@ const Sublinks = () => {
                     />
                     <label
                       htmlFor="pdf-upload"
-                      className="flex items-center justify-center gap-2 w-full px-4 py-8 bg-white dark:bg-zinc-800 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-8 bg-white dark:bg-zinc-900 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                     >
                       {selectedFile ? (
                         <>
@@ -274,7 +269,7 @@ const Sublinks = () => {
                 <button
                   type="submit"
                   disabled={uploadProgress}
-                  className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
                 >
                   {uploadProgress ? 'Creating...' : 'Create'}
                 </button>
@@ -285,7 +280,7 @@ const Sublinks = () => {
                     setFormData({ slug: '', url: '', type: 'url' })
                     setSelectedFile(null)
                   }}
-                  className="px-4 py-2 text-sm font-medium bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:opacity-80 rounded-lg transition-opacity"
+                  className="px-4 py-2 text-sm font-medium bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:opacity-80 rounded-lg transition-opacity"
                 >
                   Cancel
                 </button>
@@ -295,11 +290,11 @@ const Sublinks = () => {
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
+          <div className="text-center py-12 text-zinc-600 dark:text-zinc-300">
             Loading sublinks...
           </div>
         ) : sublinks.length === 0 ? (
-          <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
+          <div className="text-center py-12 text-zinc-600 dark:text-zinc-300">
             No sublinks yet. Click "Add Sublink" to create one.
           </div>
         ) : (
@@ -335,28 +330,28 @@ const SublinkItem = ({
 
   if (isEditing) {
     return (
-      <div className="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800/50">
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-200 mb-1">
               Slug
             </label>
             <input
               type="text"
               value={editSlug}
               onChange={(e) => setEditSlug(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-200 mb-1">
               Destination URL
             </label>
             <input
               type="url"
               value={editUrl}
               onChange={(e) => setEditUrl(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
+              className="w-full px-3 py-2 text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
             />
           </div>
           <div className="flex gap-2">
@@ -381,10 +376,10 @@ const SublinkItem = ({
   }
 
   return (
-    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
+    <div className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <code className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <code className="text-sm font-medium text-zinc-900 dark:text-white">
             /{sublink.slug}
           </code>
           {sublink.type === 'pdf' ? (
@@ -400,7 +395,7 @@ const SublinkItem = ({
           href={sublink.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 truncate block"
+          className="text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 truncate block"
         >
           {sublink.type === 'pdf' ? sublink.file_path : sublink.url}
         </a>
@@ -408,7 +403,7 @@ const SublinkItem = ({
       <div className="flex items-center gap-2 ml-4">
         <button
           onClick={onEdit}
-          className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+          className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-900 rounded-lg transition-colors"
           aria-label="Edit"
         >
           <Edit2 size={16} />

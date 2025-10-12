@@ -43,6 +43,34 @@ export const NotesProvider = ({ children }) => {
     return data
   }
 
+  const getNoteForEdit = async (id) => {
+    // Fetch note for editing (regardless of published status)
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      return null
+    }
+    return data
+  }
+
+  const deleteNote = async (id) => {
+    const { error } = await supabase
+      .from('notes')
+      .delete()
+      .eq('id', id)
+
+    if (!error) {
+      // Remove from local state
+      setNotes(prevNotes => prevNotes?.filter(note => note.id !== id) || [])
+    }
+    
+    return { error }
+  }
+
   const refetch = () => {
     fetchNotes()
   }
@@ -52,7 +80,7 @@ export const NotesProvider = ({ children }) => {
   }, [])
 
   return (
-    <NotesContext.Provider value={{ notes, loading, getNote, refetch }}>
+    <NotesContext.Provider value={{ notes, loading, getNote, getNoteForEdit, deleteNote, refetch }}>
       {children}
     </NotesContext.Provider>
   )

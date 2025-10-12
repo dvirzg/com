@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { Edit, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
@@ -8,13 +9,17 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { useNotes } from '../contexts/NotesContext'
+import { useAuth } from '../contexts/AuthContext'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 const Note = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getNote } = useNotes()
+  const { getNote, deleteNote } = useNotes()
+  const { isAdmin } = useAuth()
   const [note, setNote] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false })
 
   useEffect(() => {
     loadNote()
@@ -30,20 +35,60 @@ const Note = () => {
     setLoading(false)
   }
 
+  const handleDeleteClick = () => {
+    setDeleteDialog({ isOpen: true })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (note?.id) {
+      const { error } = await deleteNote(note.id)
+      if (error) {
+        alert('Failed to delete note: ' + error.message)
+      } else {
+        navigate('/notes')
+      }
+    }
+    setDeleteDialog({ isOpen: false })
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialog({ isOpen: false })
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-zinc-950">
-        <p className="text-zinc-600 dark:text-zinc-400">Loading...</p>
+      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black">
+        <p className="text-zinc-600 dark:text-zinc-300">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-zinc-950 transition-colors">
+    <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
       <article className="max-w-3xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">
-          {note?.title}
-        </h1>
+        <div className="flex items-start justify-between mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+            {note?.title}
+          </h1>
+          {isAdmin() && (
+            <div className="flex gap-2 ml-4">
+              <Link
+                to={`/editor?edit=${note?.id}`}
+                className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                title="Edit note"
+              >
+                <Edit size={20} className="text-zinc-600 dark:text-zinc-300" />
+              </Link>
+              <button
+                onClick={handleDeleteClick}
+                className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                title="Delete note"
+              >
+                <Trash2 size={20} className="text-red-500" />
+              </button>
+            </div>
+          )}
+        </div>
         <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-8">
           {new Date(note?.created_at).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -136,7 +181,7 @@ const Note = () => {
               },
               th({ children }) {
                 return (
-                  <th className="border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-semibold text-left text-zinc-900 dark:text-zinc-100">
+                  <th className="border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-semibold text-left text-zinc-900 dark:text-white">
                     {children}
                   </th>
                 )
@@ -154,6 +199,16 @@ const Note = () => {
           </ReactMarkdown>
         </div>
       </article>
+      
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Note"
+        message={`Are you sure you want to delete "${note?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   )
 }
