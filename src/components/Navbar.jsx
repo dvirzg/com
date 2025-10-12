@@ -22,6 +22,20 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path
 
+  const handleLogoClick = (e) => {
+    if (location.pathname === '/') {
+      e.preventDefault()
+      // Find the home page container and scroll it to the top
+      const homeContainer = document.querySelector('.h-screen.overflow-y-scroll.snap-y.snap-mandatory')
+      if (homeContainer) {
+        homeContainer.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        // Fallback to window scroll
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/80 border-b border-zinc-200/50 dark:border-zinc-800/30">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -29,8 +43,9 @@ const Navbar = () => {
           <Link
             to="/"
             className="text-lg font-medium hover:opacity-70 transition-opacity"
+            onClick={handleLogoClick}
           >
-            dvirzg
+            Hi, {getFirstName()}
           </Link>
 
           <div className="flex gap-1 relative">
