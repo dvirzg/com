@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
 const Navbar = () => {
-  const { user, signOut, isAdmin } = useAuth()
+  const { user, signOut, isAdmin, getFirstName } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const location = useLocation()
 
@@ -28,7 +28,7 @@ const Navbar = () => {
             to="/"
             className="text-lg font-medium hover:opacity-70 transition-opacity"
           >
-            Hi, {user ? user.user_metadata?.name || 'Guest' : 'Guest'}
+            Hi, {getFirstName()}
           </Link>
 
           <div className="flex gap-1 relative">

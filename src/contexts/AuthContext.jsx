@@ -30,8 +30,17 @@ export const AuthProvider = ({ children }) => {
     return user?.user_metadata?.is_admin === true
   }
 
+  const isProfileComplete = () => {
+    return user?.user_metadata?.profile_complete === true
+  }
+
+  const getFirstName = () => {
+    if (!user) return 'Guest'
+    return user.user_metadata?.name || user.user_metadata?.full_name?.split(' ')[0] || 'Guest'
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, signOut, isAdmin, isProfileComplete, getFirstName }}>
       {children}
     </AuthContext.Provider>
   )
