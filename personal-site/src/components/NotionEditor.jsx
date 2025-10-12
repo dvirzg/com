@@ -43,6 +43,7 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
   }
 
   const finishEditing = () => {
+    console.log('finishEditing called with text:', text)
     onChange(text)
     setIsEditing(false)
   }
@@ -52,7 +53,10 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
     if (e?.relatedTarget?.classList?.contains('add-block-btn')) {
       return
     }
-    finishEditing()
+    // Only finish editing if we're still in editing mode
+    if (isEditing) {
+      finishEditing()
+    }
   }
 
   const handleChange = (e) => {
@@ -192,33 +196,28 @@ const NotionEditor = ({ initialContent, onChange }) => {
   })
   const [selectedIndex, setSelectedIndex] = useState(null)
 
+  useEffect(() => {
+    onChange(blocks.join('\n\n'))
+  }, [blocks])
+
   const handleBlockChange = (index, newContent) => {
-    setBlocks(prevBlocks => {
-      const newBlocks = [...prevBlocks]
-      newBlocks[index] = newContent
-      // Call onChange immediately with the new content
-      onChange(newBlocks.join('\n\n'))
-      return newBlocks
-    })
+    console.log('handleBlockChange called:', { index, newContent, currentBlocks: blocks })
+    const newBlocks = [...blocks]
+    newBlocks[index] = newContent
+    setBlocks(newBlocks)
   }
 
   const addNewBlockAfter = (index) => {
-    setBlocks(prevBlocks => {
-      const newBlocks = [...prevBlocks]
-      newBlocks.splice(index + 1, 0, '')
-      onChange(newBlocks.join('\n\n'))
-      return newBlocks
-    })
+    const newBlocks = [...blocks]
+    newBlocks.splice(index + 1, 0, '')
+    setBlocks(newBlocks)
     setSelectedIndex(index + 1)
   }
 
   const handleDelete = (index) => {
     if (blocks.length === 1) return
-    setBlocks(prevBlocks => {
-      const newBlocks = prevBlocks.filter((_, i) => i !== index)
-      onChange(newBlocks.join('\n\n'))
-      return newBlocks
-    })
+    const newBlocks = blocks.filter((_, i) => i !== index)
+    setBlocks(newBlocks)
     setSelectedIndex(index > 0 ? index - 1 : 0)
   }
 

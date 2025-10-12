@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 
 const Navbar = () => {
-  const { user, signOut } = useAuth()
+  const { user, signOut, isAdmin } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const location = useLocation()
 
@@ -13,6 +13,10 @@ const Navbar = () => {
     { name: 'Notes', path: '/notes' },
     { name: 'About', path: '/about' },
   ]
+
+  if (isAdmin()) {
+    tabs.push({ name: 'Sublinks', path: '/sublinks' })
+  }
 
   const isActive = (path) => location.pathname === path
 

@@ -9,6 +9,8 @@ import Notes from './pages/Notes'
 import Note from './pages/Note'
 import Login from './pages/Login'
 import Editor from './pages/Editor'
+import Sublinks from './pages/Sublinks'
+import SublinkRedirect from './pages/SublinkRedirect'
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
                 <Route path="/notes/:id" element={<Note />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/editor" element={<Editor />} />
+                <Route path="/sublinks" element={<Sublinks />} />
+                <Route path="/:slug" element={<SublinkRedirect />} />
               </Routes>
             </div>
           </BrowserRouter>
