@@ -11,10 +11,13 @@ const Login = () => {
     e.preventDefault()
     setLoading(true)
 
+    // Use the current origin (supports both localhost and production)
+    const redirectUrl = window.location.origin
+
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: redirectUrl,
       },
     })
 
