@@ -26,7 +26,7 @@ const Navbar = () => {
     if (location.pathname === '/') {
       e.preventDefault()
       // Find the home page container and scroll it to the top
-      const homeContainer = document.querySelector('.h-screen.overflow-y-scroll.snap-y.snap-mandatory')
+      const homeContainer = document.querySelector('.h-screen.overflow-y-scroll')
       if (homeContainer) {
         homeContainer.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
