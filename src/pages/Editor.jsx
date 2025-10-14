@@ -19,8 +19,13 @@ const Editor = () => {
   const [noteId, setNoteId] = useState(null)
   const [initialLoading, setInitialLoading] = useState(false)
   const [publishedAt, setPublishedAt] = useState('')
+  const [selectedCategories, setSelectedCategories] = useState([])
+  const [allCategories, setAllCategories] = useState([])
+  const [newCategoryInput, setNewCategoryInput] = useState('')
+  const [showCategoryInput, setShowCategoryInput] = useState(false)
 
   useEffect(() => {
+    loadCategories()
     const editId = searchParams.get('edit')
     if (editId) {
       setIsEditing(true)
@@ -28,6 +33,16 @@ const Editor = () => {
       loadNote(editId)
     }
   }, [searchParams])
+
+  const loadCategories = async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name')
+    if (data) {
+      setAllCategories(data)
+    }
+  }
 
   const loadNote = async (id) => {
     setInitialLoading(true)
@@ -52,6 +67,14 @@ const Editor = () => {
         const formatted = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
         setPublishedAt(formatted)
       }
+      // Load categories for this note
+      const { data: noteCategories } = await supabase
+        .from('note_categories')
+        .select('category_id, categories(id, name)')
+        .eq('note_id', id)
+      if (noteCategories) {
+        setSelectedCategories(noteCategories.map(nc => nc.categories))
+      }
     } else {
       navigate('/notes')
     }
@@ -66,6 +89,71 @@ const Editor = () => {
   if (!isAdmin()) {
     navigate('/notes')
     return null
+  }
+
+  const handleAddCategory = async () => {
+    const categoryName = newCategoryInput.trim()
+    if (!categoryName) return
+
+    // Check if category already exists
+    const existing = allCategories.find(c => c.name.toLowerCase() === categoryName.toLowerCase())
+    if (existing) {
+      // Add to selected if not already there
+      if (!selectedCategories.find(c => c.id === existing.id)) {
+        setSelectedCategories([...selectedCategories, existing])
+      }
+      setNewCategoryInput('')
+      setShowCategoryInput(false)
+      return
+    }
+
+    // Create new category
+    const { data, error } = await supabase
+      .from('categories')
+      .insert([{ name: categoryName }])
+      .select()
+      .single()
+
+    if (error) {
+      alert('Error creating category: ' + error.message)
+    } else {
+      setAllCategories([...allCategories, data])
+      setSelectedCategories([...selectedCategories, data])
+      setNewCategoryInput('')
+      setShowCategoryInput(false)
+    }
+  }
+
+  const handleRemoveCategory = (categoryId) => {
+    setSelectedCategories(selectedCategories.filter(c => c.id !== categoryId))
+  }
+
+  const handleToggleCategory = (category) => {
+    const isSelected = selectedCategories.find(c => c.id === category.id)
+    if (isSelected) {
+      setSelectedCategories(selectedCategories.filter(c => c.id !== category.id))
+    } else {
+      setSelectedCategories([...selectedCategories, category])
+    }
+  }
+
+  const saveCategoriesForNote = async (noteId) => {
+    // Delete existing category associations
+    await supabase
+      .from('note_categories')
+      .delete()
+      .eq('note_id', noteId)
+
+    // Insert new category associations
+    if (selectedCategories.length > 0) {
+      const insertData = selectedCategories.map(cat => ({
+        note_id: noteId,
+        category_id: cat.id
+      }))
+      await supabase
+        .from('note_categories')
+        .insert(insertData)
+    }
   }
 
   const handleSaveDraft = async () => {
@@ -95,23 +183,25 @@ const Editor = () => {
       if (error) {
         alert('Error saving draft: ' + error.message)
       } else {
+        await saveCategoriesForNote(noteId)
         refetch()
         navigate('/drafts')
       }
     } else {
       // Create new draft
-      const { error } = await supabase.from('notes').insert([
+      const { data, error } = await supabase.from('notes').insert([
         {
           title,
           content,
           alignment: JSON.stringify(alignment),
           published: false,
         },
-      ])
+      ]).select()
 
       if (error) {
         alert('Error saving draft: ' + error.message)
       } else {
+        await saveCategoriesForNote(data[0].id)
         refetch()
         navigate('/drafts')
       }
@@ -152,12 +242,13 @@ const Editor = () => {
       if (error) {
         alert('Error publishing note: ' + error.message)
       } else {
+        await saveCategoriesForNote(noteId)
         refetch()
         navigate('/notes')
       }
     } else {
       // Create new note and publish
-      const { error } = await supabase.from('notes').insert([
+      const { data, error } = await supabase.from('notes').insert([
         {
           title,
           content,
@@ -165,11 +256,12 @@ const Editor = () => {
           published: true,
           published_at: publishedAtTimestamp,
         },
-      ])
+      ]).select()
 
       if (error) {
         alert('Error publishing note: ' + error.message)
       } else {
+        await saveCategoriesForNote(data[0].id)
         refetch()
         navigate('/notes')
       }
@@ -223,24 +315,98 @@ const Editor = () => {
               placeholder="Note title..."
               className="w-full px-0 py-3 mb-4 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
             />
-            <div className="mb-6 flex items-center gap-3">
-              <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                Publish Date:
-              </label>
-              <input
-                type="datetime-local"
-                value={publishedAt}
-                onChange={(e) => setPublishedAt(e.target.value)}
-                className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
-              />
-              {publishedAt && (
-                <button
-                  onClick={() => setPublishedAt('')}
-                  className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                >
-                  Clear (use current time)
-                </button>
-              )}
+            <div className="mb-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                  Publish Date:
+                </label>
+                <input
+                  type="datetime-local"
+                  value={publishedAt}
+                  onChange={(e) => setPublishedAt(e.target.value)}
+                  className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
+                />
+                {publishedAt && (
+                  <button
+                    onClick={() => setPublishedAt('')}
+                    className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  >
+                    Clear (use current time)
+                  </button>
+                )}
+              </div>
+
+              {/* Categories */}
+              <div>
+                <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400 block mb-2">
+                  Categories:
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {selectedCategories.map(cat => (
+                    <span
+                      key={cat.id}
+                      className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-full"
+                    >
+                      {cat.name}
+                      <button
+                        onClick={() => handleRemoveCategory(cat.id)}
+                        className="hover:text-red-500"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+
+                {!showCategoryInput && (
+                  <div className="flex flex-wrap gap-2">
+                    {allCategories.filter(cat => !selectedCategories.find(sc => sc.id === cat.id)).map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => handleToggleCategory(cat)}
+                        className="px-3 py-1 text-sm bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                      >
+                        + {cat.name}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setShowCategoryInput(true)}
+                      className="px-3 py-1 text-sm bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
+                    >
+                      + New category
+                    </button>
+                  </div>
+                )}
+
+                {showCategoryInput && (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newCategoryInput}
+                      onChange={(e) => setNewCategoryInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                      placeholder="Category name..."
+                      className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleAddCategory}
+                      className="px-3 py-1.5 text-sm bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg hover:opacity-80"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowCategoryInput(false)
+                        setNewCategoryInput('')
+                      }}
+                      className="px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded-lg hover:opacity-80"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <NotionEditor
               initialContent={content}

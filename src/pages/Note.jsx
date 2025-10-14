@@ -127,36 +127,50 @@ const Note = () => {
             </div>
           )}
         </div>
-        <div className="text-sm text-zinc-500 dark:text-zinc-500 mb-8 space-y-1">
-          {note?.published_at && (
-            <p>
-              <span className="font-medium">Published:</span>{' '}
-              {new Date(note.published_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-          )}
-          {note?.updated_at && note?.published_at &&
-           new Date(note.updated_at).getTime() - new Date(note.published_at).getTime() > 60000 && (
-            <p>
-              <span className="font-medium">Last updated:</span>{' '}
-              {new Date(note.updated_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-          )}
-          {!note?.published_at && (
-            <p>
-              {new Date(note?.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
+        <div className="mb-8">
+          <div className="text-sm text-zinc-500 dark:text-zinc-500 space-y-1 mb-3">
+            {note?.published_at && (
+              <p>
+                <span className="font-medium">Published:</span>{' '}
+                {new Date(note.published_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            )}
+            {note?.updated_at && note?.published_at &&
+             new Date(note.updated_at).getTime() - new Date(note.published_at).getTime() > 60000 && (
+              <p>
+                <span className="font-medium">Last updated:</span>{' '}
+                {new Date(note.updated_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            )}
+            {!note?.published_at && (
+              <p>
+                {new Date(note?.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            )}
+          </div>
+          {note?.categories && note.categories.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {note.categories.map(cat => (
+                <span
+                  key={cat.id}
+                  className="px-3 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full"
+                >
+                  {cat.name}
+                </span>
+              ))}
+            </div>
           )}
         </div>
         <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words overflow-wrap-anywhere">

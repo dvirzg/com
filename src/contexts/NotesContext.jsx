@@ -15,12 +15,25 @@ export const NotesProvider = ({ children }) => {
     setLoading(true)
     const { data, error } = await supabase
       .from('notes')
-      .select('*')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .eq('published', true)
       .order('created_at', { ascending: false })
 
     if (!error) {
-      setNotes(data || [])
+      // Flatten categories structure
+      const notesWithCategories = (data || []).map(note => ({
+        ...note,
+        categories: note.note_categories?.map(nc => nc.categories) || []
+      }))
+      setNotes(notesWithCategories)
     }
     setLoading(false)
   }
@@ -29,12 +42,25 @@ export const NotesProvider = ({ children }) => {
     setDraftsLoading(true)
     const { data, error } = await supabase
       .from('notes')
-      .select('*')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .eq('published', false)
       .order('created_at', { ascending: false })
 
     if (!error) {
-      setDrafts(data || [])
+      // Flatten categories structure
+      const draftsWithCategories = (data || []).map(note => ({
+        ...note,
+        categories: note.note_categories?.map(nc => nc.categories) || []
+      }))
+      setDrafts(draftsWithCategories)
     } else {
       console.error('Error fetching drafts:', error)
     }
@@ -51,28 +77,50 @@ export const NotesProvider = ({ children }) => {
     // Fetch from database if not in cache
     const { data, error } = await supabase
       .from('notes')
-      .select('*')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .eq('id', id)
       .single()
 
     if (error || !data?.published) {
       return null
     }
-    return data
+    return {
+      ...data,
+      categories: data.note_categories?.map(nc => nc.categories) || []
+    }
   }
 
   const getNoteForEdit = async (id) => {
     // Fetch note for editing (regardless of published status)
     const { data, error } = await supabase
       .from('notes')
-      .select('*')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .eq('id', id)
       .single()
 
     if (error) {
       return null
     }
-    return data
+    return {
+      ...data,
+      categories: data.note_categories?.map(nc => nc.categories) || []
+    }
   }
 
   const deleteNote = async (id) => {
