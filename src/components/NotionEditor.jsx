@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, onSelect, canDelete, isAnyBlockEditing, onEditingChange }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, onEditingChange }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
@@ -45,11 +45,15 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     }
   }
 
-  const handleClick = () => {
-    if (!isSelected) {
+  const handleClick = (e) => {
+    // Cmd+click or Ctrl+click for multi-select
+    if (e.metaKey || e.ctrlKey) {
+      e.preventDefault()
+      onMultiSelect()
+    } else if (!isSelected && !isMultiSelected) {
       // First click: select the block
       onSelect()
-    } else if (isSelected && !isEditing) {
+    } else if ((isSelected || isMultiSelected) && !isEditing) {
       // Second click on already selected block: start editing
       setIsEditing(true)
     }
@@ -110,10 +114,10 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       onSelect(null) // Deselect
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
-      onNavigate('up')
+      onNavigate('up', e.shiftKey)
     } else if (e.key === 'ArrowDown') {
       e.preventDefault()
-      onNavigate('down')
+      onNavigate('down', e.shiftKey)
     } else if (e.key === 'Backspace' && !isEditing && text === '') {
       e.preventDefault()
       onDelete()
@@ -135,73 +139,75 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     <div
       ref={blockRef}
       tabIndex={0}
-      className={`relative group outline-none transition-colors ${isSelected ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
+      className={`relative group outline-none transition-colors ${(isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onKeyDown={handleBlockKeyDown}
       onClick={onSelect}
     >
-      <div className="absolute -right-32 top-2 flex flex-col gap-1 z-10">
-        {(isSelected || isEditing) && (
-          <>
+      {!isMultiSelected && (isSelected || isEditing || (!isAnyBlockEditing && isHovered)) && (
+        <div className="absolute -right-32 top-2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
+          {(isSelected || isEditing) && (
+            <>
+              <button
+                onClick={() => onAlignmentChange('left')}
+                className={`p-2 rounded transition-colors ${
+                  alignment === 'left'
+                    ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                }`}
+                title="Align left"
+              >
+                <AlignLeft size={16} />
+              </button>
+              <button
+                onClick={() => onAlignmentChange('center')}
+                className={`p-2 rounded transition-colors ${
+                  alignment === 'center'
+                    ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                }`}
+                title="Align center"
+              >
+                <AlignCenter size={16} />
+              </button>
+              <button
+                onClick={() => onAlignmentChange('right')}
+                className={`p-2 rounded transition-colors ${
+                  alignment === 'right'
+                    ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                }`}
+                title="Align right"
+              >
+                <AlignRight size={16} />
+              </button>
+              <button
+                onClick={() => onAlignmentChange('justify')}
+                className={`p-2 rounded transition-colors ${
+                  alignment === 'justify'
+                    ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                }`}
+                title="Justify"
+              >
+                <AlignJustify size={16} />
+              </button>
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-0.5" />
+            </>
+          )}
+          {!isAnyBlockEditing && (
             <button
-              onClick={() => onAlignmentChange('left')}
-              className={`p-1.5 rounded transition-colors ${
-                alignment === 'left'
-                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
-                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
-              }`}
-              title="Align left"
+              onClick={handleDeleteClick}
+              disabled={!canDelete}
+              className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title={canDelete ? "Delete block" : "Cannot delete the last block"}
             >
-              <AlignLeft size={14} />
+              <Trash2 size={16} />
             </button>
-            <button
-              onClick={() => onAlignmentChange('center')}
-              className={`p-1.5 rounded transition-colors ${
-                alignment === 'center'
-                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
-                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
-              }`}
-              title="Align center"
-            >
-              <AlignCenter size={14} />
-            </button>
-            <button
-              onClick={() => onAlignmentChange('right')}
-              className={`p-1.5 rounded transition-colors ${
-                alignment === 'right'
-                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
-                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
-              }`}
-              title="Align right"
-            >
-              <AlignRight size={14} />
-            </button>
-            <button
-              onClick={() => onAlignmentChange('justify')}
-              className={`p-1.5 rounded transition-colors ${
-                alignment === 'justify'
-                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
-                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
-              }`}
-              title="Justify"
-            >
-              <AlignJustify size={14} />
-            </button>
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
-          </>
-        )}
-        {!isAnyBlockEditing && (isHovered || isEditing || isSelected) && (
-          <button
-            onClick={handleDeleteClick}
-            disabled={!canDelete}
-            className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            title={canDelete ? "Delete block" : "Cannot delete the last block"}
-          >
-            <Trash2 size={14} />
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {isEditing ? (
         <div className="relative">
@@ -379,14 +385,27 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
     const handleClickOutside = (event) => {
       if (editorRef.current && !editorRef.current.contains(event.target)) {
         setSelectedIndex(null)
+        setSelectedIndices(new Set())
+      }
+    }
+
+    const handleKeyDown = (event) => {
+      // Cmd+A or Ctrl+A to select all
+      if ((event.metaKey || event.ctrlKey) && event.key === 'a' && editingIndex === null) {
+        event.preventDefault()
+        const allIndices = new Set(blocks.map((_, i) => i))
+        setSelectedIndices(allIndices)
+        setSelectedIndex(null)
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [])
+  }, [blocks, editingIndex])
 
   useEffect(() => {
     onChange(blocks.join('\n\n'))
@@ -431,11 +450,70 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
     setSelectedIndex(index > 0 ? index - 1 : 0)
   }
 
-  const handleNavigate = (index, direction) => {
-    if (direction === 'up' && index > 0) {
-      setSelectedIndex(index - 1)
-    } else if (direction === 'down' && index < blocks.length - 1) {
-      setSelectedIndex(index + 1)
+  const handleNavigate = (index, direction, isShiftKey) => {
+    if (isShiftKey) {
+      // Shift+arrow: extend selection
+      const newIndices = new Set(selectedIndices)
+      if (selectedIndex !== null) {
+        newIndices.add(selectedIndex)
+      }
+      newIndices.add(index)
+
+      if (direction === 'up' && index > 0) {
+        newIndices.add(index - 1)
+      } else if (direction === 'down' && index < blocks.length - 1) {
+        newIndices.add(index + 1)
+      }
+
+      setSelectedIndices(newIndices)
+      if (direction === 'up' && index > 0) {
+        setSelectedIndex(index - 1)
+      } else if (direction === 'down' && index < blocks.length - 1) {
+        setSelectedIndex(index + 1)
+      }
+    } else {
+      // Regular arrow: move selection
+      setSelectedIndices(new Set())
+      if (direction === 'up' && index > 0) {
+        setSelectedIndex(index - 1)
+      } else if (direction === 'down' && index < blocks.length - 1) {
+        setSelectedIndex(index + 1)
+      }
+    }
+  }
+
+  const handleSelect = (index, deselect) => {
+    if (deselect === null) {
+      setSelectedIndex(null)
+      setSelectedIndices(new Set())
+    } else {
+      setSelectedIndex(index)
+      setSelectedIndices(new Set())
+    }
+  }
+
+  const handleMultiSelect = (index) => {
+    const newIndices = new Set(selectedIndices)
+    if (newIndices.has(index)) {
+      newIndices.delete(index)
+    } else {
+      newIndices.add(index)
+    }
+    setSelectedIndices(newIndices)
+    setSelectedIndex(null)
+  }
+
+  const handleAlignmentChangeForBlock = (index, newAlignment) => {
+    if (selectedIndices.size > 0) {
+      // Apply to all selected blocks
+      const newAlignments = [...alignments]
+      selectedIndices.forEach(i => {
+        newAlignments[i] = newAlignment
+      })
+      setAlignments(newAlignments)
+    } else {
+      // Apply to single block
+      handleAlignmentChange(index, newAlignment)
     }
   }
 
@@ -449,24 +527,93 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
 
   const isAnyBlockEditingOrSelected = editingIndex !== null || selectedIndex !== null
 
+  const handleMultiSelectAlignmentChange = (newAlignment) => {
+    const newAlignments = [...alignments]
+    selectedIndices.forEach(i => {
+      newAlignments[i] = newAlignment
+    })
+    setAlignments(newAlignments)
+  }
+
+  const handleMultiSelectDelete = () => {
+    if (selectedIndices.size >= blocks.length) {
+      alert('Cannot delete all blocks')
+      return
+    }
+    const newBlocks = blocks.filter((_, i) => !selectedIndices.has(i))
+    const newAlignments = alignments.filter((_, i) => !selectedIndices.has(i))
+    setBlocks(newBlocks)
+    setAlignments(newAlignments)
+    setSelectedIndices(new Set())
+  }
+
   return (
-    <div ref={editorRef}>
+    <div ref={editorRef} className="relative">
+      {/* Floating toolbar for multi-select */}
+      {selectedIndices.size > 1 && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-2 flex gap-2 z-50">
+          <div className="flex items-center gap-1 border-r border-zinc-200 dark:border-zinc-800 pr-2">
+            <span className="text-sm text-zinc-600 dark:text-zinc-400 px-2">
+              {selectedIndices.size} selected
+            </span>
+          </div>
+          <button
+            onClick={() => handleMultiSelectAlignmentChange('left')}
+            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            title="Align left"
+          >
+            <AlignLeft size={16} />
+          </button>
+          <button
+            onClick={() => handleMultiSelectAlignmentChange('center')}
+            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            title="Align center"
+          >
+            <AlignCenter size={16} />
+          </button>
+          <button
+            onClick={() => handleMultiSelectAlignmentChange('right')}
+            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            title="Align right"
+          >
+            <AlignRight size={16} />
+          </button>
+          <button
+            onClick={() => handleMultiSelectAlignmentChange('justify')}
+            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            title="Justify"
+          >
+            <AlignJustify size={16} />
+          </button>
+          <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800" />
+          <button
+            onClick={handleMultiSelectDelete}
+            className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors"
+            title="Delete selected blocks"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      )}
+
       {blocks.map((block, index) => (
         <Block
           key={index}
           content={block}
           alignment={alignments[index] || 'left'}
           onChange={(newContent) => handleBlockChange(index, newContent)}
-          onAlignmentChange={(newAlignment) => handleAlignmentChange(index, newAlignment)}
+          onAlignmentChange={(newAlignment) => handleAlignmentChangeForBlock(index, newAlignment)}
           onDelete={() => handleDelete(index)}
-          onNavigate={(direction) => handleNavigate(index, direction)}
+          onNavigate={(direction, isShiftKey) => handleNavigate(index, direction, isShiftKey)}
           onAddBelow={() => addNewBlockAfter(index)}
-          onSelect={(deselect) => setSelectedIndex(deselect === null ? null : index)}
+          onSelect={(deselect) => handleSelect(index, deselect)}
+          onMultiSelect={() => handleMultiSelect(index)}
           onEditingChange={(isEditing) => handleEditingChange(index, isEditing)}
           isSelected={selectedIndex === index}
+          isMultiSelected={selectedIndices.has(index)}
           isLast={index === blocks.length - 1}
           canDelete={blocks.length > 1}
-          isAnyBlockEditing={isAnyBlockEditingOrSelected && editingIndex !== index && selectedIndex !== index}
+          isAnyBlockEditing={isAnyBlockEditingOrSelected && editingIndex !== index && selectedIndex !== index && !selectedIndices.has(index)}
         />
       ))}
     </div>
