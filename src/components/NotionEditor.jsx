@@ -344,7 +344,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
                     </pre>
                   ),
                   ul: ({children}) => <ul className="list-disc ml-6 my-2">{children}</ul>,
-                  ol: ({children}) => <ol className="list-decimal ml-6 my-2">{children}</ol>,
+                  ol: ({children}) => <ol className="list-decimal ml-6 my-2 marker:text-zinc-900 dark:marker:text-white">{children}</ol>,
                   li: ({children}) => <li className="my-1">{children}</li>,
                 }}
               >

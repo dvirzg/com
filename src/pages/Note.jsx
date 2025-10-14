@@ -151,7 +151,7 @@ const Note = () => {
             return blocks.map((block, index) => {
               const alignment = alignments[index] || 'left'
               return (
-                <div key={index} style={{ textAlign: alignment }}>
+                <div key={index} className="mb-6" style={{ textAlign: alignment }}>
                   <ReactMarkdown
                     remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                     rehypePlugins={[rehypeKatex]}
@@ -247,6 +247,15 @@ const Note = () => {
                     {children}
                   </td>
                 )
+              },
+              ul({ children }) {
+                return <ul className="list-disc ml-6 my-4">{children}</ul>
+              },
+              ol({ children }) {
+                return <ol className="list-decimal ml-6 my-4 marker:text-zinc-900 dark:marker:text-white">{children}</ol>
+              },
+              li({ children }) {
+                return <li className="my-1">{children}</li>
               }
                     }}
                   >
