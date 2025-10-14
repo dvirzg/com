@@ -90,7 +90,7 @@ const Drafts = () => {
                         {draft.title}
                       </h2>
                       <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-1">
-                        Last edited: {new Date(draft.updated_at || draft.created_at).toLocaleDateString('en-US', {
+                        Created: {new Date(draft.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',

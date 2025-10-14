@@ -13,11 +13,15 @@ const Navbar = () => {
 
   const tabs = [
     { name: 'Notes', path: '/notes' },
-    { name: 'About', path: '/about' },
   ]
 
   if (isAdmin()) {
     tabs.push({ name: 'Drafts', path: '/drafts' })
+  }
+
+  tabs.push({ name: 'About', path: '/about' })
+
+  if (isAdmin()) {
     tabs.push({ name: 'Sublinks', path: '/sublinks' })
   }
 

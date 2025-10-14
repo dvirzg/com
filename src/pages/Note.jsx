@@ -4,6 +4,7 @@ import { Edit, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
@@ -98,7 +99,7 @@ const Note = () => {
         </p>
         <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none">
           <ReactMarkdown
-            remarkPlugins={[remarkMath, remarkGfm]}
+            remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
             rehypePlugins={[rehypeKatex]}
             components={{
               code({ node, inline, className, children, ...props }) {

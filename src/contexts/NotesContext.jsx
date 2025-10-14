@@ -31,10 +31,12 @@ export const NotesProvider = ({ children }) => {
       .from('notes')
       .select('*')
       .eq('published', false)
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (!error) {
       setDrafts(data || [])
+    } else {
+      console.error('Error fetching drafts:', error)
     }
     setDraftsLoading(false)
   }
@@ -80,15 +82,17 @@ export const NotesProvider = ({ children }) => {
       .eq('id', id)
 
     if (!error) {
-      // Remove from local state
+      // Remove from both local states
       setNotes(prevNotes => prevNotes?.filter(note => note.id !== id) || [])
+      setDrafts(prevDrafts => prevDrafts?.filter(note => note.id !== id) || [])
     }
-    
+
     return { error }
   }
 
   const refetch = () => {
     fetchNotes()
+    fetchDrafts()
   }
 
   useEffect(() => {

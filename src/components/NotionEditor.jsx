@@ -80,8 +80,9 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
       e.preventDefault()
       onDelete()
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      // Allow default behavior when editing - cursor moves within textarea
-      return
+      // Stop propagation to prevent block navigation when editing
+      e.stopPropagation()
+      // Allow default textarea behavior for cursor movement
     }
   }
 
@@ -168,7 +169,8 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
                   h4: ({children}) => <h4 className="text-lg font-bold">{children}</h4>,
                   h5: ({children}) => <h5 className="text-base font-bold">{children}</h5>,
                   h6: ({children}) => <h6 className="text-sm font-bold">{children}</h6>,
-                  p: ({children}) => <p className="m-0">{children}</p>,
+                  p: ({children}) => <p className="my-2">{children}</p>,
+                  br: () => <br />,
                   hr: () => <hr className="my-4 border-zinc-300 dark:border-zinc-700" />,
                   img: ({src, alt, title}) => (
                     <img 
