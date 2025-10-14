@@ -7,6 +7,7 @@ import Note from '../pages/Note'
 import Login from '../pages/Login'
 import ProfileSetup from '../pages/ProfileSetup'
 import Editor from '../pages/Editor'
+import Drafts from '../pages/Drafts'
 import Sublinks from '../pages/Sublinks'
 import SublinkRedirect from '../pages/SublinkRedirect'
 
@@ -37,6 +38,7 @@ const AppRouter = () => {
       <Route path="/notes" element={<Notes />} />
       <Route path="/notes/:id" element={<Note />} />
       <Route path="/editor" element={<Editor />} />
+      <Route path="/drafts" element={<Drafts />} />
       <Route path="/sublinks" element={<Sublinks />} />
       <Route path="/:slug" element={<SublinkRedirect />} />
     </Routes>

@@ -57,6 +57,52 @@ const Editor = () => {
     return firstLine.replace(/^#\s*/, '')
   }
 
+  const handleSaveDraft = async () => {
+    if (!content.trim()) {
+      alert('Please write some content')
+      return
+    }
+
+    setLoading(true)
+    const title = extractTitle(content)
+
+    if (isEditing && noteId) {
+      // Update existing note as draft
+      const { error } = await supabase
+        .from('notes')
+        .update({
+          title,
+          content,
+          published: false,
+        })
+        .eq('id', noteId)
+
+      if (error) {
+        alert('Error saving draft: ' + error.message)
+      } else {
+        refetch()
+        navigate('/drafts')
+      }
+    } else {
+      // Create new draft
+      const { error } = await supabase.from('notes').insert([
+        {
+          title,
+          content,
+          published: false,
+        },
+      ])
+
+      if (error) {
+        alert('Error saving draft: ' + error.message)
+      } else {
+        refetch()
+        navigate('/drafts')
+      }
+    }
+    setLoading(false)
+  }
+
   const handlePublish = async () => {
     if (!content.trim()) {
       alert('Please write some content')
@@ -67,23 +113,24 @@ const Editor = () => {
     const title = extractTitle(content)
 
     if (isEditing && noteId) {
-      // Update existing note
+      // Update existing note and publish
       const { error } = await supabase
         .from('notes')
         .update({
           title,
           content,
+          published: true,
         })
         .eq('id', noteId)
 
       if (error) {
-        alert('Error updating note: ' + error.message)
+        alert('Error publishing note: ' + error.message)
       } else {
         refetch()
         navigate('/notes')
       }
     } else {
-      // Create new note
+      // Create new note and publish
       const { error } = await supabase.from('notes').insert([
         {
           title,
@@ -117,11 +164,18 @@ const Editor = () => {
               Cancel
             </button>
             <button
+              onClick={handleSaveDraft}
+              disabled={loading || initialLoading}
+              className="px-4 py-2 text-sm font-medium bg-zinc-400 dark:bg-zinc-600 text-white hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Save as Draft'}
+            </button>
+            <button
               onClick={handlePublish}
               disabled={loading || initialLoading}
               className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
             >
-              {loading ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Update' : 'Publish')}
+              {loading ? (isEditing ? 'Publishing...' : 'Publishing...') : 'Publish'}
             </button>
           </div>
         </div>

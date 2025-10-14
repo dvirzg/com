@@ -17,6 +17,7 @@ const Navbar = () => {
   ]
 
   if (isAdmin()) {
+    tabs.push({ name: 'Drafts', path: '/drafts' })
     tabs.push({ name: 'Sublinks', path: '/sublinks' })
   }
 

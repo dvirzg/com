@@ -7,7 +7,9 @@ export const useNotes = () => useContext(NotesContext)
 
 export const NotesProvider = ({ children }) => {
   const [notes, setNotes] = useState(null)
+  const [drafts, setDrafts] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [draftsLoading, setDraftsLoading] = useState(false)
 
   const fetchNotes = async () => {
     setLoading(true)
@@ -21,6 +23,20 @@ export const NotesProvider = ({ children }) => {
       setNotes(data || [])
     }
     setLoading(false)
+  }
+
+  const fetchDrafts = async () => {
+    setDraftsLoading(true)
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('published', false)
+      .order('updated_at', { ascending: false })
+
+    if (!error) {
+      setDrafts(data || [])
+    }
+    setDraftsLoading(false)
   }
 
   const getNote = async (id) => {
@@ -80,7 +96,7 @@ export const NotesProvider = ({ children }) => {
   }, [])
 
   return (
-    <NotesContext.Provider value={{ notes, loading, getNote, getNoteForEdit, deleteNote, refetch }}>
+    <NotesContext.Provider value={{ notes, drafts, loading, draftsLoading, getNote, getNoteForEdit, deleteNote, refetch, fetchDrafts }}>
       {children}
     </NotesContext.Provider>
   )
