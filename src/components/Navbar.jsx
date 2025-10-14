@@ -1,15 +1,33 @@
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Moon, Sun } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { supabase } from '../lib/supabase'
 
 const Navbar = () => {
   const { user, signOut, isAdmin, getFirstName } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const location = useLocation()
   const [hoveredTab, setHoveredTab] = useState(null)
+  const [customPages, setCustomPages] = useState([])
+
+  useEffect(() => {
+    loadCustomPages()
+  }, [])
+
+  const loadCustomPages = async () => {
+    const { data } = await supabase
+      .from('pages')
+      .select('slug, title, nav_order')
+      .eq('show_in_nav', true)
+      .order('nav_order', { ascending: true })
+
+    if (data) {
+      setCustomPages(data)
+    }
+  }
 
   const tabs = [
     { name: 'Notes', path: '/notes' },
@@ -19,10 +37,13 @@ const Navbar = () => {
     tabs.push({ name: 'Drafts', path: '/drafts' })
   }
 
-  tabs.push({ name: 'About', path: '/about' })
+  // Add custom pages to tabs
+  customPages.forEach((page) => {
+    tabs.push({ name: page.title, path: `/${page.slug}` })
+  })
 
   if (isAdmin()) {
-    tabs.push({ name: 'Sublinks', path: '/sublinks' })
+    tabs.push({ name: 'Admin', path: '/admin' })
   }
 
   const isActive = (path) => location.pathname === path
