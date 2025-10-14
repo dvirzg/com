@@ -162,10 +162,12 @@ const Sublinks = () => {
       <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
         showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
       }`}>
-        <div className="max-w-3xl mx-auto px-6 py-4">
-          <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white">
-            Sublinks
-          </h1>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            <h1 className="text-lg font-bold text-zinc-900 dark:text-white">
+              Sublinks
+            </h1>
+          </div>
         </div>
       </div>
 
