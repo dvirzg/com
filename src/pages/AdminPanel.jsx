@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SublinksTab from '../components/admin/SublinksTab'
@@ -8,6 +8,20 @@ const AdminPanel = () => {
   const navigate = useNavigate()
   const { user, isAdmin } = useAuth()
   const [activeTab, setActiveTab] = useState('pages')
+  const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const titleRef = useRef(null)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (titleRef.current) {
+        const titleRect = titleRef.current.getBoundingClientRect()
+        setShowStickyTitle(titleRect.top < 80)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   if (!user || !isAdmin()) {
     navigate('/')
@@ -15,11 +29,23 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 px-6 pb-12 bg-white dark:bg-black transition-colors">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-8">
-          Admin Panel
-        </h1>
+    <>
+      {/* Sticky Title Header */}
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
+        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
+      }`}>
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white">
+            Admin Panel
+          </h1>
+        </div>
+      </div>
+
+      <div className="min-h-screen pt-24 px-6 pb-12 bg-white dark:bg-black transition-colors">
+        <div className="max-w-4xl mx-auto">
+          <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-8">
+            Admin Panel
+          </h1>
 
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-800">
@@ -45,10 +71,11 @@ const AdminPanel = () => {
           </button>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'pages' ? <PagesTab /> : <SublinksTab />}
+          {/* Tab Content */}
+          {activeTab === 'pages' ? <PagesTab /> : <SublinksTab />}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

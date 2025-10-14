@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Edit } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -19,10 +19,24 @@ const CustomPage = () => {
   const { isAdmin } = useAuth()
   const [page, setPage] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const titleRef = useRef(null)
 
   useEffect(() => {
     loadPage()
   }, [slug])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (titleRef.current) {
+        const titleRect = titleRef.current.getBoundingClientRect()
+        setShowStickyTitle(titleRect.top < 80)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [page])
 
   const loadPage = async () => {
     // First check if it's a sublink (redirect)
@@ -58,12 +72,24 @@ const CustomPage = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-start justify-between mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words">
+    <>
+      {/* Sticky Title Header */}
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
+        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
+      }`}>
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white break-words">
             {page?.title}
           </h1>
+        </div>
+      </div>
+
+      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words">
+              {page?.title}
+            </h1>
           {isAdmin() && (
             <Link
               to={`/admin/pages/edit/${page?.slug}`}
@@ -73,9 +99,9 @@ const CustomPage = () => {
               <Edit size={20} className="text-zinc-600 dark:text-zinc-300" />
             </Link>
           )}
-        </div>
+          </div>
 
-        <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words overflow-wrap-anywhere">
+          <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words overflow-wrap-anywhere">
           <ReactMarkdown
             remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
             rehypePlugins={[rehypeKatex]}
@@ -142,9 +168,10 @@ const CustomPage = () => {
           >
             {page?.content || ''}
           </ReactMarkdown>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

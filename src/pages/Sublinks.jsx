@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -14,6 +14,8 @@ const Sublinks = () => {
   const [formData, setFormData] = useState({ slug: '', url: '', type: 'url' })
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadProgress, setUploadProgress] = useState(false)
+  const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const titleRef = useRef(null)
 
   useEffect(() => {
     if (!user || !isAdmin()) {
@@ -22,6 +24,18 @@ const Sublinks = () => {
     }
     fetchSublinks()
   }, [user, isAdmin, navigate])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (titleRef.current) {
+        const titleRect = titleRef.current.getBoundingClientRect()
+        setShowStickyTitle(titleRect.top < 80)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const fetchSublinks = async () => {
     setLoading(true)
@@ -143,12 +157,24 @@ const Sublinks = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 px-6 pb-12 bg-white dark:bg-black transition-colors">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+    <>
+      {/* Sticky Title Header */}
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
+        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
+      }`}>
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white">
             Sublinks
           </h1>
+        </div>
+      </div>
+
+      <div className="min-h-screen pt-24 px-6 pb-12 bg-white dark:bg-black transition-colors">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+              Sublinks
+            </h1>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-80 rounded-lg transition-opacity"
@@ -312,8 +338,9 @@ const Sublinks = () => {
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

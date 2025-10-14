@@ -12,10 +12,30 @@ const Navbar = () => {
   const location = useLocation()
   const [hoveredTab, setHoveredTab] = useState(null)
   const [customPages, setCustomPages] = useState([])
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   useEffect(() => {
     loadCustomPages()
   }, [])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+
+      // Show navbar when scrolling up, hide when scrolling down
+      if (currentScrollY < lastScrollY || currentScrollY < 10) {
+        setIsVisible(true)
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false)
+      }
+
+      setLastScrollY(currentScrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
 
   const loadCustomPages = async () => {
     const { data } = await supabase
@@ -63,7 +83,9 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/80 border-b border-zinc-200/50 dark:border-zinc-800/30">
+    <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/80 border-b border-zinc-200/50 dark:border-zinc-800/30 transition-transform duration-300 ${
+      isVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link

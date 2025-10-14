@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Edit, Trash2, X, Filter } from 'lucide-react'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -14,6 +14,8 @@ const Drafts = () => {
   const [selectedCategories, setSelectedCategories] = useState([])
   const [showFilters, setShowFilters] = useState(false)
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
+  const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const titleRef = useRef(null)
 
   useEffect(() => {
     fetchDrafts()
@@ -29,6 +31,18 @@ const Drafts = () => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showCategoryDropdown])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (titleRef.current) {
+        const titleRect = titleRef.current.getBoundingClientRect()
+        setShowStickyTitle(titleRect.top < 80)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const loadCategories = async () => {
     const { data } = await supabase
@@ -101,10 +115,22 @@ const Drafts = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
-      <div className="max-w-3xl mx-auto">
+    <>
+      {/* Sticky Title Header */}
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
+        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
+      }`}>
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white">
+            Drafts
+          </h1>
+        </div>
+      </div>
+
+      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
+        <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+          <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
             Drafts
           </h1>
           <div className="flex gap-2">
@@ -258,6 +284,7 @@ const Drafts = () => {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       <ConfirmDialog
@@ -269,7 +296,7 @@ const Drafts = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
-    </div>
+    </>
   )
 }
 
