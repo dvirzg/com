@@ -9,7 +9,7 @@ import NotionEditor from '../components/NotionEditor'
 const Editor = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const { refetch, getNoteForEdit } = useNotes()
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
@@ -39,6 +39,11 @@ const Editor = () => {
 
   if (!user) {
     navigate('/login')
+    return null
+  }
+
+  if (!isAdmin()) {
+    navigate('/notes')
     return null
   }
 

@@ -51,7 +51,7 @@ const Notes = () => {
             >
               ↻
             </button>
-            {user && (
+            {isAdmin() && (
               <Link
                 to="/editor"
                 className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity"
