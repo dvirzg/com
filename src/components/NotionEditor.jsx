@@ -121,6 +121,9 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     } else if (e.key === 'Backspace' && !isEditing && text === '') {
       e.preventDefault()
       onDelete()
+    } else if ((e.key === 'n' || e.key === 'N') && !isEditing) {
+      e.preventDefault()
+      onAddBelow()
     }
   }
 
