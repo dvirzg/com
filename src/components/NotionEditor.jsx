@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Trash2, Plus } from 'lucide-react'
 
-const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, onSelect, isTitle, canDelete }) => {
+const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, onSelect, canDelete }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
@@ -136,11 +136,6 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
 
       {isEditing ? (
         <div className="relative">
-          {isTitle && (
-            <div className="absolute -top-5 left-3 text-xs text-zinc-500 dark:text-zinc-500">
-              Title
-            </div>
-          )}
           <textarea
             ref={textareaRef}
             value={text}
@@ -148,7 +143,7 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             className="w-full px-3 py-2 pr-10 bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none border-l-2 border-zinc-400 dark:border-zinc-600 font-mono text-sm resize-none overflow-hidden"
-            placeholder={isTitle ? "## Your note title" : "Type markdown..."}
+            placeholder="Type markdown..."
             rows={1}
           />
         </div>
@@ -269,7 +264,7 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
             </div>
           ) : (
             <span className="text-zinc-400 dark:text-zinc-600 text-sm">
-              {isTitle ? 'Click to add title...' : 'Click to add content...'}
+              Click to add content...
             </span>
           )}
         </div>
@@ -333,7 +328,7 @@ const NotionEditor = ({ initialContent, onChange }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <>
       {blocks.map((block, index) => (
         <Block
           key={index}
@@ -345,11 +340,10 @@ const NotionEditor = ({ initialContent, onChange }) => {
           onSelect={() => setSelectedIndex(index)}
           isSelected={selectedIndex === index}
           isLast={index === blocks.length - 1}
-          isTitle={index === 0 && block.startsWith('##')}
           canDelete={blocks.length > 1}
         />
       ))}
-    </div>
+    </>
   )
 }
 

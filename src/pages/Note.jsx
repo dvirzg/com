@@ -11,23 +11,26 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 
 const Note = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getNote, deleteNote } = useNotes()
+  const { getNote, getNoteForEdit, deleteNote } = useNotes()
   const { isAdmin } = useAuth()
   const [note, setNote] = useState(null)
   const [loading, setLoading] = useState(true)
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false })
+  const [publishing, setPublishing] = useState(false)
 
   useEffect(() => {
     loadNote()
   }, [id])
 
   const loadNote = async () => {
-    const data = await getNote(id)
+    // For admins, use getNoteForEdit to get drafts too
+    const data = isAdmin() ? await getNoteForEdit(id) : await getNote(id)
     if (!data) {
       navigate('/notes')
     } else {
@@ -56,6 +59,23 @@ const Note = () => {
     setDeleteDialog({ isOpen: false })
   }
 
+  const handlePublish = async () => {
+    if (!note?.id) return
+
+    setPublishing(true)
+    const { error } = await supabase
+      .from('notes')
+      .update({ published: true })
+      .eq('id', note.id)
+
+    if (error) {
+      alert('Failed to publish note: ' + error.message)
+    } else {
+      navigate('/notes')
+    }
+    setPublishing(false)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black">
@@ -68,11 +88,28 @@ const Note = () => {
     <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
       <article className="max-w-3xl mx-auto">
         <div className="flex items-start justify-between mb-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
-            {note?.title}
-          </h1>
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+              {note?.title}
+            </h1>
+            {!note?.published && isAdmin() && (
+              <span className="inline-block mt-2 px-3 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full">
+                Draft
+              </span>
+            )}
+          </div>
           {isAdmin() && (
             <div className="flex gap-2 ml-4">
+              {!note?.published && (
+                <button
+                  onClick={handlePublish}
+                  disabled={publishing}
+                  className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
+                  title="Publish note"
+                >
+                  {publishing ? 'Publishing...' : 'Publish'}
+                </button>
+              )}
               <Link
                 to={`/editor?edit=${note?.id}`}
                 className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"

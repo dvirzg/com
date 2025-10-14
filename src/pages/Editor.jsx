@@ -11,6 +11,7 @@ const Editor = () => {
   const [searchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
   const { refetch, getNoteForEdit } = useNotes()
+  const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -30,6 +31,7 @@ const Editor = () => {
     setInitialLoading(true)
     const note = await getNoteForEdit(id)
     if (note) {
+      setTitle(note.title || '')
       setContent(note.content)
     } else {
       navigate('/notes')
@@ -47,24 +49,17 @@ const Editor = () => {
     return null
   }
 
-  const extractTitle = (markdown) => {
-    const lines = markdown.trim().split('\n')
-    if (lines.length === 0) return 'Untitled'
-    const firstLine = lines[0].trim()
-    if (firstLine.startsWith('##')) {
-      return firstLine.replace(/^##\s*/, '')
-    }
-    return firstLine.replace(/^#\s*/, '')
-  }
-
   const handleSaveDraft = async () => {
+    if (!title.trim()) {
+      alert('Please enter a title')
+      return
+    }
     if (!content.trim()) {
       alert('Please write some content')
       return
     }
 
     setLoading(true)
-    const title = extractTitle(content)
 
     if (isEditing && noteId) {
       // Update existing note as draft
@@ -104,13 +99,16 @@ const Editor = () => {
   }
 
   const handlePublish = async () => {
+    if (!title.trim()) {
+      alert('Please enter a title')
+      return
+    }
     if (!content.trim()) {
       alert('Please write some content')
       return
     }
 
     setLoading(true)
-    const title = extractTitle(content)
 
     if (isEditing && noteId) {
       // Update existing note and publish
@@ -187,7 +185,16 @@ const Editor = () => {
             <p className="text-zinc-600 dark:text-zinc-300">Loading note...</p>
           </div>
         ) : (
-          <NotionEditor initialContent={content} onChange={setContent} />
+          <div className="max-w-4xl mx-auto">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Note title..."
+              className="w-full px-0 py-3 mb-6 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
+            />
+            <NotionEditor initialContent={content} onChange={setContent} />
+          </div>
         )}
       </div>
     </div>
