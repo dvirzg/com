@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, onEditingChange }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
@@ -145,7 +145,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       onKeyDown={handleBlockKeyDown}
       onClick={onSelect}
     >
-      {!isMultiSelected && (isSelected || isEditing || (!isAnyBlockEditing && isHovered)) && (
+      {!isMultiSelected && (isSelected || isEditing || (!isAnyBlockEditing && !isAnyBlockSelected && isHovered)) && (
         <div className="absolute -right-32 top-2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
           {(isSelected || isEditing) && (
             <>
@@ -197,14 +197,24 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
             </>
           )}
           {!isAnyBlockEditing && (
-            <button
-              onClick={handleDeleteClick}
-              disabled={!canDelete}
-              className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              title={canDelete ? "Delete block" : "Cannot delete the last block"}
-            >
-              <Trash2 size={16} />
-            </button>
+            <>
+              <button
+                onClick={handleAddClick}
+                onMouseDown={(e) => e.preventDefault()}
+                className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+                title="Add block below"
+              >
+                <Plus size={16} />
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                disabled={!canDelete}
+                className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title={canDelete ? "Delete block" : "Cannot delete the last block"}
+              >
+                <Trash2 size={16} />
+              </button>
+            </>
           )}
         </div>
       )}
@@ -226,7 +236,9 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
         <div
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
-          className="w-full px-3 py-2 pr-10 min-h-[40px] cursor-text hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors"
+          className={`w-full px-3 py-2 pr-10 min-h-[40px] cursor-text transition-colors ${
+            !isAnyBlockEditing ? 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30' : ''
+          }`}
           style={{ textAlign: alignment || 'left' }}
         >
           {text ? (
@@ -347,7 +359,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
         </div>
       )}
 
-      {(isEditing || (isSelected && !isEditing) || isLast) && (
+      {isLast && !isSelected && !isEditing && (
         <div className="flex justify-center py-2">
           <button
             onClick={handleAddClick}
@@ -525,7 +537,8 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
     }
   }
 
-  const isAnyBlockEditingOrSelected = editingIndex !== null || selectedIndex !== null
+  const isAnyBlockEditing = editingIndex !== null
+  const isAnyBlockSelected = selectedIndex !== null || selectedIndices.size > 0
 
   const handleMultiSelectAlignmentChange = (newAlignment) => {
     const newAlignments = [...alignments]
@@ -613,7 +626,8 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
           isMultiSelected={selectedIndices.has(index)}
           isLast={index === blocks.length - 1}
           canDelete={blocks.length > 1}
-          isAnyBlockEditing={isAnyBlockEditingOrSelected && editingIndex !== index && selectedIndex !== index && !selectedIndices.has(index)}
+          isAnyBlockEditing={isAnyBlockEditing && editingIndex !== index}
+          isAnyBlockSelected={isAnyBlockSelected && selectedIndex !== index && !selectedIndices.has(index)}
         />
       ))}
     </div>
