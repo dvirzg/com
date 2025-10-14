@@ -80,7 +80,7 @@ const Notes = () => {
                       {note.title}
                     </h2>
                     <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-1">
-                      {new Date(note.created_at).toLocaleDateString('en-US', {
+                      {new Date(note.published_at || note.created_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',

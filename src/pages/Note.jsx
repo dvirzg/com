@@ -66,7 +66,10 @@ const Note = () => {
     setPublishing(true)
     const { error } = await supabase
       .from('notes')
-      .update({ published: true })
+      .update({
+        published: true,
+        published_at: new Date().toISOString()
+      })
       .eq('id', note.id)
 
     if (error) {
@@ -124,13 +127,38 @@ const Note = () => {
             </div>
           )}
         </div>
-        <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-8">
-          {new Date(note?.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </p>
+        <div className="text-sm text-zinc-500 dark:text-zinc-500 mb-8 space-y-1">
+          {note?.published_at && (
+            <p>
+              <span className="font-medium">Published:</span>{' '}
+              {new Date(note.published_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          )}
+          {note?.updated_at && note?.published_at &&
+           new Date(note.updated_at).getTime() - new Date(note.published_at).getTime() > 60000 && (
+            <p>
+              <span className="font-medium">Last updated:</span>{' '}
+              {new Date(note.updated_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          )}
+          {!note?.published_at && (
+            <p>
+              {new Date(note?.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          )}
+        </div>
         <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words overflow-wrap-anywhere">
           {(() => {
             const blocks = note?.content ? note.content.split('\n\n') : []

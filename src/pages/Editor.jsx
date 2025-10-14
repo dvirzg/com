@@ -18,6 +18,7 @@ const Editor = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [noteId, setNoteId] = useState(null)
   const [initialLoading, setInitialLoading] = useState(false)
+  const [publishedAt, setPublishedAt] = useState('')
 
   useEffect(() => {
     const editId = searchParams.get('edit')
@@ -44,6 +45,12 @@ const Editor = () => {
         }
       } else {
         setAlignment([])
+      }
+      // Set published_at if it exists, format for datetime-local input
+      if (note.published_at) {
+        const date = new Date(note.published_at)
+        const formatted = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+        setPublishedAt(formatted)
       }
     } else {
       navigate('/notes')
@@ -124,6 +131,11 @@ const Editor = () => {
 
     setLoading(true)
 
+    // Prepare the published_at timestamp
+    const publishedAtTimestamp = publishedAt
+      ? new Date(publishedAt).toISOString()
+      : new Date().toISOString()
+
     if (isEditing && noteId) {
       // Update existing note and publish
       const { error } = await supabase
@@ -133,6 +145,7 @@ const Editor = () => {
           content,
           alignment: JSON.stringify(alignment),
           published: true,
+          published_at: publishedAtTimestamp,
         })
         .eq('id', noteId)
 
@@ -150,6 +163,7 @@ const Editor = () => {
           content,
           alignment: JSON.stringify(alignment),
           published: true,
+          published_at: publishedAtTimestamp,
         },
       ])
 
@@ -207,8 +221,27 @@ const Editor = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Note title..."
-              className="w-full px-0 py-3 mb-6 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
+              className="w-full px-0 py-3 mb-4 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
             />
+            <div className="mb-6 flex items-center gap-3">
+              <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                Publish Date:
+              </label>
+              <input
+                type="datetime-local"
+                value={publishedAt}
+                onChange={(e) => setPublishedAt(e.target.value)}
+                className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
+              />
+              {publishedAt && (
+                <button
+                  onClick={() => setPublishedAt('')}
+                  className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                >
+                  Clear (use current time)
+                </button>
+              )}
+            </div>
             <NotionEditor
               initialContent={content}
               initialAlignment={alignment}
