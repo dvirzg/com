@@ -13,6 +13,7 @@ import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
+import Loading from '../components/Loading'
 
 const Note = () => {
   const { id } = useParams()
@@ -77,11 +78,7 @@ const Note = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black">
-        <p className="text-zinc-600 dark:text-zinc-300">Loading...</p>
-      </div>
-    )
+    return <Loading />
   }
 
   return (

@@ -4,6 +4,7 @@ import { Edit, Trash2 } from 'lucide-react'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
 import ConfirmDialog from '../components/ConfirmDialog'
+import Loading from '../components/Loading'
 
 const Notes = () => {
   const { notes, loading, refetch, deleteNote } = useNotes()
@@ -63,7 +64,7 @@ const Notes = () => {
         </div>
 
         {loading ? (
-          <p className="text-zinc-600 dark:text-zinc-300">Loading...</p>
+          <Loading fullScreen={false} />
         ) : !notes || notes.length === 0 ? (
           <p className="text-zinc-600 dark:text-zinc-300">No notes yet.</p>
         ) : (

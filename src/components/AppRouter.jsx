@@ -12,17 +12,14 @@ import EditLandingPage from '../pages/EditLandingPage'
 import AdminPanel from '../pages/AdminPanel'
 import CustomPage from '../pages/CustomPage'
 import PageEditor from '../pages/PageEditor'
+import Loading from '../components/Loading'
 
 const AppRouter = () => {
   const { user, loading, isProfileComplete } = useAuth()
 
   // Show loading while checking auth status
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950">
-        <div className="text-zinc-600 dark:text-zinc-400">Loading...</div>
-      </div>
-    )
+    return <Loading />
   }
 
   // If user is logged in but profile is not complete, show profile setup

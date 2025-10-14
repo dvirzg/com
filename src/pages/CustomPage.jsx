@@ -11,6 +11,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import Loading from '../components/Loading'
 
 const CustomPage = () => {
   const { slug } = useParams()
@@ -53,11 +54,7 @@ const CustomPage = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black">
-        <p className="text-zinc-600 dark:text-zinc-300">Loading...</p>
-      </div>
-    )
+    return <Loading />
   }
 
   return (

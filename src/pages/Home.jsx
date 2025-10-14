@@ -10,6 +10,7 @@ import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import Loading from '../components/Loading'
 
 const ScrollArrow = () => {
   const { scrollYProgress } = useScroll()
@@ -64,11 +65,7 @@ const Home = () => {
   }
 
   if (loading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-white dark:bg-black">
-        <p className="text-zinc-600 dark:text-zinc-300">Loading...</p>
-      </div>
-    )
+    return <Loading />
   }
 
   return (
