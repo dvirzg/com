@@ -10,6 +10,7 @@ import Editor from '../pages/Editor'
 import Drafts from '../pages/Drafts'
 import Sublinks from '../pages/Sublinks'
 import SublinkRedirect from '../pages/SublinkRedirect'
+import EditLandingPage from '../pages/EditLandingPage'
 
 const AppRouter = () => {
   const { user, loading, isProfileComplete } = useAuth()
@@ -40,6 +41,7 @@ const AppRouter = () => {
       <Route path="/editor" element={<Editor />} />
       <Route path="/drafts" element={<Drafts />} />
       <Route path="/sublinks" element={<Sublinks />} />
+      <Route path="/edit-landing" element={<EditLandingPage />} />
       <Route path="/:slug" element={<SublinkRedirect />} />
     </Routes>
   )

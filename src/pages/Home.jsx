@@ -1,5 +1,15 @@
+import { useState, useEffect } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Edit } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 
 const ScrollArrow = () => {
   const { scrollYProgress } = useScroll()
@@ -32,10 +42,39 @@ const ScrollArrow = () => {
 }
 
 const Home = () => {
+  const { isAdmin } = useAuth()
+  const [landingPage, setLandingPage] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadLandingPage()
+  }, [])
+
+  const loadLandingPage = async () => {
+    const { data, error } = await supabase
+      .from('landing_page')
+      .select('*')
+      .limit(1)
+      .single()
+
+    if (!error && data) {
+      setLandingPage(data)
+    }
+    setLoading(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-white dark:bg-black">
+        <p className="text-zinc-600 dark:text-zinc-300">Loading...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="h-screen overflow-y-scroll bg-white dark:bg-black transition-colors">
       {/* Hero Section */}
-      <motion.div 
+      <motion.div
         className="h-screen flex flex-col items-center justify-center px-6"
         style={{ position: 'relative' }}
       >
@@ -46,10 +85,10 @@ const Home = () => {
           className="text-center max-w-3xl"
         >
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-zinc-900 dark:text-white">
-            Hi, I'm Dvir
+            {landingPage?.title || 'Hi, I\'m Dvir'}
           </h1>
           <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-300">
-            Welcome to my personal website.
+            {landingPage?.subtitle || 'Welcome to my personal website.'}
           </p>
         </motion.div>
 
@@ -58,40 +97,41 @@ const Home = () => {
 
       {/* Content Section */}
       <div className="h-screen flex flex-col items-center justify-start px-6 pt-30">
-        <div className="text-left max-w-4xl w-full">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-zinc-900 dark:text-white">
-            About Me
-          </h2>
-          <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed mb-8">
-            ...
-          </p>
-          
-          <h3 className="text-2xl md:text-3xl font-bold mb-6 text-zinc-900 dark:text-white">
-            Let's Connect
-          </h3>
-          <p className="text-lg text-zinc-600 dark:text-zinc-300">
-            Email me at{' '}
-            <a href="mailto:dvirzagury@gmail.com" className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity" style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}>
-              dvirzagury@gmail.com
-            </a>
-            {' '}
-            or{' '}
-            <a href="mailto:dzagury@uwaterloo.ca" className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity" style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}>
-              dzagury@uwaterloo.ca
-            </a>
-            .<br />
-            Or connect with me on{' '}
-            <a
-              href="https://www.dvirzg.com/linkedin"
-              className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity"
-              style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}
-              target="_blank"
-              rel="noopener noreferrer"
+        <div className="text-left max-w-4xl w-full relative">
+          {isAdmin() && (
+            <Link
+              to="/edit-landing"
+              className="absolute -top-4 right-0 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              title="Edit landing page"
             >
-              LinkedIn
-            </a>
-            .
-          </p>
+              <Edit size={20} className="text-zinc-600 dark:text-zinc-300" />
+            </Link>
+          )}
+
+          <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words">
+            <ReactMarkdown
+              remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                h2: ({children}) => <h2 className="text-3xl md:text-4xl font-bold mb-6 text-zinc-900 dark:text-white">{children}</h2>,
+                h3: ({children}) => <h3 className="text-2xl md:text-3xl font-bold mb-6 text-zinc-900 dark:text-white">{children}</h3>,
+                p: ({children}) => <p className="text-lg text-zinc-600 dark:text-zinc-300 leading-relaxed mb-8">{children}</p>,
+                a: ({href, children}) => (
+                  <a
+                    href={href}
+                    className="text-zinc-900 dark:text-white hover:opacity-80 transition-opacity"
+                    style={{ textDecoration: 'underline', textDecorationSkipInk: 'none' }}
+                    target={href?.startsWith('http') ? '_blank' : undefined}
+                    rel={href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >
+                    {children}
+                  </a>
+                ),
+              }}
+            >
+              {landingPage?.content || '## About Me\n\n...\n\n## Let\'s Connect\n\nEmail me at [dvirzagury@gmail.com](mailto:dvirzagury@gmail.com).'}
+            </ReactMarkdown>
+          </div>
         </div>
       </div>
     </div>
