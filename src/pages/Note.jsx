@@ -135,10 +135,27 @@ const Note = () => {
           })}
         </p>
         <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none">
-          <ReactMarkdown
-            remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-            rehypePlugins={[rehypeKatex]}
-            components={{
+          {(() => {
+            const blocks = note?.content ? note.content.split('\n\n') : []
+            let alignments = []
+
+            // Parse alignment data
+            if (note?.alignment) {
+              try {
+                alignments = typeof note.alignment === 'string' ? JSON.parse(note.alignment) : note.alignment
+              } catch (e) {
+                alignments = []
+              }
+            }
+
+            return blocks.map((block, index) => {
+              const alignment = alignments[index] || 'left'
+              return (
+                <div key={index} style={{ textAlign: alignment }}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
               code({ node, inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
                 const language = match ? match[1] : ''
@@ -231,10 +248,14 @@ const Note = () => {
                   </td>
                 )
               }
-            }}
-          >
-            {note?.content}
-          </ReactMarkdown>
+                    }}
+                  >
+                    {block}
+                  </ReactMarkdown>
+                </div>
+              )
+            })
+          })()}
         </div>
       </article>
       

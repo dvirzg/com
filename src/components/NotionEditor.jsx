@@ -6,14 +6,20 @@ import remarkBreaks from 'remark-breaks'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Trash2, Plus } from 'lucide-react'
+import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react'
 
-const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, onSelect, canDelete }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, onSelect, canDelete, isAnyBlockEditing, onEditingChange }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
   const textareaRef = useRef(null)
   const blockRef = useRef(null)
+
+  useEffect(() => {
+    if (onEditingChange) {
+      onEditingChange(isEditing)
+    }
+  }, [isEditing])
 
   useEffect(() => {
     setText(content)
@@ -40,10 +46,19 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
   }
 
   const handleClick = () => {
-    onSelect()
-    if (!isEditing) {
+    if (!isSelected) {
+      // First click: select the block
+      onSelect()
+    } else if (isSelected && !isEditing) {
+      // Second click on already selected block: start editing
       setIsEditing(true)
     }
+  }
+
+  const handleDoubleClick = () => {
+    // Double click: select and start editing immediately
+    onSelect()
+    setIsEditing(true)
   }
 
   const finishEditing = () => {
@@ -90,6 +105,9 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
     if (e.key === 'Enter' && !isEditing) {
       e.preventDefault()
       setIsEditing(true)
+    } else if (e.key === 'Escape' && !isEditing) {
+      e.preventDefault()
+      onSelect(null) // Deselect
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       onNavigate('up')
@@ -123,16 +141,67 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
       onKeyDown={handleBlockKeyDown}
       onClick={onSelect}
     >
-      {(isHovered || isEditing || isSelected) && (
-        <button
-          onClick={handleDeleteClick}
-          disabled={!canDelete}
-          className="absolute right-2 top-2 p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed z-10"
-          title={canDelete ? "Delete block" : "Cannot delete the last block"}
-        >
-          <Trash2 size={14} />
-        </button>
-      )}
+      <div className="absolute -right-32 top-2 flex flex-col gap-1 z-10">
+        {(isSelected || isEditing) && (
+          <>
+            <button
+              onClick={() => onAlignmentChange('left')}
+              className={`p-1.5 rounded transition-colors ${
+                alignment === 'left'
+                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
+              }`}
+              title="Align left"
+            >
+              <AlignLeft size={14} />
+            </button>
+            <button
+              onClick={() => onAlignmentChange('center')}
+              className={`p-1.5 rounded transition-colors ${
+                alignment === 'center'
+                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
+              }`}
+              title="Align center"
+            >
+              <AlignCenter size={14} />
+            </button>
+            <button
+              onClick={() => onAlignmentChange('right')}
+              className={`p-1.5 rounded transition-colors ${
+                alignment === 'right'
+                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
+              }`}
+              title="Align right"
+            >
+              <AlignRight size={14} />
+            </button>
+            <button
+              onClick={() => onAlignmentChange('justify')}
+              className={`p-1.5 rounded transition-colors ${
+                alignment === 'justify'
+                  ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
+                  : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400'
+              }`}
+              title="Justify"
+            >
+              <AlignJustify size={14} />
+            </button>
+            <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+          </>
+        )}
+        {!isAnyBlockEditing && (isHovered || isEditing || isSelected) && (
+          <button
+            onClick={handleDeleteClick}
+            disabled={!canDelete}
+            className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title={canDelete ? "Delete block" : "Cannot delete the last block"}
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
+      </div>
 
       {isEditing ? (
         <div className="relative">
@@ -150,7 +219,9 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
       ) : (
         <div
           onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
           className="w-full px-3 py-2 pr-10 min-h-[40px] cursor-text hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors"
+          style={{ textAlign: alignment || 'left' }}
         >
           {text ? (
             <div className="prose prose-zinc dark:prose-invert max-w-none prose-headings:mt-0 prose-headings:mb-2 prose-p:my-0">
@@ -286,16 +357,46 @@ const Block = ({ content, onChange, onDelete, onNavigate, onAddBelow, isLast, is
   )
 }
 
-const NotionEditor = ({ initialContent, onChange }) => {
+const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentChange }) => {
+  const editorRef = useRef(null)
   const [blocks, setBlocks] = useState(() => {
     if (!initialContent || initialContent.trim() === '') return ['']
     return initialContent.split('\n\n')
   })
+  const [alignments, setAlignments] = useState(() => {
+    if (!initialAlignment || Object.keys(initialAlignment).length === 0) {
+      // Default all blocks to left alignment
+      const initialBlocks = !initialContent || initialContent.trim() === '' ? [''] : initialContent.split('\n\n')
+      return initialBlocks.map(() => 'left')
+    }
+    return initialAlignment
+  })
   const [selectedIndex, setSelectedIndex] = useState(null)
+  const [selectedIndices, setSelectedIndices] = useState(new Set())
+  const [editingIndex, setEditingIndex] = useState(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (editorRef.current && !editorRef.current.contains(event.target)) {
+        setSelectedIndex(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   useEffect(() => {
     onChange(blocks.join('\n\n'))
   }, [blocks])
+
+  useEffect(() => {
+    if (onAlignmentChange) {
+      onAlignmentChange(alignments)
+    }
+  }, [alignments])
 
   const handleBlockChange = (index, newContent) => {
     console.log('handleBlockChange called:', { index, newContent, currentBlocks: blocks })
@@ -304,10 +405,19 @@ const NotionEditor = ({ initialContent, onChange }) => {
     setBlocks(newBlocks)
   }
 
+  const handleAlignmentChange = (index, newAlignment) => {
+    const newAlignments = [...alignments]
+    newAlignments[index] = newAlignment
+    setAlignments(newAlignments)
+  }
+
   const addNewBlockAfter = (index) => {
     const newBlocks = [...blocks]
+    const newAlignments = [...alignments]
     newBlocks.splice(index + 1, 0, '')
+    newAlignments.splice(index + 1, 0, 'left')
     setBlocks(newBlocks)
+    setAlignments(newAlignments)
     setSelectedIndex(index + 1)
   }
 
@@ -315,7 +425,9 @@ const NotionEditor = ({ initialContent, onChange }) => {
     // Only allow deletion if there's more than one block
     if (blocks.length <= 1) return
     const newBlocks = blocks.filter((_, i) => i !== index)
+    const newAlignments = alignments.filter((_, i) => i !== index)
     setBlocks(newBlocks)
+    setAlignments(newAlignments)
     setSelectedIndex(index > 0 ? index - 1 : 0)
   }
 
@@ -327,23 +439,37 @@ const NotionEditor = ({ initialContent, onChange }) => {
     }
   }
 
+  const handleEditingChange = (index, isEditing) => {
+    if (isEditing) {
+      setEditingIndex(index)
+    } else if (editingIndex === index) {
+      setEditingIndex(null)
+    }
+  }
+
+  const isAnyBlockEditingOrSelected = editingIndex !== null || selectedIndex !== null
+
   return (
-    <>
+    <div ref={editorRef}>
       {blocks.map((block, index) => (
         <Block
           key={index}
           content={block}
+          alignment={alignments[index] || 'left'}
           onChange={(newContent) => handleBlockChange(index, newContent)}
+          onAlignmentChange={(newAlignment) => handleAlignmentChange(index, newAlignment)}
           onDelete={() => handleDelete(index)}
           onNavigate={(direction) => handleNavigate(index, direction)}
           onAddBelow={() => addNewBlockAfter(index)}
-          onSelect={() => setSelectedIndex(index)}
+          onSelect={(deselect) => setSelectedIndex(deselect === null ? null : index)}
+          onEditingChange={(isEditing) => handleEditingChange(index, isEditing)}
           isSelected={selectedIndex === index}
           isLast={index === blocks.length - 1}
           canDelete={blocks.length > 1}
+          isAnyBlockEditing={isAnyBlockEditingOrSelected && editingIndex !== index && selectedIndex !== index}
         />
       ))}
-    </>
+    </div>
   )
 }
 

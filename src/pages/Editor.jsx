@@ -13,6 +13,7 @@ const Editor = () => {
   const { refetch, getNoteForEdit } = useNotes()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [alignment, setAlignment] = useState([])
   const [loading, setLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [noteId, setNoteId] = useState(null)
@@ -33,6 +34,17 @@ const Editor = () => {
     if (note) {
       setTitle(note.title || '')
       setContent(note.content)
+      // Parse alignment data if it exists
+      if (note.alignment) {
+        try {
+          const parsedAlignment = typeof note.alignment === 'string' ? JSON.parse(note.alignment) : note.alignment
+          setAlignment(parsedAlignment)
+        } catch (e) {
+          setAlignment([])
+        }
+      } else {
+        setAlignment([])
+      }
     } else {
       navigate('/notes')
     }
@@ -68,6 +80,7 @@ const Editor = () => {
         .update({
           title,
           content,
+          alignment: JSON.stringify(alignment),
           published: false,
         })
         .eq('id', noteId)
@@ -84,6 +97,7 @@ const Editor = () => {
         {
           title,
           content,
+          alignment: JSON.stringify(alignment),
           published: false,
         },
       ])
@@ -117,6 +131,7 @@ const Editor = () => {
         .update({
           title,
           content,
+          alignment: JSON.stringify(alignment),
           published: true,
         })
         .eq('id', noteId)
@@ -133,6 +148,7 @@ const Editor = () => {
         {
           title,
           content,
+          alignment: JSON.stringify(alignment),
           published: true,
         },
       ])
@@ -193,7 +209,12 @@ const Editor = () => {
               placeholder="Note title..."
               className="w-full px-0 py-3 mb-6 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
             />
-            <NotionEditor initialContent={content} onChange={setContent} />
+            <NotionEditor
+              initialContent={content}
+              initialAlignment={alignment}
+              onChange={setContent}
+              onAlignmentChange={setAlignment}
+            />
           </div>
         )}
       </div>
