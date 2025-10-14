@@ -5,6 +5,7 @@ import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
+import ScrollToTop from '../components/ScrollToTop'
 
 const Drafts = () => {
   const { drafts, draftsLoading, fetchDrafts, deleteNote } = useNotes()
@@ -298,6 +299,7 @@ const Drafts = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
+      <ScrollToTop />
     </>
   )
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
+import ScrollToTop from '../components/ScrollToTop'
 
 const AdminPanel = () => {
   const navigate = useNavigate()
@@ -77,6 +78,7 @@ const AdminPanel = () => {
           {activeTab === 'pages' ? <PagesTab /> : <SublinksTab />}
         </div>
       </div>
+      <ScrollToTop />
     </>
   )
 }

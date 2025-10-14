@@ -14,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Loading from '../components/Loading'
+import ScrollToTop from '../components/ScrollToTop'
 
 const Note = () => {
   const { id } = useParams()
@@ -345,6 +346,7 @@ const Note = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
+      <ScrollToTop />
       </div>
     </>
   )

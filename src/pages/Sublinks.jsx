@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import ScrollToTop from '../components/ScrollToTop'
 
 const Sublinks = () => {
   const navigate = useNavigate()
@@ -342,6 +343,7 @@ const Sublinks = () => {
         )}
         </div>
       </div>
+      <ScrollToTop />
     </>
   )
 }

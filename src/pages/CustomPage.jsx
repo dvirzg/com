@@ -12,6 +12,7 @@ import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Loading from '../components/Loading'
+import ScrollToTop from '../components/ScrollToTop'
 
 const CustomPage = () => {
   const { slug } = useParams()
@@ -173,6 +174,7 @@ const CustomPage = () => {
           </div>
         </div>
       </div>
+      <ScrollToTop />
     </>
   )
 }
