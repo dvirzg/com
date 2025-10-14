@@ -86,10 +86,10 @@ const Note = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
-      <article className="max-w-3xl mx-auto">
+      <article className="max-w-3xl mx-auto overflow-x-hidden">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words">
               {note?.title}
             </h1>
             {!note?.published && isAdmin() && (
@@ -134,7 +134,7 @@ const Note = () => {
             day: 'numeric',
           })}
         </p>
-        <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none">
+        <div className="prose prose-lg prose-zinc dark:prose-invert max-w-none break-words overflow-wrap-anywhere">
           {(() => {
             const blocks = note?.content ? note.content.split('\n\n') : []
             let alignments = []
@@ -151,7 +151,7 @@ const Note = () => {
             return blocks.map((block, index) => {
               const alignment = alignments[index] || 'left'
               return (
-                <div key={index} className="mb-6" style={{ textAlign: alignment }}>
+                <div key={index} className="mb-6 break-words" style={{ textAlign: alignment }}>
                   <ReactMarkdown
                     remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                     rehypePlugins={[rehypeKatex]}
