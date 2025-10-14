@@ -166,6 +166,38 @@ const CustomPage = () => {
               },
               p({ children }) {
                 return <p className="text-lg text-zinc-600 dark:text-zinc-200 leading-relaxed my-4">{children}</p>
+              },
+              table({ children }) {
+                return (
+                  <div className="overflow-x-auto my-6">
+                    <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700 rounded-lg">
+                      {children}
+                    </table>
+                  </div>
+                )
+              },
+              thead({ children }) {
+                return <thead className="bg-zinc-50 dark:bg-zinc-800">{children}</thead>
+              },
+              tbody({ children }) {
+                return <tbody>{children}</tbody>
+              },
+              tr({ children }) {
+                return <tr className="border-b border-zinc-200 dark:border-zinc-700">{children}</tr>
+              },
+              th({ children }) {
+                return (
+                  <th className="border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-semibold text-left text-zinc-900 dark:text-white">
+                    {children}
+                  </th>
+                )
+              },
+              td({ children }) {
+                return (
+                  <td className="border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-zinc-700 dark:text-zinc-300">
+                    {children}
+                  </td>
+                )
               }
             }}
           >

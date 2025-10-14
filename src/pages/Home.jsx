@@ -124,6 +124,26 @@ const Home = () => {
                     {children}
                   </a>
                 ),
+                table: ({children}) => (
+                  <div className="overflow-x-auto my-6">
+                    <table className="min-w-full border-collapse border border-zinc-300 dark:border-zinc-700 rounded-lg">
+                      {children}
+                    </table>
+                  </div>
+                ),
+                thead: ({children}) => <thead className="bg-zinc-50 dark:bg-zinc-800">{children}</thead>,
+                tbody: ({children}) => <tbody>{children}</tbody>,
+                tr: ({children}) => <tr className="border-b border-zinc-200 dark:border-zinc-700">{children}</tr>,
+                th: ({children}) => (
+                  <th className="border border-zinc-300 dark:border-zinc-700 px-4 py-3 font-semibold text-left text-zinc-900 dark:text-white">
+                    {children}
+                  </th>
+                ),
+                td: ({children}) => (
+                  <td className="border border-zinc-300 dark:border-zinc-700 px-4 py-3 text-zinc-700 dark:text-zinc-300">
+                    {children}
+                  </td>
+                ),
               }}
             >
               {landingPage?.content || '## About Me\n\n...\n\n## Let\'s Connect\n\nEmail me at [dvirzagury@gmail.com](mailto:dvirzagury@gmail.com).'}
