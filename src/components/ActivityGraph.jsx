@@ -7,10 +7,44 @@ const ActivityGraph = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [hoveredDay, setHoveredDay] = useState(null)
   const [showYearDropdown, setShowYearDropdown] = useState(false)
+  const [selectedDay, setSelectedDay] = useState(null)
+  const [dayDetails, setDayDetails] = useState(null)
+  const [loadingDetails, setLoadingDetails] = useState(false)
 
   useEffect(() => {
     fetchActivityData()
   }, [selectedYear])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showYearDropdown && !event.target.closest('.year-dropdown')) {
+        setShowYearDropdown(false)
+      }
+      if (selectedDay && !event.target.closest('.activity-modal') && !event.target.closest('.activity-square')) {
+        setSelectedDay(null)
+        setDayDetails(null)
+      }
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        if (selectedDay) {
+          setSelectedDay(null)
+          setDayDetails(null)
+        }
+        if (showYearDropdown) {
+          setShowYearDropdown(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showYearDropdown, selectedDay])
 
   const fetchActivityData = async () => {
     setLoading(true)
@@ -157,15 +191,52 @@ const ActivityGraph = () => {
     availableYears.push(year)
   }
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (showYearDropdown && !event.target.closest('.year-dropdown')) {
-        setShowYearDropdown(false)
-      }
+  const fetchDayDetails = async (date) => {
+    setLoadingDetails(true)
+    const dateStr = date.toISOString().split('T')[0]
+    const nextDay = new Date(date)
+    nextDay.setDate(nextDay.getDate() + 1)
+    const nextDayStr = nextDay.toISOString().split('T')[0]
+
+    try {
+      const { data: notes, error } = await supabase
+        .from('notes')
+        .select('id, title, created_at, updated_at, published_at')
+        .or(`created_at.gte.${dateStr},updated_at.gte.${dateStr},published_at.gte.${dateStr}`)
+        .or(`created_at.lt.${nextDayStr},updated_at.lt.${nextDayStr},published_at.lt.${nextDayStr}`)
+
+      if (error) throw error
+
+      const activities = []
+      notes?.forEach(note => {
+        const noteCreatedDate = new Date(note.created_at).toISOString().split('T')[0]
+        const noteUpdatedDate = note.updated_at ? new Date(note.updated_at).toISOString().split('T')[0] : null
+        const notePublishedDate = note.published_at ? new Date(note.published_at).toISOString().split('T')[0] : null
+
+        if (noteCreatedDate === dateStr) {
+          activities.push({ type: 'Created', title: note.title, id: note.id })
+        }
+        if (noteUpdatedDate === dateStr && note.updated_at !== note.created_at) {
+          activities.push({ type: 'Updated', title: note.title, id: note.id })
+        }
+        if (notePublishedDate === dateStr && note.published_at !== note.created_at) {
+          activities.push({ type: 'Published', title: note.title, id: note.id })
+        }
+      })
+
+      setDayDetails(activities)
+    } catch (error) {
+      console.error('Error fetching day details:', error)
+      setDayDetails([])
+    } finally {
+      setLoadingDetails(false)
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showYearDropdown])
+  }
+
+  const handleDayClick = (date) => {
+    setSelectedDay(date)
+    fetchDayDetails(date)
+  }
 
   if (loading) {
     return (
@@ -273,8 +344,9 @@ const ActivityGraph = () => {
                   return (
                     <div
                       key={dayIndex}
-                      className={`w-[11px] h-[11px] rounded-sm ${colorClass} hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all cursor-pointer`}
+                      className={`activity-square w-[11px] h-[11px] rounded-sm ${colorClass} hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all cursor-pointer`}
                       onMouseEnter={() => setHoveredDay({ date: day, count })}
+                      onClick={() => count > 0 && handleDayClick(day)}
                       title={`${day.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -304,6 +376,78 @@ const ActivityGraph = () => {
           )}
         </div>
       </div>
+
+      {/* Activity Details Modal */}
+      {selectedDay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="activity-modal bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-xl max-w-lg w-full mx-4 max-h-[70vh] overflow-hidden flex flex-col">
+            <div className="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
+                  {selectedDay.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </h3>
+                {!loadingDetails && dayDetails && (
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    {dayDetails.length} {dayDetails.length === 1 ? 'activity' : 'activities'}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedDay(null)
+                  setDayDetails(null)
+                }}
+                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                title="Close"
+              >
+                <svg className="w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {loadingDetails ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-900 dark:border-zinc-100"></div>
+                </div>
+              ) : dayDetails && dayDetails.length > 0 ? (
+                <div className="space-y-1.5">
+                  {dayDetails.map((activity, index) => (
+                    <div
+                      key={index}
+                      className="px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-md transition-colors group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded uppercase tracking-wide ${
+                          activity.type === 'Created'
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                            : activity.type === 'Published'
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                            : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                        }`}>
+                          {activity.type}
+                        </span>
+                        <p className="text-sm text-zinc-900 dark:text-white flex-1">
+                          {activity.title}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-8">
+                  No activities found for this date
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
