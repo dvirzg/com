@@ -38,18 +38,18 @@ const SublinksTab = () => {
     let finalUrl = formData.url
     let filePath = null
 
-    // Handle PDF upload
-    if (formData.type === 'pdf' && selectedFile) {
+    // Handle file upload
+    if (formData.type === 'file' && selectedFile) {
       const fileExt = selectedFile.name.split('.').pop()
       const fileName = `${formData.slug.toLowerCase().replace(/\s+/g, '-')}.${fileExt}`
-      filePath = `pdfs/${fileName}`
+      filePath = `files/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('sublinks')
         .upload(filePath, selectedFile, { upsert: true })
 
       if (uploadError) {
-        alert('Error uploading PDF: ' + uploadError.message)
+        alert('Error uploading file: ' + uploadError.message)
         setUploadProgress(false)
         return
       }
@@ -122,11 +122,21 @@ const SublinksTab = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0]
-    if (file && file.type === 'application/pdf') {
-      setSelectedFile(file)
-    } else {
-      alert('Please select a PDF file')
-      e.target.value = ''
+    if (file) {
+      // Accept video, image, and PDF files
+      const validTypes = [
+        'video/',
+        'image/',
+        'application/pdf'
+      ]
+      const isValid = validTypes.some(type => file.type.startsWith(type) || file.type === type)
+
+      if (isValid) {
+        setSelectedFile(file)
+      } else {
+        alert('Please select a video, image, or PDF file')
+        e.target.value = ''
+      }
     }
   }
 
@@ -134,7 +144,7 @@ const SublinksTab = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Create short URLs that redirect to external links or PDFs
+          Create short URLs that redirect to external links or files
         </p>
           <button
             onClick={() => setShowAddForm(!showAddForm)}
@@ -171,14 +181,14 @@ const SublinksTab = () => {
                     <input
                       type="radio"
                       name="type"
-                      value="pdf"
-                      checked={formData.type === 'pdf'}
+                      value="file"
+                      checked={formData.type === 'file'}
                       onChange={(e) => {
                         setFormData({ ...formData, type: e.target.value, url: '' })
                       }}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm">PDF</span>
+                    <span className="text-sm">File</span>
                   </label>
                 </div>
               </div>
@@ -193,7 +203,7 @@ const SublinksTab = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, slug: e.target.value })
                   }
-                  placeholder={formData.type === 'pdf' ? 'resume' : 'sublink'}
+                  placeholder={formData.type === 'file' ? 'resume' : 'sublink'}
                   className="w-full px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                   required
                 />
@@ -221,19 +231,19 @@ const SublinksTab = () => {
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-2">
-                    Upload PDF
+                    Upload File
                   </label>
                   <div className="relative">
                     <input
                       type="file"
-                      accept="application/pdf"
+                      accept="video/*,image/*,application/pdf"
                       onChange={handleFileChange}
                       className="hidden"
-                      id="pdf-upload"
+                      id="file-upload"
                       required
                     />
                     <label
-                      htmlFor="pdf-upload"
+                      htmlFor="file-upload"
                       className="flex items-center justify-center gap-2 w-full px-4 py-8 bg-white dark:bg-zinc-900 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                     >
                       {selectedFile ? (
@@ -244,7 +254,7 @@ const SublinksTab = () => {
                       ) : (
                         <>
                           <Upload size={20} />
-                          <span className="text-sm">Drop PDF here or click to upload</span>
+                          <span className="text-sm">Drop file here or click to upload (video, image, or PDF)</span>
                         </>
                       )}
                     </label>
@@ -368,10 +378,10 @@ const SublinkItem = ({
           <code className="text-sm font-medium text-zinc-900 dark:text-white">
             /{sublink.slug}
           </code>
-          {sublink.type === 'pdf' ? (
-            <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded">
+          {sublink.type === 'file' ? (
+            <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
               <FileText size={12} />
-              PDF
+              FILE
             </span>
           ) : (
             <ExternalLink size={14} className="text-zinc-400" />
@@ -383,7 +393,7 @@ const SublinkItem = ({
           rel="noopener noreferrer"
           className="text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 truncate block"
         >
-          {sublink.type === 'pdf' ? sublink.file_path : sublink.url}
+          {sublink.type === 'file' ? sublink.file_path : sublink.url}
         </a>
       </div>
       <div className="flex items-center gap-2 ml-4">
