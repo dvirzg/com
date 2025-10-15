@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
+import ActivityGraph from '../components/ActivityGraph'
 import ScrollToTop from '../components/ScrollToTop'
 
 const AdminPanel = () => {
@@ -49,6 +50,11 @@ const AdminPanel = () => {
           <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white mb-8">
             Admin Panel
           </h1>
+
+          {/* Activity Graph */}
+          <div className="mb-8">
+            <ActivityGraph />
+          </div>
 
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-800">
