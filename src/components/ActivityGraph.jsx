@@ -251,7 +251,7 @@ const ActivityGraph = () => {
 
   return (
     <div className="p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-4">
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
           Activity Graph
         </h3>
@@ -293,13 +293,13 @@ const ActivityGraph = () => {
 
       <div className="relative flex flex-col">
         {/* Month labels */}
-        <div className="flex mb-1.5 ml-[42px] gap-[2px]">
+        <div className="flex mb-2 ml-[42px] gap-[2.5px]">
           {weeks.map((week, weekIndex) => {
             const monthLabel = monthLabels.find(label => label.weekIndex === weekIndex)
             return (
               <div
                 key={weekIndex}
-                className="w-[11px] text-[10px] text-zinc-500 dark:text-zinc-400"
+                className="w-[12px] text-[10px] text-zinc-500 dark:text-zinc-400"
               >
                 {monthLabel ? monthLabel.month : ''}
               </div>
@@ -307,31 +307,31 @@ const ActivityGraph = () => {
           })}
         </div>
 
-        <div className="flex gap-[2px]">
+        <div className="flex gap-[2.5px]">
           {/* Day labels */}
-          <div className="flex flex-col gap-[2px] text-[10px] text-zinc-500 dark:text-zinc-400 mr-1.5 w-[38px] text-right">
-            <div className="h-[11px] leading-[11px]">Mon</div>
-            <div className="h-[11px]"></div>
-            <div className="h-[11px] leading-[11px]">Wed</div>
-            <div className="h-[11px]"></div>
-            <div className="h-[11px] leading-[11px]">Fri</div>
-            <div className="h-[11px]"></div>
-            <div className="h-[11px]"></div>
+          <div className="flex flex-col gap-[2.5px] text-[10px] text-zinc-500 dark:text-zinc-400 mr-2 w-[36px] text-right">
+            <div className="h-[12px] leading-[12px]">Mon</div>
+            <div className="h-[12px]"></div>
+            <div className="h-[12px] leading-[12px]">Wed</div>
+            <div className="h-[12px]"></div>
+            <div className="h-[12px] leading-[12px]">Fri</div>
+            <div className="h-[12px]"></div>
+            <div className="h-[12px]"></div>
           </div>
 
           {/* Activity grid */}
           <div
-            className="flex gap-[2px] flex-1 overflow-x-auto"
+            className="flex gap-[2.5px] flex-1"
             onMouseLeave={() => setHoveredDay(null)}
           >
             {weeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="flex flex-col gap-[2px]">
+              <div key={weekIndex} className="flex flex-col gap-[2.5px]">
                 {week.map((day, dayIndex) => {
                   if (!day) {
                     return (
                       <div
                         key={dayIndex}
-                        className="w-[11px] h-[11px]"
+                        className="w-[12px] h-[12px]"
                       />
                     )
                   }
@@ -344,7 +344,7 @@ const ActivityGraph = () => {
                   return (
                     <div
                       key={dayIndex}
-                      className={`activity-square w-[11px] h-[11px] rounded-sm ${colorClass} hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all cursor-pointer`}
+                      className={`activity-square w-[12px] h-[12px] rounded-sm ${colorClass} hover:ring-2 hover:ring-zinc-400 dark:hover:ring-zinc-500 transition-all cursor-pointer`}
                       onMouseEnter={() => setHoveredDay({ date: day, count })}
                       onClick={() => count > 0 && handleDayClick(day)}
                       title={`${day.toLocaleDateString('en-US', {
@@ -361,7 +361,7 @@ const ActivityGraph = () => {
         </div>
 
         {/* Hover tooltip - fixed height container */}
-        <div className="mt-2.5 h-4 text-[10px] text-zinc-600 dark:text-zinc-300 ml-[42px]">
+        <div className="mt-3 h-4 text-[11px] text-zinc-600 dark:text-zinc-300 ml-[42px]">
           {hoveredDay ? (
             <>
               <span className="font-medium">{hoveredDay.count}</span> {hoveredDay.count === 1 ? 'activity' : 'activities'} on{' '}
