@@ -221,16 +221,19 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
 
   return (
     <div
-      ref={blockRef}
-      tabIndex={0}
-      className={`relative group outline-none transition-colors ${(isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
+      className="relative pr-16"
       onMouseEnter={onHover}
       onMouseLeave={() => onHover(null)}
-      onKeyDown={handleBlockKeyDown}
-      onClick={onSelect}
     >
+      <div
+        ref={blockRef}
+        tabIndex={0}
+        className={`relative group outline-none transition-colors ${(isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
+        onKeyDown={handleBlockKeyDown}
+        onClick={onSelect}
+      >
       {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
-        <div className="absolute -right-32 top-2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
+        <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
           {(isSelected || isEditing) && (
             <>
               <button
@@ -508,6 +511,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
           </button>
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -707,7 +711,11 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
   }
 
   return (
-    <div ref={editorRef} className="relative">
+    <div
+      ref={editorRef}
+      className="relative"
+      onMouseLeave={() => setHoveredIndex(null)}
+    >
       {/* Floating toolbar for multi-select */}
       {selectedIndices.size > 1 && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-2 flex gap-2 z-50">
