@@ -10,9 +10,8 @@ import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image a
 import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
 import { useAuth } from '../contexts/AuthContext'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover }) => {
   const [isEditing, setIsEditing] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
   const [uploading, setUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -225,12 +224,12 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       ref={blockRef}
       tabIndex={0}
       className={`relative group outline-none transition-colors ${(isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={onHover}
+      onMouseLeave={() => onHover(null)}
       onKeyDown={handleBlockKeyDown}
       onClick={onSelect}
     >
-      {!isMultiSelected && (isSelected || isEditing || (!isAnyBlockEditing && !isAnyBlockSelected && isHovered)) && (
+      {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
         <div className="absolute -right-32 top-2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
           {(isSelected || isEditing) && (
             <>
@@ -531,6 +530,7 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
   const [selectedIndex, setSelectedIndex] = useState(null)
   const [selectedIndices, setSelectedIndices] = useState(new Set())
   const [editingIndex, setEditingIndex] = useState(null)
+  const [hoveredIndex, setHoveredIndex] = useState(null)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -699,6 +699,13 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
     setSelectedIndices(new Set())
   }
 
+  const handleHover = (index) => {
+    // Only allow hover if no blocks are selected or editing
+    if (!isAnyBlockEditing && !isAnyBlockSelected) {
+      setHoveredIndex(index)
+    }
+  }
+
   return (
     <div ref={editorRef} className="relative">
       {/* Floating toolbar for multi-select */}
@@ -768,6 +775,8 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
           isAnyBlockEditing={isAnyBlockEditing && editingIndex !== index}
           isAnyBlockSelected={isAnyBlockSelected && selectedIndex !== index && !selectedIndices.has(index)}
           userId={user?.id}
+          isHovered={hoveredIndex === index}
+          onHover={() => handleHover(index)}
         />
       ))}
     </div>
