@@ -6,14 +6,20 @@ import remarkBreaks from 'remark-breaks'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react'
+import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon } from 'lucide-react'
+import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
+import { useAuth } from '../contexts/AuthContext'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [text, setText] = useState(content)
+  const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [showDropZone, setShowDropZone] = useState(false)
   const textareaRef = useRef(null)
   const blockRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (onEditingChange) {
@@ -72,13 +78,18 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   }
 
   const handleBlur = (e) => {
-    // Don't blur if clicking the add button
+    // Don't blur if clicking the add button or within the drop zone
     if (e?.relatedTarget?.classList?.contains('add-block-btn')) {
+      return
+    }
+    // Check if clicking within the drop zone
+    if (e?.relatedTarget && blockRef.current?.contains(e.relatedTarget)) {
       return
     }
     // Only finish editing if we're still in editing mode
     if (isEditing) {
       finishEditing()
+      setShowDropZone(false)
     }
   }
 
@@ -138,6 +149,77 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     onAddBelow()
   }
 
+  const handleFileUpload = async (file) => {
+    if (!file) return
+
+    setUploading(true)
+    const { url, error } = await uploadMedia(file, userId)
+
+    if (error) {
+      alert(`Upload failed: ${error}`)
+      setUploading(false)
+      return
+    }
+
+    // Generate markdown and insert into text
+    const markdown = generateMarkdown(url, file.name, file.type)
+    const newText = text ? `${text}\n${markdown}` : markdown
+    setText(newText)
+    onChange(newText)
+    setUploading(false)
+  }
+
+  const handleImageButtonClick = (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    setShowDropZone(!showDropZone)
+  }
+
+  const handleBrowseClick = (e) => {
+    e.stopPropagation()
+    fileInputRef.current?.click()
+  }
+
+  const handleFileInputChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleFileUpload(file)
+    }
+    // Reset input so same file can be selected again
+    e.target.value = ''
+  }
+
+  const handleDragEnter = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    // Only hide if leaving the entire drop zone area
+    if (e.currentTarget.contains(e.relatedTarget)) return
+    setIsDragging(false)
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    setShowDropZone(false)
+
+    const file = e.dataTransfer.files?.[0]
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      handleFileUpload(file)
+    }
+  }
+
   return (
     <div
       ref={blockRef}
@@ -195,6 +277,19 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
                 title="Justify"
               >
                 <AlignJustify size={16} />
+              </button>
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-0.5" />
+              <button
+                onClick={handleImageButtonClick}
+                disabled={uploading}
+                className={`p-2 rounded transition-colors disabled:opacity-50 ${
+                  showDropZone
+                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
+                }`}
+                title={showDropZone ? "Hide drop zone" : "Show drop zone for media upload"}
+              >
+                <ImageIcon size={16} />
               </button>
               <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-0.5" />
             </>
@@ -362,6 +457,46 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
         </div>
       )}
 
+      {/* Drop zone - shows when button is clicked and block is selected or editing */}
+      {showDropZone && (isSelected || isEditing) && (
+        <div
+          className="mt-2 p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-900/30 transition-colors cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600"
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onClick={handleBrowseClick}
+        >
+          {uploading ? (
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div className="w-8 h-8 border-2 border-zinc-400 border-t-zinc-900 dark:border-t-white rounded-full animate-spin"></div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">Uploading...</div>
+            </div>
+          ) : isDragging ? (
+            <div className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg -m-2 p-8">
+              <ImageIcon size={32} className="text-blue-600 dark:text-blue-400" />
+              <div className="text-sm font-medium text-blue-600 dark:text-blue-400">Drop to upload</div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-3 text-zinc-500 dark:text-zinc-500">
+              <ImageIcon size={32} />
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm">Drag and drop images or videos here</div>
+                <div className="text-sm">or <span className="text-blue-600 dark:text-blue-400 font-medium">click to browse</span></div>
+              </div>
+              <div className="text-xs">Max 10MB • JPG, PNG, GIF, WebP, MP4, WebM</div>
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleFileInputChange}
+            className="hidden"
+          />
+        </div>
+      )}
+
       {isLast && !isSelected && !isEditing && (
         <div className="flex justify-center py-2">
           <button
@@ -379,6 +514,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
 }
 
 const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentChange }) => {
+  const { user } = useAuth()
   const editorRef = useRef(null)
   const [blocks, setBlocks] = useState(() => {
     if (!initialContent || initialContent.trim() === '') return ['']
@@ -631,6 +767,7 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
           canDelete={blocks.length > 1}
           isAnyBlockEditing={isAnyBlockEditing && editingIndex !== index}
           isAnyBlockSelected={isAnyBlockSelected && selectedIndex !== index && !selectedIndices.has(index)}
+          userId={user?.id}
         />
       ))}
     </div>
