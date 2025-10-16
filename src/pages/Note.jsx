@@ -15,6 +15,7 @@ import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
+import TableOfContents from '../components/TableOfContents'
 
 const Note = () => {
   const { id } = useParams()
@@ -115,7 +116,13 @@ const Note = () => {
         </div>
       </div>
 
-      <div className="min-h-screen bg-white dark:bg-black transition-colors">
+      <div className="min-h-screen bg-white dark:bg-black transition-colors relative">
+        {/* Table of Contents Sidebar - Fixed to left side */}
+        <aside className="hidden xl:block fixed left-8 top-24 w-64">
+          <TableOfContents content={note?.content} />
+        </aside>
+
+        {/* Main content - Centered exactly as before */}
         <article className="max-w-3xl mx-auto overflow-x-hidden px-6 pt-24 pb-12">
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -219,18 +226,49 @@ const Note = () => {
 
             return blocks.map((block, index) => {
               const alignment = alignments[index] || 'left'
+
+              // Generate heading ID function to match TableOfContents
+              const generateHeadingId = (text, blockIndex) => {
+                const cleanText = typeof text === 'string' ? text : String(text)
+                return `heading-${blockIndex}-${cleanText.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+              }
+
               return (
                 <div key={index} className="mb-6 break-words" style={{ textAlign: alignment }}>
                   <ReactMarkdown
                     remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
                     rehypePlugins={[rehypeKatex]}
                     components={{
-              h1: ({children}) => <h1 className="text-3xl font-bold my-4">{children}</h1>,
-              h2: ({children}) => <h2 className="text-2xl font-bold my-3">{children}</h2>,
-              h3: ({children}) => <h3 className="text-xl font-bold my-3">{children}</h3>,
-              h4: ({children}) => <h4 className="text-lg font-bold my-2">{children}</h4>,
-              h5: ({children}) => <h5 className="text-base font-bold my-2">{children}</h5>,
-              h6: ({children}) => <h6 className="text-sm font-bold my-2">{children}</h6>,
+              h1: ({children}) => {
+                const text = typeof children === 'string' ? children : (children?.[0] || '')
+                const id = generateHeadingId(text, index)
+                return <h1 id={id} className="text-3xl font-bold my-4 scroll-mt-24">{children}</h1>
+              },
+              h2: ({children}) => {
+                const text = typeof children === 'string' ? children : (children?.[0] || '')
+                const id = generateHeadingId(text, index)
+                return <h2 id={id} className="text-2xl font-bold my-3 scroll-mt-24">{children}</h2>
+              },
+              h3: ({children}) => {
+                const text = typeof children === 'string' ? children : (children?.[0] || '')
+                const id = generateHeadingId(text, index)
+                return <h3 id={id} className="text-xl font-bold my-3 scroll-mt-24">{children}</h3>
+              },
+              h4: ({children}) => {
+                const text = typeof children === 'string' ? children : (children?.[0] || '')
+                const id = generateHeadingId(text, index)
+                return <h4 id={id} className="text-lg font-bold my-2 scroll-mt-24">{children}</h4>
+              },
+              h5: ({children}) => {
+                const text = typeof children === 'string' ? children : (children?.[0] || '')
+                const id = generateHeadingId(text, index)
+                return <h5 id={id} className="text-base font-bold my-2 scroll-mt-24">{children}</h5>
+              },
+              h6: ({children}) => {
+                const text = typeof children === 'string' ? children : (children?.[0] || '')
+                const id = generateHeadingId(text, index)
+                return <h6 id={id} className="text-sm font-bold my-2 scroll-mt-24">{children}</h6>
+              },
               p: ({children}) => <p className="my-2">{children}</p>,
               code({ node, inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
@@ -343,7 +381,8 @@ const Note = () => {
           })()}
         </div>
       </article>
-      
+      </div>
+
       <ConfirmDialog
         isOpen={deleteDialog.isOpen}
         onClose={handleDeleteCancel}
@@ -354,7 +393,6 @@ const Note = () => {
         cancelText="Cancel"
       />
       <ScrollToTop />
-      </div>
     </>
   )
 }
