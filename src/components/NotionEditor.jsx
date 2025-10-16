@@ -6,11 +6,11 @@ import remarkBreaks from 'remark-breaks'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon } from 'lucide-react'
+import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon, GripVertical } from 'lucide-react'
 import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
 import { useAuth } from '../contexts/AuthContext'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover, onDragStart, onDragOver, onDrop, isDraggedOver, index }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState(content)
   const [uploading, setUploading] = useState(false)
@@ -228,12 +228,27 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       <div
         ref={blockRef}
         tabIndex={0}
-        className={`relative group outline-none transition-colors ${(isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''}`}
+        draggable={!isEditing}
+        onDragStart={(e) => onDragStart(e, index)}
+        onDragOver={(e) => onDragOver(e, index)}
+        onDrop={(e) => onDrop(e, index)}
+        className={`relative group outline-none transition-colors ${
+          (isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''
+        } ${
+          isDraggedOver ? 'border-t-2 border-blue-500' : ''
+        }`}
         onKeyDown={handleBlockKeyDown}
         onClick={onSelect}
       >
       {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
         <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
+          {/* Drag handle - always visible */}
+          <div
+            className="p-2 cursor-grab active:cursor-grabbing text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
+            title="Drag to reorder"
+          >
+            <GripVertical size={16} />
+          </div>
           {(isSelected || isEditing) && (
             <>
               <button
@@ -535,6 +550,8 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
   const [selectedIndices, setSelectedIndices] = useState(new Set())
   const [editingIndex, setEditingIndex] = useState(null)
   const [hoveredIndex, setHoveredIndex] = useState(null)
+  const [draggedIndex, setDraggedIndex] = useState(null)
+  const [draggedOverIndex, setDraggedOverIndex] = useState(null)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -710,6 +727,44 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
     }
   }
 
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDraggedOverIndex(index)
+    }
+  }
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault()
+
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null)
+      setDraggedOverIndex(null)
+      return
+    }
+
+    // Reorder blocks and alignments
+    const newBlocks = [...blocks]
+    const newAlignments = [...alignments]
+
+    const [movedBlock] = newBlocks.splice(draggedIndex, 1)
+    const [movedAlignment] = newAlignments.splice(draggedIndex, 1)
+
+    newBlocks.splice(dropIndex, 0, movedBlock)
+    newAlignments.splice(dropIndex, 0, movedAlignment)
+
+    setBlocks(newBlocks)
+    setAlignments(newAlignments)
+    setDraggedIndex(null)
+    setDraggedOverIndex(null)
+  }
+
   return (
     <div
       ref={editorRef}
@@ -766,6 +821,7 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
       {blocks.map((block, index) => (
         <Block
           key={index}
+          index={index}
           content={block}
           alignment={alignments[index] || 'left'}
           onChange={(newContent) => handleBlockChange(index, newContent)}
@@ -785,6 +841,10 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
           userId={user?.id}
           isHovered={hoveredIndex === index}
           onHover={() => handleHover(index)}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          isDraggedOver={draggedOverIndex === index}
         />
       ))}
     </div>
