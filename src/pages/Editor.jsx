@@ -271,50 +271,44 @@ const Editor = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors">
-      <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-zinc-900/70 border-b border-zinc-200/50 dark:border-zinc-800/50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-white">
-            {isEditing ? 'Edit Note' : 'New Note'}
-          </h1>
-          <div className="flex gap-3">
-            <button
-              onClick={() => navigate('/notes')}
-              className="px-4 py-2 text-sm font-medium bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:opacity-80 rounded-lg transition-opacity"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveDraft}
-              disabled={loading || initialLoading}
-              className="px-4 py-2 text-sm font-medium bg-zinc-400 dark:bg-zinc-600 text-white hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save as Draft'}
-            </button>
-            <button
-              onClick={handlePublish}
-              disabled={loading || initialLoading}
-              className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
-            >
-              {loading ? (isEditing ? 'Publishing...' : 'Publishing...') : 'Publish'}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="pt-24 px-6 pb-12">
         {initialLoading ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-zinc-600 dark:text-zinc-300">Loading note...</p>
           </div>
         ) : (
-          <div className="max-w-4xl mx-auto">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Note title..."
-              className="w-full px-0 py-3 mb-4 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
-            />
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-start justify-between mb-4">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Note title..."
+                className="flex-1 px-0 py-3 text-4xl font-bold bg-transparent text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none border-b-2 border-transparent focus:border-zinc-300 dark:focus:border-zinc-700 transition-colors"
+              />
+              <div className="flex gap-2 ml-4 flex-shrink-0">
+                <button
+                  onClick={() => navigate('/notes')}
+                  className="px-3 py-2 text-sm font-medium bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:opacity-80 rounded-lg transition-opacity"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={loading || initialLoading}
+                  className="px-3 py-2 text-sm font-medium bg-zinc-400 dark:bg-zinc-600 text-white hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
+                >
+                  {loading ? 'Saving...' : 'Draft'}
+                </button>
+                <button
+                  onClick={handlePublish}
+                  disabled={loading || initialLoading}
+                  className="px-3 py-2 text-sm font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
+                >
+                  {loading ? 'Publishing...' : 'Publish'}
+                </button>
+              </div>
+            </div>
             <div className="mb-6 space-y-4">
               <div className="flex items-center gap-3">
                 <label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
@@ -331,7 +325,7 @@ const Editor = () => {
                     onClick={() => setPublishedAt('')}
                     className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                   >
-                    Clear (use current time)
+                    Today
                   </button>
                 )}
               </div>
