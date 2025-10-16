@@ -342,7 +342,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="w-full px-3 py-2 pr-10 bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none border-l-2 border-zinc-400 dark:border-zinc-600 font-mono text-sm resize-none overflow-hidden"
+            className="w-full px-0 py-2 bg-transparent text-zinc-900 dark:text-zinc-100 focus:outline-none border-l-2 border-zinc-400 dark:border-zinc-600 font-mono text-sm resize-none overflow-hidden"
             placeholder="Type markdown..."
             rows={1}
           />
@@ -351,7 +351,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
         <div
           onClick={handleClick}
           onDoubleClick={handleDoubleClick}
-          className={`w-full px-3 py-2 pr-10 min-h-[40px] cursor-text transition-colors ${
+          className={`w-full px-0 py-2 min-h-[40px] cursor-text transition-colors ${
             !isAnyBlockEditing ? 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30' : ''
           }`}
           style={{ textAlign: alignment || 'left' }}

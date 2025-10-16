@@ -271,13 +271,13 @@ const Editor = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black transition-colors">
-      <div className="pt-24 px-6 pb-12">
+      <div className="pt-24 pb-12">
         {initialLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12 px-6">
             <p className="text-zinc-600 dark:text-zinc-300">Loading note...</p>
           </div>
         ) : (
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-4xl mx-auto px-6">
             <div className="flex items-start justify-between mb-4">
               <input
                 type="text"

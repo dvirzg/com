@@ -123,7 +123,7 @@ const Note = () => {
         </aside>
 
         {/* Main content - Centered exactly as before */}
-        <article className="max-w-3xl mx-auto overflow-x-hidden px-6 pt-24 pb-12">
+        <article className="max-w-4xl mx-auto overflow-x-hidden px-6 pt-24 pb-12">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words">
