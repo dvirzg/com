@@ -1,4 +1,5 @@
 import { BrowserRouter } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { NotesProvider } from './contexts/NotesContext'
@@ -15,6 +16,7 @@ function App() {
               <Navbar />
               <AppRouter />
             </div>
+            <Analytics />
           </BrowserRouter>
         </NotesProvider>
       </AuthProvider>
