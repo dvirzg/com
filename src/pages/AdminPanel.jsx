@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
+import SettingsTab from '../components/admin/SettingsTab'
 import ActivityGraph from '../components/ActivityGraph'
 import ScrollToTop from '../components/ScrollToTop'
 
@@ -78,10 +79,26 @@ const AdminPanel = () => {
           >
             Sublinks
           </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'settings'
+                ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
+                : 'border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            Settings
+          </button>
         </div>
 
           {/* Tab Content */}
-          {activeTab === 'pages' ? <PagesTab /> : <SublinksTab />}
+          {activeTab === 'pages' ? (
+            <PagesTab />
+          ) : activeTab === 'sublinks' ? (
+            <SublinksTab />
+          ) : (
+            <SettingsTab />
+          )}
         </div>
       </div>
       <ScrollToTop />
