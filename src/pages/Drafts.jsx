@@ -238,29 +238,31 @@ const Drafts = () => {
                   className="block"
                 >
                   <div className="py-5 border-b border-zinc-100 dark:border-zinc-900 transition-all hover:border-zinc-200 dark:hover:border-zinc-800">
-                    <div className="flex items-baseline gap-6">
+                    <div className="flex items-center justify-between gap-6">
                       <h2 className="text-2xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors [&_em]:italic [&_strong]:font-semibold [&_del]:line-through">
                         <ReactMarkdown components={{ p: 'span' }}>{draft.title}</ReactMarkdown>
                       </h2>
-                      <p className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700 whitespace-nowrap">
-                        {new Date(draft.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      {draft.categories && draft.categories.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {draft.categories.map(cat => (
-                            <span
-                              key={cat.id}
-                              className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700"
-                            >
-                              {cat.name}
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      <div className="flex flex-col gap-1 items-end">
+                        <p className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700 whitespace-nowrap">
+                          {new Date(draft.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </p>
+                        {draft.categories && draft.categories.length > 0 && (
+                          <div className="flex flex-wrap gap-2 justify-end">
+                            {draft.categories.map(cat => (
+                              <span
+                                key={cat.id}
+                                className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700"
+                              >
+                                {cat.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Link>
