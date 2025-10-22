@@ -229,31 +229,31 @@ const Drafts = () => {
         ) : filteredDrafts().length === 0 ? (
           <p className="text-zinc-600 dark:text-zinc-300">No drafts match the selected filters.</p>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-0">
             {filteredDrafts().map((draft) => (
               <div key={draft.id} className="group relative">
                 <Link
                   to={`/notes/${draft.id}`}
                   className="block"
                 >
-                  <div className="py-4 border-b border-zinc-200 dark:border-zinc-800">
-                    <h2 className="text-xl font-semibold text-zinc-900 dark:text-white group-hover:text-zinc-600 dark:group-hover:text-zinc-400 transition-colors">
-                      {draft.title}
-                    </h2>
-                    <div className="flex items-center gap-3 mt-2">
-                      <p className="text-sm text-zinc-500 dark:text-zinc-500">
-                        Created: {new Date(draft.created_at).toLocaleDateString('en-US', {
+                  <div className="py-4 border-b border-zinc-100 dark:border-zinc-900 transition-all hover:border-zinc-200 dark:hover:border-zinc-800">
+                    <div className="flex items-baseline gap-4">
+                      <h2 className="text-xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors">
+                        {draft.title}
+                      </h2>
+                      <p className="text-xs tracking-wide uppercase text-zinc-400 dark:text-zinc-600 whitespace-nowrap">
+                        {new Date(draft.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
-                          month: 'long',
+                          month: 'short',
                           day: 'numeric',
                         })}
                       </p>
                       {draft.categories && draft.categories.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                           {draft.categories.map(cat => (
                             <span
                               key={cat.id}
-                              className="px-2 py-0.5 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full"
+                              className="text-xs tracking-wide uppercase text-zinc-400 dark:text-zinc-600"
                             >
                               {cat.name}
                             </span>
@@ -264,23 +264,23 @@ const Drafts = () => {
                   </div>
                 </Link>
 
-                <div className="absolute top-4 right-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     to={`/editor?edit=${draft.id}`}
-                    className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-2 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                     title="Edit draft"
                   >
-                    <Edit size={16} className="text-zinc-600 dark:text-zinc-300" />
+                    <Edit size={14} className="text-zinc-400 dark:text-zinc-600" />
                   </Link>
                   <button
                     onClick={(e) => {
                       e.preventDefault()
                       handleDeleteClick(draft.id, draft.title)
                     }}
-                    className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                    className="p-2 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
                     title="Delete draft"
                   >
-                    <Trash2 size={16} className="text-red-500" />
+                    <Trash2 size={14} className="text-zinc-400 dark:text-zinc-600" />
                   </button>
                 </div>
               </div>
