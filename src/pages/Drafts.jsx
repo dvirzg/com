@@ -236,12 +236,12 @@ const Drafts = () => {
                   to={`/notes/${draft.id}`}
                   className="block"
                 >
-                  <div className="py-4 border-b border-zinc-100 dark:border-zinc-900 transition-all hover:border-zinc-200 dark:hover:border-zinc-800">
-                    <div className="flex items-baseline gap-4">
-                      <h2 className="text-xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors">
+                  <div className="py-5 border-b border-zinc-100 dark:border-zinc-900 transition-all hover:border-zinc-200 dark:hover:border-zinc-800">
+                    <div className="flex items-baseline gap-6">
+                      <h2 className="text-2xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors">
                         {draft.title}
                       </h2>
-                      <p className="text-xs tracking-wide uppercase text-zinc-400 dark:text-zinc-600 whitespace-nowrap">
+                      <p className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700 whitespace-nowrap">
                         {new Date(draft.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
@@ -253,7 +253,7 @@ const Drafts = () => {
                           {draft.categories.map(cat => (
                             <span
                               key={cat.id}
-                              className="text-xs tracking-wide uppercase text-zinc-400 dark:text-zinc-600"
+                              className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700"
                             >
                               {cat.name}
                             </span>
@@ -264,7 +264,7 @@ const Drafts = () => {
                   </div>
                 </Link>
 
-                <div className="absolute top-4 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-5 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     to={`/editor?edit=${draft.id}`}
                     className="p-2 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
