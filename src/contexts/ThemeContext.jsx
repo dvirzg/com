@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 const ThemeContext = createContext({})
 
@@ -22,10 +23,60 @@ export const ThemeProvider = ({ children }) => {
     return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
   })
 
-  const [font, setFont] = useState(() => {
-    const saved = localStorage.getItem('font')
-    return saved || 'system'
-  })
+  const [font, setFont] = useState('system')
+  const [isLoadingFont, setIsLoadingFont] = useState(true)
+
+  // Fetch font from database on mount
+  useEffect(() => {
+    const fetchFont = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('font_family')
+          .eq('id', 1)
+          .single()
+
+        if (error) {
+          console.error('Error fetching font settings:', error)
+          setFont('system')
+        } else if (data) {
+          setFont(data.font_family)
+        }
+      } catch (err) {
+        console.error('Error fetching font settings:', err)
+        setFont('system')
+      } finally {
+        setIsLoadingFont(false)
+      }
+    }
+
+    fetchFont()
+  }, [])
+
+  // Subscribe to font changes in real-time
+  useEffect(() => {
+    const channel = supabase
+      .channel('site_settings_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'site_settings',
+          filter: 'id=eq.1'
+        },
+        (payload) => {
+          if (payload.new?.font_family) {
+            setFont(payload.new.font_family)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   useEffect(() => {
     if (isDark) {
@@ -39,7 +90,6 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--font-family', FONT_FAMILIES[font])
-    localStorage.setItem('font', font)
   }, [font])
 
   const toggleTheme = () => setIsDark(!isDark)
