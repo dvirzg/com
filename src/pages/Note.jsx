@@ -109,8 +109,8 @@ const Note = () => {
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <h1 className="text-lg font-bold text-zinc-900 dark:text-white break-words">
-              {note?.title}
+            <h1 className="text-lg font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
+              <ReactMarkdown components={{ p: 'span' }}>{note?.title}</ReactMarkdown>
             </h1>
           </div>
         </div>
@@ -126,8 +126,8 @@ const Note = () => {
         <article className="max-w-4xl mx-auto overflow-x-hidden px-6 pt-24 pb-12">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words">
-              {note?.title}
+            <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
+              <ReactMarkdown components={{ p: 'span' }}>{note?.title}</ReactMarkdown>
             </h1>
             {!note?.published && isAdmin() && (
               <span className="inline-block mt-2 px-3 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full">

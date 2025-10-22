@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ScrollToTop from '../components/ScrollToTop'
+import ReactMarkdown from 'react-markdown'
 
 const Drafts = () => {
   const { drafts, draftsLoading, fetchDrafts, deleteNote } = useNotes()
@@ -238,8 +239,8 @@ const Drafts = () => {
                 >
                   <div className="py-5 border-b border-zinc-100 dark:border-zinc-900 transition-all hover:border-zinc-200 dark:hover:border-zinc-800">
                     <div className="flex items-baseline gap-6">
-                      <h2 className="text-2xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors">
-                        {draft.title}
+                      <h2 className="text-2xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors [&_em]:italic [&_strong]:font-semibold [&_del]:line-through">
+                        <ReactMarkdown components={{ p: 'span' }}>{draft.title}</ReactMarkdown>
                       </h2>
                       <p className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700 whitespace-nowrap">
                         {new Date(draft.created_at).toLocaleDateString('en-US', {
