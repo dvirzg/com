@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ExternalLink, FileText } from 'lucide-react'
+import { ExternalLink, FileText, Linkedin } from 'lucide-react'
 
 const Career = () => {
   const [showStickyTitle, setShowStickyTitle] = useState(false)
@@ -129,15 +129,26 @@ const Career = () => {
               <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
                 Career
               </h1>
-              <a
-                href="https://dvirzg.com/resume"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
-              >
-                <FileText size={16} />
-                PDF Resume
-              </a>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://www.dvirzg.com/linkedin"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
+                >
+                  <Linkedin size={16} />
+                  LinkedIn
+                </a>
+                <a
+                  href="https://dvirzg.com/resume"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
+                >
+                  <FileText size={16} />
+                  PDF Resume
+                </a>
+              </div>
             </div>
             {/* Work Authorization */}
             <p className="text-sm text-zinc-500 dark:text-zinc-500">
@@ -225,9 +236,9 @@ const Career = () => {
                     </div>
                     <ul className="space-y-2">
                       {exp.highlights.map((highlight, idx) => (
-                        <li key={idx} className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                          <span className="text-zinc-400 dark:text-zinc-600 mr-2">•</span>
-                          {highlight}
+                        <li key={idx} className="flex gap-2 text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                          <span className="text-zinc-400 dark:text-zinc-600 flex-shrink-0">•</span>
+                          <span>{highlight}</span>
                         </li>
                       ))}
                     </ul>
