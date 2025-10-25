@@ -4,7 +4,7 @@ const Loading = ({ fullScreen = true }) => {
       {/* Wave interference animation */}
       <div className="relative flex items-center justify-center">
         <img
-          src="https://ophysics.com/images/pulses.gif"
+          src="/pulses.gif"
           alt="Loading..."
           className="object-contain dark:invert"
           style={{
