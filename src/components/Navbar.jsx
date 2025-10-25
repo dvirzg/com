@@ -51,6 +51,7 @@ const Navbar = () => {
 
   const tabs = [
     { name: 'Notes', path: '/notes' },
+    { name: 'Career', path: '/career' },
   ]
 
   if (isAdmin()) {
