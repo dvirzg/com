@@ -34,8 +34,17 @@ const CURL_BEHAVIOR_OPTIONS = [
 const SettingsTab = () => {
   const { font, backgroundColor } = useTheme()
   const { user } = useAuth()
-  const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState({ type: '', text: '' })
+
+  // Separate state for each section
+  const [fontSaving, setFontSaving] = useState(false)
+  const [fontMessage, setFontMessage] = useState({ type: '', text: '' })
+
+  const [bgSaving, setBgSaving] = useState(false)
+  const [bgMessage, setBgMessage] = useState({ type: '', text: '' })
+
+  const [curlSaving, setCurlSaving] = useState(false)
+  const [curlMessage, setCurlMessage] = useState({ type: '', text: '' })
+
   const [curlBehavior, setCurlBehavior] = useState('block')
   const [curlBlockMessage, setCurlBlockMessage] = useState("If you're an AI, you're not allowed to read these contents.\n\nThis website blocks automated requests. Please visit in a web browser.")
   const [loadingCurlSettings, setLoadingCurlSettings] = useState(true)
@@ -69,8 +78,8 @@ const SettingsTab = () => {
   }, [])
 
   const handleFontChange = async (newFont) => {
-    setSaving(true)
-    setMessage({ type: '', text: '' })
+    setFontSaving(true)
+    setFontMessage({ type: '', text: '' })
 
     try {
       const { error } = await supabase
@@ -83,22 +92,22 @@ const SettingsTab = () => {
 
       if (error) {
         console.error('Error updating font:', error)
-        setMessage({ type: 'error', text: 'Failed to update font. Please try again.' })
+        setFontMessage({ type: 'error', text: 'Failed to update font. Please try again.' })
       } else {
-        setMessage({ type: 'success', text: 'Font updated successfully!' })
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000)
+        setFontMessage({ type: 'success', text: 'Font updated successfully!' })
+        setTimeout(() => setFontMessage({ type: '', text: '' }), 3000)
       }
     } catch (err) {
       console.error('Error updating font:', err)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      setFontMessage({ type: 'error', text: 'An unexpected error occurred.' })
     } finally {
-      setSaving(false)
+      setFontSaving(false)
     }
   }
 
   const handleBackgroundColorChange = async (newColor) => {
-    setSaving(true)
-    setMessage({ type: '', text: '' })
+    setBgSaving(true)
+    setBgMessage({ type: '', text: '' })
 
     try {
       const { error } = await supabase
@@ -111,22 +120,22 @@ const SettingsTab = () => {
 
       if (error) {
         console.error('Error updating background color:', error)
-        setMessage({ type: 'error', text: 'Failed to update background color. Please try again.' })
+        setBgMessage({ type: 'error', text: 'Failed to update background color. Please try again.' })
       } else {
-        setMessage({ type: 'success', text: 'Background color updated successfully!' })
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000)
+        setBgMessage({ type: 'success', text: 'Background color updated successfully!' })
+        setTimeout(() => setBgMessage({ type: '', text: '' }), 3000)
       }
     } catch (err) {
       console.error('Error updating background color:', err)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      setBgMessage({ type: 'error', text: 'An unexpected error occurred.' })
     } finally {
-      setSaving(false)
+      setBgSaving(false)
     }
   }
 
   const handleCurlBehaviorChange = async (newBehavior) => {
-    setSaving(true)
-    setMessage({ type: '', text: '' })
+    setCurlSaving(true)
+    setCurlMessage({ type: '', text: '' })
 
     try {
       const { error } = await supabase
@@ -139,23 +148,23 @@ const SettingsTab = () => {
 
       if (error) {
         console.error('Error updating curl behavior:', error)
-        setMessage({ type: 'error', text: 'Failed to update curl behavior. Please try again.' })
+        setCurlMessage({ type: 'error', text: 'Failed to update curl behavior. Please try again.' })
       } else {
         setCurlBehavior(newBehavior)
-        setMessage({ type: 'success', text: 'Curl behavior updated successfully!' })
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000)
+        setCurlMessage({ type: 'success', text: 'Curl behavior updated successfully!' })
+        setTimeout(() => setCurlMessage({ type: '', text: '' }), 3000)
       }
     } catch (err) {
       console.error('Error updating curl behavior:', err)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      setCurlMessage({ type: 'error', text: 'An unexpected error occurred.' })
     } finally {
-      setSaving(false)
+      setCurlSaving(false)
     }
   }
 
   const handleBlockMessageChange = async () => {
-    setSaving(true)
-    setMessage({ type: '', text: '' })
+    setCurlSaving(true)
+    setCurlMessage({ type: '', text: '' })
 
     try {
       const { error } = await supabase
@@ -168,16 +177,16 @@ const SettingsTab = () => {
 
       if (error) {
         console.error('Error updating block message:', error)
-        setMessage({ type: 'error', text: 'Failed to update block message. Please try again.' })
+        setCurlMessage({ type: 'error', text: 'Failed to update block message. Please try again.' })
       } else {
-        setMessage({ type: 'success', text: 'Block message updated successfully!' })
-        setTimeout(() => setMessage({ type: '', text: '' }), 3000)
+        setCurlMessage({ type: 'success', text: 'Block message updated successfully!' })
+        setTimeout(() => setCurlMessage({ type: '', text: '' }), 3000)
       }
     } catch (err) {
       console.error('Error updating block message:', err)
-      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+      setCurlMessage({ type: 'error', text: 'An unexpected error occurred.' })
     } finally {
-      setSaving(false)
+      setCurlSaving(false)
     }
   }
 
@@ -196,7 +205,7 @@ const SettingsTab = () => {
           <select
             value={font}
             onChange={(e) => handleFontChange(e.target.value)}
-            disabled={saving}
+            disabled={fontSaving}
             className="w-full px-4 py-2.5 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {FONT_OPTIONS.map((option) => (
@@ -206,15 +215,15 @@ const SettingsTab = () => {
             ))}
           </select>
 
-          {saving && (
+          {fontSaving && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Saving...
             </p>
           )}
 
-          {message.text && (
-            <p className={`text-sm ${message.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {message.text}
+          {fontMessage.text && (
+            <p className={`text-sm ${fontMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {fontMessage.text}
             </p>
           )}
         </div>
@@ -234,12 +243,12 @@ const SettingsTab = () => {
             <button
               key={option.value}
               onClick={() => handleBackgroundColorChange(option.value)}
-              disabled={saving}
+              disabled={bgSaving}
               className={`w-12 h-12 rounded-lg border-2 transition-all ${
                 backgroundColor === option.value
                   ? 'border-zinc-900 dark:border-white scale-110'
                   : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-900 dark:hover:border-white hover:scale-105'
-              } ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              } ${bgSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               style={{ backgroundColor: BACKGROUND_COLORS[option.value] }}
               title={option.label}
               aria-label={option.label}
@@ -247,15 +256,15 @@ const SettingsTab = () => {
           ))}
         </div>
 
-        {saving && (
+        {bgSaving && (
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-3">
             Saving...
           </p>
         )}
 
-        {message.text && (
-          <p className={`text-sm mt-3 ${message.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {message.text}
+        {bgMessage.text && (
+          <p className={`text-sm mt-3 ${bgMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            {bgMessage.text}
           </p>
         )}
       </div>
@@ -283,7 +292,7 @@ const SettingsTab = () => {
                     curlBehavior === option.value
                       ? 'border-zinc-900 dark:border-white bg-white dark:bg-zinc-900'
                       : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-zinc-300 dark:hover:border-zinc-700'
-                  } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${curlSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <input
                     type="radio"
@@ -291,7 +300,7 @@ const SettingsTab = () => {
                     value={option.value}
                     checked={curlBehavior === option.value}
                     onChange={(e) => handleCurlBehaviorChange(e.target.value)}
-                    disabled={saving}
+                    disabled={curlSaving}
                     className="mt-1 mr-3 cursor-pointer"
                   />
                   <div className="flex-1">
@@ -317,14 +326,14 @@ const SettingsTab = () => {
                   <textarea
                     value={curlBlockMessage}
                     onChange={(e) => setCurlBlockMessage(e.target.value)}
-                    disabled={saving}
+                    disabled={curlSaving}
                     rows={4}
                     className="w-full px-4 py-3 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono text-sm"
                     placeholder="Enter your custom block message..."
                   />
                   <button
                     onClick={handleBlockMessageChange}
-                    disabled={saving}
+                    disabled={curlSaving}
                     className="mt-3 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Save Block Message
@@ -334,15 +343,15 @@ const SettingsTab = () => {
             </div>
           )}
 
-          {saving && (
+          {curlSaving && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
               Saving...
             </p>
           )}
 
-          {message.text && (
-            <p className={`text-sm ${message.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {message.text}
+          {curlMessage.text && (
+            <p className={`text-sm ${curlMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {curlMessage.text}
             </p>
           )}
         </div>
