@@ -23,7 +23,8 @@ const Career = () => {
       company: 'Cash App (Block)',
       location: 'San Francisco, CA',
       period: 'May - Aug 2025',
-      logo: '/logos/cashapp.jpeg',
+      logo: '/logos/block.jpeg',
+      secondaryLogo: '/logos/cashapp.jpeg',
       highlights: [
         'Scaled fraud train and test data 20x by building a multi-agent AI, cutting ML iteration from monthly to weekly',
         'Built an end-to-end feature engineering automation pipeline that converted agent insights into production signals',
@@ -74,7 +75,7 @@ const Career = () => {
       company: 'Ontario Health',
       location: 'Toronto, ON',
       period: 'Jan - Apr 2023',
-      logo: '/logos/ontariohealth.svg',
+      logo: '/logos/ontariohealth.png',
       highlights: [
         'Accelerated COVID-19 data processing by 90% by parallelizing Pandas and SQL scripts on 80M records',
         'Resolved memory overload crashes that blocked back-testing capabilities'
@@ -130,21 +131,21 @@ const Career = () => {
           {/* Education */}
           <section className="mb-16">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Education</h2>
-            <div className="border-l-2 border-zinc-200 dark:border-zinc-800 pl-6">
-              <div className="flex items-start gap-4">
+            <div className="relative">
+              <div className="absolute -left-32 top-0 hidden lg:block">
                 <img
                   src="/logos/waterloo.png"
                   alt="University of Waterloo logo"
-                  className="w-12 h-12 rounded-lg object-contain bg-white dark:bg-zinc-900 p-2 border border-zinc-200 dark:border-zinc-800"
+                  className="w-24 h-24 rounded-lg object-contain bg-white dark:bg-zinc-900 p-3 border border-zinc-200 dark:border-zinc-800"
                   onError={(e) => { e.target.style.display = 'none' }}
                 />
-                <div className="flex-1">
-                  <div className="mb-2">
-                    <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">University of Waterloo</h3>
-                    <p className="text-zinc-600 dark:text-zinc-400">Honours B.Sc. Mathematical Physics Co-op</p>
-                  </div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-500">Graduation Dec 2026 • Waterloo, ON</p>
+              </div>
+              <div className="border-l-2 border-zinc-200 dark:border-zinc-800 pl-6">
+                <div className="mb-2">
+                  <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">University of Waterloo</h3>
+                  <p className="text-zinc-600 dark:text-zinc-400">Honours B.Sc. Mathematical Physics Co-op</p>
                 </div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-500">Graduation Dec 2026 • Waterloo, ON</p>
               </div>
             </div>
           </section>
@@ -154,47 +155,65 @@ const Career = () => {
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-8">Experience</h2>
             <div className="space-y-12">
               {experiences.map((exp, index) => (
-                <div key={index} className="border-l-2 border-zinc-200 dark:border-zinc-800 pl-6 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors">
-                  <div className="mb-3">
-                    <div className="flex items-start gap-4 mb-3">
-                      {exp.logo && (
+                <div key={index} className="relative">
+                  {exp.logo && (
+                    <div className="absolute -left-32 top-0 hidden lg:block">
+                      {exp.secondaryLogo ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <img
+                            src={exp.secondaryLogo}
+                            alt={`${exp.company} secondary logo`}
+                            className="w-20 h-20 rounded-lg object-contain bg-white dark:bg-zinc-900 p-2 border border-zinc-200 dark:border-zinc-800"
+                            onError={(e) => { e.target.style.display = 'none' }}
+                          />
+                          <span className="text-xl text-zinc-400 dark:text-zinc-600 -my-1">⊂</span>
+                          <img
+                            src={exp.logo}
+                            alt={`${exp.company} logo`}
+                            className="w-20 h-20 rounded-lg object-contain bg-white dark:bg-zinc-900 p-2 border border-zinc-200 dark:border-zinc-800"
+                            onError={(e) => { e.target.style.display = 'none' }}
+                          />
+                        </div>
+                      ) : (
                         <img
                           src={exp.logo}
                           alt={`${exp.company} logo`}
-                          className="w-12 h-12 rounded-lg object-contain bg-white dark:bg-zinc-900 p-2 border border-zinc-200 dark:border-zinc-800"
+                          className="w-24 h-24 rounded-lg object-contain bg-white dark:bg-zinc-900 p-3 border border-zinc-200 dark:border-zinc-800"
                           onError={(e) => { e.target.style.display = 'none' }}
                         />
                       )}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-                          <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">{exp.role}</h3>
-                          <span className="text-sm text-zinc-500 dark:text-zinc-500">{exp.period}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-zinc-600 dark:text-zinc-400">{exp.company}</p>
-                          {exp.link && (
-                            <a
-                              href={exp.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
-                            >
-                              <ExternalLink size={16} />
-                            </a>
-                          )}
-                        </div>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-500">{exp.location}</p>
-                      </div>
                     </div>
+                  )}
+                  <div className="border-l-2 border-zinc-200 dark:border-zinc-800 pl-6 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors">
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+                        <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">{exp.role}</h3>
+                        <span className="text-sm text-zinc-500 dark:text-zinc-500">{exp.period}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-zinc-600 dark:text-zinc-400">{exp.company}</p>
+                        {exp.link && (
+                          <a
+                            href={exp.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-zinc-500 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+                          >
+                            <ExternalLink size={16} />
+                          </a>
+                        )}
+                      </div>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-500">{exp.location}</p>
+                    </div>
+                    <ul className="space-y-2">
+                      {exp.highlights.map((highlight, idx) => (
+                        <li key={idx} className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                          <span className="text-zinc-400 dark:text-zinc-600 mr-2">•</span>
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-2">
-                    {exp.highlights.map((highlight, idx) => (
-                      <li key={idx} className="text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                        <span className="text-zinc-400 dark:text-zinc-600 mr-2">•</span>
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               ))}
             </div>
