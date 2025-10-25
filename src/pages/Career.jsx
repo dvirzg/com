@@ -124,20 +124,27 @@ const Career = () => {
 
       <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-12">
-            <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
-              Career
-            </h1>
-            <a
-              href="https://dvirzg.com/resume"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
-            >
-              <FileText size={16} />
-              PDF Resume
-            </a>
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
+                Career
+              </h1>
+              <a
+                href="https://dvirzg.com/resume"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
+              >
+                <FileText size={16} />
+                PDF Resume
+              </a>
+            </div>
+            {/* Work Authorization */}
+            <p className="text-sm text-zinc-500 dark:text-zinc-500">
+              Work authorization: 🇺🇸 🇨🇦 🇮🇱 🇪🇺 (🇵🇹)
+            </p>
           </div>
+          <div className="mb-12"></div>
 
           {/* Education */}
           <section className="mb-16">
