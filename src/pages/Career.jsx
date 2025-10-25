@@ -24,24 +24,12 @@ const Career = () => {
       location: 'San Francisco, CA',
       period: 'May - Aug 2025',
       logo: '/logos/block.jpeg',
-      secondaryLogo: '/logos/cashapp.jpeg',
+      secondaryLogo: '/logos/cashapp.png',
       highlights: [
         'Scaled fraud train and test data 20x by building a multi-agent AI, cutting ML iteration from monthly to weekly',
         'Built an end-to-end feature engineering automation pipeline that converted agent insights into production signals',
         'Improved fraud detection precision by 15% at constant recall through expanded training data and new features',
         'Reduced analyst workload 80% by automating case risk summaries with Snowflake, Pinecone, and FAISS'
-      ]
-    },
-    {
-      role: 'Data Scientist',
-      company: 'Intact Data Lab',
-      location: 'Toronto, ON',
-      period: 'Jan - Aug 2024',
-      logo: '/logos/intact.png',
-      highlights: [
-        'Prevented $3.1M annual logistical costs by applying causal ML for optimal interventions and success probabilities',
-        'Increased prediction accuracy from 40% to 80% on sparse, high-dimensional data using autoencoders and external behavioral and socioeconomic datasets',
-        "Led the company's first causal ML initiative from R&D to executive presentation, including to the CEO"
       ]
     },
     {
@@ -58,11 +46,23 @@ const Career = () => {
       ]
     },
     {
+      role: 'Data Scientist',
+      company: 'Intact Data Lab',
+      location: 'Toronto, ON',
+      period: 'Jan - Aug 2024',
+      logo: '/logos/intact.png',
+      highlights: [
+        'Prevented $3.1M annual logistical costs by applying causal ML for optimal interventions and success probabilities',
+        'Increased prediction accuracy from 40% to 80% on sparse, high-dimensional data using autoencoders and external behavioral and socioeconomic datasets',
+        "Led the company's first causal ML initiative from R&D to executive presentation, including to the CEO"
+      ]
+    },
+    {
       role: 'Technical Team Lead',
       company: 'WAT.ai, a Student Design Team',
       location: 'Waterloo, ON',
       period: 'Sep 2024 – Apr 2025',
-      logo: '/logos/watai-new.png',
+      logo: '/logos/watai-icon.jpeg',
       highlights: [
         'Led a 15-student team building personalized diabetes causal time-series models with healthcare startup Gluroo',
         'Created a simulator for insulin timing and dosage using personalized blood glucose trajectory modeling',
@@ -75,7 +75,7 @@ const Career = () => {
       company: 'Ontario Health',
       location: 'Toronto, ON',
       period: 'Jan - Apr 2023',
-      logo: '/logos/ontariohealth.png',
+      logo: '/logos/ontariohealth-trillium.png',
       highlights: [
         'Accelerated COVID-19 data processing by 90% by parallelizing Pandas and SQL scripts on 80M records',
         'Resolved memory overload crashes that blocked back-testing capabilities'
