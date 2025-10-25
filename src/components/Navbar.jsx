@@ -97,14 +97,13 @@ const Navbar = () => {
             Hi, {getFirstName()}
           </Link>
 
-          <div className="flex gap-1 relative">
+          <div className="flex gap-1 relative" onMouseLeave={() => setHoveredTab(null)}>
             {tabs.map((tab) => (
               <Link
                 key={tab.path}
                 to={tab.path}
                 className="relative px-4 py-2 text-sm font-medium transition-colors"
                 onMouseEnter={() => setHoveredTab(tab.path)}
-                onMouseLeave={() => setHoveredTab(null)}
               >
                 {hoveredTab === tab.path && (
                   <motion.div
