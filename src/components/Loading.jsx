@@ -1,6 +1,6 @@
 const Loading = ({ fullScreen = true }) => {
   return (
-    <div className={`${fullScreen ? 'min-h-screen' : 'py-12'} flex flex-col items-center justify-center bg-white dark:bg-black transition-colors`}>
+    <div className={`${fullScreen ? 'min-h-screen' : 'py-12'} flex flex-col items-center justify-center transition-colors`}>
       {/* Wave interference animation */}
       <div className="relative flex items-center justify-center">
         <img

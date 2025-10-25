@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
-import { BACKGROUND_COLORS } from '../../contexts/ThemeContext'
+import { BACKGROUND_COLORS } from '../../constants/colors'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -32,7 +32,7 @@ const CURL_BEHAVIOR_OPTIONS = [
 ]
 
 const SettingsTab = () => {
-  const { font, backgroundColor } = useTheme()
+  const { font, backgroundColor, setBackgroundColor } = useTheme()
   const { user } = useAuth()
 
   // Separate state for each section
@@ -122,6 +122,8 @@ const SettingsTab = () => {
         console.error('Error updating background color:', error)
         setBgMessage({ type: 'error', text: 'Failed to update background color. Please try again.' })
       } else {
+        // Manually update the local state immediately
+        setBackgroundColor(newColor)
         setBgMessage({ type: 'success', text: 'Background color updated successfully!' })
         setTimeout(() => setBgMessage({ type: '', text: '' }), 3000)
       }

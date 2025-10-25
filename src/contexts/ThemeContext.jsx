@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { BACKGROUND_COLORS } from '../constants/colors'
 
 const ThemeContext = createContext({})
 
@@ -15,15 +16,6 @@ const FONT_FAMILIES = {
   montserrat: "Montserrat, system-ui, sans-serif",
   clashDisplay: "'Clash Display', Impact, sans-serif",
   playfairDisplay: "'Playfair Display', Georgia, serif"
-}
-
-const BACKGROUND_COLORS = {
-  white: '#FFFFFF',
-  cream: '#FFFDF7',
-  sepia: '#F4ECD8',
-  lightBeige: '#FAF7F0',
-  warmWhite: '#FFF8F0',
-  paper: '#F5F1E8'
 }
 
 export const ThemeProvider = ({ children }) => {
@@ -120,5 +112,3 @@ export const ThemeProvider = ({ children }) => {
     </ThemeContext.Provider>
   )
 }
-
-export { BACKGROUND_COLORS }

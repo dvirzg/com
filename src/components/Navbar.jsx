@@ -4,11 +4,12 @@ import { Moon, Sun } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
 
 const Navbar = () => {
   const { user, signOut, isAdmin, getFirstName } = useAuth()
-  const { isDark, toggleTheme } = useTheme()
+  const { isDark, toggleTheme, backgroundColor } = useTheme()
   const location = useLocation()
   const [hoveredTab, setHoveredTab] = useState(null)
   const [customPages, setCustomPages] = useState([])
@@ -83,10 +84,17 @@ const Navbar = () => {
     }
   }
 
+  const bgColor = isDark
+    ? 'rgba(0, 0, 0, 0.8)'
+    : `${BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white}B3` // B3 = 70% opacity in hex
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-black/80 border-b border-zinc-200/50 dark:border-zinc-800/30 transition-transform duration-300 ${
-      isVisible ? 'translate-y-0' : '-translate-y-full'
-    }`}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b border-zinc-200/50 dark:border-zinc-800/30 transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+      style={{ backgroundColor: bgColor }}
+    >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link

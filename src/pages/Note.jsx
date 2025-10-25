@@ -104,7 +104,7 @@ const Note = () => {
   return (
     <>
       {/* Sticky Title Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
         showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -116,7 +116,7 @@ const Note = () => {
         </div>
       </div>
 
-      <div className="min-h-screen bg-white dark:bg-black transition-colors relative">
+      <div className="min-h-screen transition-colors relative">
         {/* Table of Contents Sidebar - Fixed to left side */}
         <aside className="hidden xl:block fixed left-8 top-24 w-64">
           <TableOfContents content={note?.content} />

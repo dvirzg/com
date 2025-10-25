@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Edit, Trash2, X, Filter } from 'lucide-react'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
+import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Loading from '../components/Loading'
@@ -12,6 +14,7 @@ import ReactMarkdown from 'react-markdown'
 const Notes = () => {
   const { notes, loading, refetch, deleteNote } = useNotes()
   const { user, isAdmin } = useAuth()
+  const { isDark, backgroundColor } = useTheme()
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, noteId: null, noteTitle: '' })
   const [allCategories, setAllCategories] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
@@ -134,7 +137,7 @@ const Notes = () => {
   return (
     <>
       {/* Sticky Title Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-black/80 transition-all duration-300 ${
+      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
         showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -146,7 +149,7 @@ const Notes = () => {
         </div>
       </div>
 
-      <div className="min-h-screen pt-24 pb-12 px-6 bg-white dark:bg-black transition-colors">
+      <div className="min-h-screen pt-24 pb-12 px-6 transition-colors">
         <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
@@ -338,13 +341,13 @@ const Notes = () => {
                   to={`/notes/${note.id}`}
                   className="block"
                 >
-                  <div className="py-5 border-b border-zinc-100 dark:border-zinc-900 transition-all hover:border-zinc-200 dark:hover:border-zinc-800">
+                  <div className="py-5 border-b border-zinc-200 dark:border-zinc-800 transition-all hover:border-zinc-300 dark:hover:border-zinc-700">
                     <div className="flex items-center justify-between gap-6">
                       <h2 className="text-2xl font-normal text-zinc-900 dark:text-white group-hover:text-zinc-500 dark:group-hover:text-zinc-400 transition-colors [&_em]:italic [&_strong]:font-semibold [&_del]:line-through">
                         <ReactMarkdown components={{ p: 'span' }}>{note.title}</ReactMarkdown>
                       </h2>
                       <div className="flex flex-col gap-1 items-end">
-                        <p className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700 whitespace-nowrap">
+                        <p className="text-xs tracking-wider uppercase text-zinc-400 dark:text-zinc-600 whitespace-nowrap">
                           {new Date(note.published_at || note.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'short',
@@ -356,7 +359,7 @@ const Notes = () => {
                             {note.categories.map(cat => (
                               <span
                                 key={cat.id}
-                                className="text-xs tracking-wider uppercase text-zinc-300 dark:text-zinc-700"
+                                className="text-xs tracking-wider uppercase text-zinc-400 dark:text-zinc-600"
                               >
                                 {cat.name}
                               </span>

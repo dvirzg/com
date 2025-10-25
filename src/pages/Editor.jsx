@@ -270,7 +270,7 @@ const Editor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black transition-colors">
+    <div className="min-h-screen transition-colors">
       <div className="pt-24 pb-12">
         {initialLoading ? (
           <div className="flex items-center justify-center py-12 px-6">
