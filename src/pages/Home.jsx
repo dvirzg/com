@@ -10,6 +10,7 @@ import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 import Loading from '../components/Loading'
 
 const ScrollArrow = () => {
@@ -44,6 +45,7 @@ const ScrollArrow = () => {
 
 const Home = () => {
   const { isAdmin } = useAuth()
+  const { isDark } = useTheme()
   const [landingPage, setLandingPage] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -94,7 +96,8 @@ const Home = () => {
               className="object-contain dark:invert"
               style={{
                 height: '40px',
-                imageRendering: 'crisp-edges'
+                imageRendering: 'crisp-edges',
+                mixBlendMode: isDark ? 'normal' : 'multiply'
               }}
             />
           </div>

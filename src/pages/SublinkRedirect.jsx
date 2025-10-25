@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useTheme } from '../contexts/ThemeContext'
 
 const SublinkRedirect = () => {
   const { slug } = useParams()
+  const { isDark } = useTheme()
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -40,7 +42,8 @@ const SublinkRedirect = () => {
             className="inline-block object-contain dark:invert"
             style={{
               height: '40px',
-              imageRendering: 'crisp-edges'
+              imageRendering: 'crisp-edges',
+              mixBlendMode: isDark ? 'normal' : 'multiply'
             }}
           />
           <p className="mt-4 text-zinc-600 dark:text-zinc-400">Redirecting...</p>

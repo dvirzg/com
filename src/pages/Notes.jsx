@@ -134,12 +134,19 @@ const Notes = () => {
     setDeleteDialog({ isOpen: false, noteId: null, noteTitle: '' })
   }
 
+  const stickyBgColor = isDark
+    ? 'rgba(0, 0, 0, 0.8)'
+    : `${BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white}B3`
+
   return (
     <>
       {/* Sticky Title Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
-        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
-      }`}>
+      <div
+        className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
+          showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
+        }`}
+        style={{ backgroundColor: stickyBgColor }}
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <h1 className="text-lg font-bold text-zinc-900 dark:text-white">

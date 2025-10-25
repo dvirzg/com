@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { Edit, Trash2, X, Filter } from 'lucide-react'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
+import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ScrollToTop from '../components/ScrollToTop'
@@ -11,6 +13,7 @@ import ReactMarkdown from 'react-markdown'
 const Drafts = () => {
   const { drafts, draftsLoading, fetchDrafts, deleteNote } = useNotes()
   const { isAdmin } = useAuth()
+  const { isDark, backgroundColor } = useTheme()
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, noteId: null, noteTitle: '' })
   const [allCategories, setAllCategories] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
@@ -116,12 +119,19 @@ const Drafts = () => {
     )
   }
 
+  const stickyBgColor = isDark
+    ? 'rgba(0, 0, 0, 0.8)'
+    : `${BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white}B3`
+
   return (
     <>
       {/* Sticky Title Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
-        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
-      }`}>
+      <div
+        className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
+          showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
+        }`}
+        style={{ backgroundColor: stickyBgColor }}
+      >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <h1 className="text-lg font-bold text-zinc-900 dark:text-white">

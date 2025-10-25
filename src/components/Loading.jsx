@@ -1,4 +1,8 @@
+import { useTheme } from '../contexts/ThemeContext'
+
 const Loading = ({ fullScreen = true }) => {
+  const { isDark } = useTheme()
+
   return (
     <div className={`${fullScreen ? 'min-h-screen' : 'py-12'} flex flex-col items-center justify-center transition-colors`}>
       {/* Wave interference animation */}
@@ -9,7 +13,8 @@ const Loading = ({ fullScreen = true }) => {
           className="object-contain dark:invert"
           style={{
             height: '40px',
-            imageRendering: 'crisp-edges'
+            imageRendering: 'crisp-edges',
+            mixBlendMode: isDark ? 'normal' : 'multiply'
           }}
         />
       </div>
