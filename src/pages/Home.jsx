@@ -84,9 +84,20 @@ const Home = () => {
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-zinc-900 dark:text-white">
             {landingPage?.title || 'Hi, I\'m Dvir'}
           </h1>
-          <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-300">
+          <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-300 mb-6">
             {landingPage?.subtitle || 'Welcome to my personal website.'}
           </p>
+          <div className="flex justify-center">
+            <img
+              src="/pulses.gif"
+              alt="Wave interference animation"
+              className="object-contain dark:invert"
+              style={{
+                height: '40px',
+                imageRendering: 'crisp-edges'
+              }}
+            />
+          </div>
         </motion.div>
 
         <ScrollArrow />
