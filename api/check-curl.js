@@ -72,8 +72,49 @@ export default async function handler(req, res) {
     if (curlBehavior === 'block') {
       return res.status(403).setHeader('Content-Type', 'text/plain').send(blockMessage)
     } else if (curlBehavior === 'markdown') {
-      // Redirect to markdown API endpoint
-      return res.redirect(307, `/api/markdown?path=${encodeURIComponent(requestPath)}`)
+      // Fetch and return markdown directly
+      const path = requestPath.startsWith('/') ? requestPath : `/${requestPath}`
+
+      if (path.startsWith('/notes/')) {
+        // Extract note ID from path
+        const noteId = path.replace('/notes/', '').split('?')[0]
+
+        // Fetch note from database (only published notes)
+        const { data: note, error: noteError } = await supabase
+          .from('notes')
+          .select('title, content')
+          .eq('id', noteId)
+          .eq('published', true)
+          .single()
+
+        if (noteError || !note) {
+          return res.status(404).setHeader('Content-Type', 'text/plain').send('Note not found')
+        }
+
+        // Return markdown
+        const markdown = `# ${note.title}\n\n${note.content}`
+        return res.status(200).setHeader('Content-Type', 'text/markdown; charset=utf-8').send(markdown)
+
+      } else if (path !== '/' && path !== '/notes' && path !== '/admin') {
+        // Check if it's a custom page
+        const slug = path.replace(/^\//, '').split('?')[0]
+
+        const { data: page, error: pageError } = await supabase
+          .from('pages')
+          .select('title, content')
+          .eq('slug', slug)
+          .single()
+
+        if (!pageError && page) {
+          const markdown = `# ${page.title}\n\n${page.content}`
+          return res.status(200).setHeader('Content-Type', 'text/markdown; charset=utf-8').send(markdown)
+        }
+      }
+
+      // For home page or other pages without specific content
+      const response = `# Welcome\n\nThis is a personal website. Visit in a web browser for the full experience.\n\nPath: ${path}`
+      return res.status(200).setHeader('Content-Type', 'text/markdown; charset=utf-8').send(response)
+
     } else {
       // curlBehavior === 'html' - serve the SPA
       const indexPath = join(process.cwd(), 'dist', 'index.html')
