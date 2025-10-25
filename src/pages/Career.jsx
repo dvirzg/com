@@ -23,8 +23,8 @@ const Career = () => {
       company: 'Cash App (Block)',
       location: 'San Francisco, CA',
       period: 'May - Aug 2025',
-      logo: '/logos/block.jpeg',
-      secondaryLogo: '/logos/cashapp.png',
+      logo: '/logos/block-jewel.svg',
+      secondaryLogo: '/logos/cashapp-new.png',
       highlights: [
         'Scaled fraud train and test data 20x by building a multi-agent AI, cutting ML iteration from monthly to weekly',
         'Built an end-to-end feature engineering automation pipeline that converted agent insights into production signals',
@@ -37,7 +37,7 @@ const Career = () => {
       company: 'Perimeter Institute for Theoretical Physics',
       location: 'Waterloo, ON',
       period: 'Jan - Aug 2024',
-      logo: '/logos/perimeter.png',
+      logo: '/logos/perimeter-inverted.png',
       highlights: [
         'Advanced research in quantum foundations and causal inference under Dr. Robert Spekkens and Dr. Elie Wolfe',
         'Derived new precision limit Bell inequalities and compatibility constraints for hidden-variable causal structures using GurobiPy based linear programming and NetworkX DAG analyses',
