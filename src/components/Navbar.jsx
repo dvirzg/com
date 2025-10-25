@@ -108,7 +108,7 @@ const Navbar = () => {
                 {hoveredTab === tab.path && (
                   <motion.div
                     layoutId="hover-pill"
-                    className="absolute inset-0 bg-zinc-100/80 dark:bg-zinc-800/60 rounded-lg backdrop-blur-sm z-10"
+                    className="absolute inset-0 bg-zinc-100/80 dark:bg-zinc-800 rounded-lg backdrop-blur-sm z-10"
                     transition={{ type: 'spring', duration: 0.15, bounce: 0 }}
                   />
                 )}
