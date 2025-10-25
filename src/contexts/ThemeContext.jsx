@@ -17,6 +17,15 @@ const FONT_FAMILIES = {
   playfairDisplay: "'Playfair Display', Georgia, serif"
 }
 
+const BACKGROUND_COLORS = {
+  white: '#FFFFFF',
+  cream: '#FFFDF7',
+  sepia: '#F4ECD8',
+  lightBeige: '#FAF7F0',
+  warmWhite: '#FFF8F0',
+  paper: '#F5F1E8'
+}
+
 export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('theme')
@@ -24,36 +33,40 @@ export const ThemeProvider = ({ children }) => {
   })
 
   const [font, setFont] = useState('system')
+  const [backgroundColor, setBackgroundColor] = useState('white')
   const [isLoadingFont, setIsLoadingFont] = useState(true)
 
-  // Fetch font from database on mount
+  // Fetch font and background color from database on mount
   useEffect(() => {
-    const fetchFont = async () => {
+    const fetchSettings = async () => {
       try {
         const { data, error } = await supabase
           .from('site_settings')
-          .select('font_family')
+          .select('font_family, background_color')
           .eq('id', 1)
           .single()
 
         if (error) {
-          console.error('Error fetching font settings:', error)
+          console.error('Error fetching settings:', error)
           setFont('system')
+          setBackgroundColor('white')
         } else if (data) {
           setFont(data.font_family)
+          setBackgroundColor(data.background_color || 'white')
         }
       } catch (err) {
-        console.error('Error fetching font settings:', err)
+        console.error('Error fetching settings:', err)
         setFont('system')
+        setBackgroundColor('white')
       } finally {
         setIsLoadingFont(false)
       }
     }
 
-    fetchFont()
+    fetchSettings()
   }, [])
 
-  // Subscribe to font changes in real-time
+  // Subscribe to settings changes in real-time
   useEffect(() => {
     const channel = supabase
       .channel('site_settings_changes')
@@ -68,6 +81,9 @@ export const ThemeProvider = ({ children }) => {
         (payload) => {
           if (payload.new?.font_family) {
             setFont(payload.new.font_family)
+          }
+          if (payload.new?.background_color) {
+            setBackgroundColor(payload.new.background_color)
           }
         }
       )
@@ -92,11 +108,17 @@ export const ThemeProvider = ({ children }) => {
     document.documentElement.style.setProperty('--font-family', FONT_FAMILIES[font])
   }, [font])
 
+  useEffect(() => {
+    document.documentElement.style.setProperty('--bg-color', BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white)
+  }, [backgroundColor])
+
   const toggleTheme = () => setIsDark(!isDark)
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme, font, setFont }}>
+    <ThemeContext.Provider value={{ isDark, toggleTheme, font, setFont, backgroundColor, setBackgroundColor }}>
       {children}
     </ThemeContext.Provider>
   )
 }
+
+export { BACKGROUND_COLORS }

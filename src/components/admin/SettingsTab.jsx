@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
+import { BACKGROUND_COLORS } from '../../contexts/ThemeContext'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -15,6 +16,15 @@ const FONT_OPTIONS = [
   { value: 'playfairDisplay', label: 'Playfair Display' }
 ]
 
+const BACKGROUND_COLOR_OPTIONS = [
+  { value: 'white', label: 'White', description: 'Pure white background' },
+  { value: 'cream', label: 'Cream', description: 'Soft cream color for reduced eye strain' },
+  { value: 'sepia', label: 'Sepia', description: 'Warm sepia tone like old paper' },
+  { value: 'lightBeige', label: 'Light Beige', description: 'Light beige for comfortable reading' },
+  { value: 'warmWhite', label: 'Warm White', description: 'Warm white with a hint of yellow' },
+  { value: 'paper', label: 'Paper', description: 'Natural paper color' }
+]
+
 const CURL_BEHAVIOR_OPTIONS = [
   { value: 'block', label: 'Block Automated Requests', description: 'Show a message to AI crawlers and curl users' },
   { value: 'html', label: 'Allow HTML', description: 'Return the normal HTML page' },
@@ -22,7 +32,7 @@ const CURL_BEHAVIOR_OPTIONS = [
 ]
 
 const SettingsTab = () => {
-  const { font } = useTheme()
+  const { font, backgroundColor } = useTheme()
   const { user } = useAuth()
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
@@ -80,6 +90,34 @@ const SettingsTab = () => {
       }
     } catch (err) {
       console.error('Error updating font:', err)
+      setMessage({ type: 'error', text: 'An unexpected error occurred.' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleBackgroundColorChange = async (newColor) => {
+    setSaving(true)
+    setMessage({ type: '', text: '' })
+
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({
+          background_color: newColor,
+          updated_by: user?.id
+        })
+        .eq('id', 1)
+
+      if (error) {
+        console.error('Error updating background color:', error)
+        setMessage({ type: 'error', text: 'Failed to update background color. Please try again.' })
+      } else {
+        setMessage({ type: 'success', text: 'Background color updated successfully!' })
+        setTimeout(() => setMessage({ type: '', text: '' }), 3000)
+      }
+    } catch (err) {
+      console.error('Error updating background color:', err)
       setMessage({ type: 'error', text: 'An unexpected error occurred.' })
     } finally {
       setSaving(false)
@@ -180,6 +218,46 @@ const SettingsTab = () => {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Background Color Settings Section */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-lg p-6 border border-zinc-200 dark:border-zinc-800">
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+          Background Color
+        </h2>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+          Choose the background color for the entire website in light mode. This will affect all users.
+        </p>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          {BACKGROUND_COLOR_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleBackgroundColorChange(option.value)}
+              disabled={saving}
+              className={`w-12 h-12 rounded-lg border-2 transition-all ${
+                backgroundColor === option.value
+                  ? 'border-zinc-900 dark:border-white scale-110'
+                  : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-900 dark:hover:border-white hover:scale-105'
+              } ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              style={{ backgroundColor: BACKGROUND_COLORS[option.value] }}
+              title={option.label}
+              aria-label={option.label}
+            />
+          ))}
+        </div>
+
+        {saving && (
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-3">
+            Saving...
+          </p>
+        )}
+
+        {message.text && (
+          <p className={`text-sm mt-3 ${message.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+            {message.text}
+          </p>
+        )}
       </div>
 
       {/* Curl Behavior Settings Section */}

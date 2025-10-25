@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS site_settings (
   id INTEGER PRIMARY KEY DEFAULT 1,
   font_family TEXT NOT NULL DEFAULT 'system',
+  background_color TEXT NOT NULL DEFAULT 'white',
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   updated_by UUID REFERENCES auth.users(id),
 
@@ -13,8 +14,8 @@ CREATE TABLE IF NOT EXISTS site_settings (
 );
 
 -- Insert default settings
-INSERT INTO site_settings (id, font_family)
-VALUES (1, 'system')
+INSERT INTO site_settings (id, font_family, background_color)
+VALUES (1, 'system', 'white')
 ON CONFLICT (id) DO NOTHING;
 
 -- Enable RLS on the site_settings table

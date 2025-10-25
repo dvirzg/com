@@ -12,7 +12,7 @@ function App() {
       <AuthProvider>
         <NotesProvider>
           <BrowserRouter>
-            <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-white transition-colors">
+            <div className="min-h-screen bg-[var(--bg-color)] dark:bg-black text-zinc-900 dark:text-white transition-colors">
               <Navbar />
               <AppRouter />
             </div>
