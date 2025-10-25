@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 const SublinkRedirect = () => {
@@ -34,7 +35,7 @@ const SublinkRedirect = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900 dark:border-zinc-100"></div>
+          <Loader2 className="inline-block animate-spin h-8 w-8 text-zinc-900 dark:text-zinc-100" />
           <p className="mt-4 text-zinc-600 dark:text-zinc-400">Redirecting...</p>
         </div>
       </div>

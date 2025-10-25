@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { ExternalLink, FileText, Linkedin } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -137,24 +138,20 @@ const Career = () => {
                 Career
               </h1>
               <div className="flex items-center gap-3">
-                <a
-                  href="https://www.dvirzg.com/linkedin"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/linkedin"
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
                 >
                   <Linkedin size={16} />
                   LinkedIn
-                </a>
-                <a
-                  href="https://dvirzg.com/resume"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                </Link>
+                <Link
+                  to="/resume"
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
                 >
                   <FileText size={16} />
                   PDF Resume
-                </a>
+                </Link>
               </div>
             </div>
             {/* Work Authorization */}
