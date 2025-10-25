@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { ExternalLink, FileText, Linkedin } from 'lucide-react'
+import { useTheme } from '../contexts/ThemeContext'
 
 const Career = () => {
   const [showStickyTitle, setShowStickyTitle] = useState(false)
   const titleRef = useRef(null)
+  const { isDark } = useTheme()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +26,7 @@ const Career = () => {
       location: 'San Francisco, CA',
       period: 'May - Aug 2025',
       logo: '/logos/block-jewel.svg',
+      logoDark: '/logos/block-jewel-white.svg',
       secondaryLogo: '/logos/cashapp-new.png',
       highlights: [
         'Scaled fraud train and test data 20x by building a multi-agent AI, cutting ML iteration from monthly to weekly',
@@ -38,6 +41,7 @@ const Career = () => {
       location: 'Waterloo, ON',
       period: 'Jan - Aug 2024',
       logo: '/logos/perimeter-inverted.png',
+      logoDark: '/logos/perimeter-white.png',
       highlights: [
         'Advanced research in quantum foundations and causal inference under Dr. Robert Spekkens and Dr. Elie Wolfe',
         'Derived new precision limit Bell inequalities and compatibility constraints for hidden-variable causal structures using GurobiPy based linear programming and NetworkX DAG analyses',
@@ -52,6 +56,7 @@ const Career = () => {
       period: 'Jan - Aug 2024',
       logo: '/logos/intact.png',
       logoStyle: 'contain',
+      logoBg: true,
       highlights: [
         'Prevented $3.1M annual logistical costs by applying causal ML for optimal interventions and success probabilities',
         'Increased prediction accuracy from 40% to 80% on sparse, high-dimensional data using autoencoders and external behavioral and socioeconomic datasets',
@@ -78,6 +83,8 @@ const Career = () => {
       location: 'Toronto, ON',
       period: 'Jan - Apr 2023',
       logo: '/logos/ontariohealth-trillium.png',
+      logoStyle: 'contain',
+      logoBg: true,
       highlights: [
         'Accelerated COVID-19 data processing by 90% by parallelizing Pandas and SQL scripts on 80M records',
         'Resolved memory overload crashes that blocked back-testing capabilities'
@@ -197,7 +204,7 @@ const Career = () => {
                           />
                           <span className="text-lg text-zinc-400 dark:text-zinc-600 -my-1">⊂</span>
                           <img
-                            src={exp.logo}
+                            src={isDark && exp.logoDark ? exp.logoDark : exp.logo}
                             alt={`${exp.company} logo`}
                             className="w-[68px] h-[68px] rounded-lg object-cover"
                             onError={(e) => { e.target.style.display = 'none' }}
@@ -205,9 +212,9 @@ const Career = () => {
                         </div>
                       ) : (
                         <img
-                          src={exp.logo}
+                          src={isDark && exp.logoDark ? exp.logoDark : exp.logo}
                           alt={`${exp.company} logo`}
-                          className={`w-20 h-20 rounded-lg ${exp.logoStyle === 'contain' ? 'object-contain' : 'object-cover'}`}
+                          className={`w-20 h-20 rounded-lg ${exp.logoStyle === 'contain' ? 'object-contain' : 'object-cover'} ${exp.logoBg ? 'bg-white dark:bg-white p-2' : ''}`}
                           onError={(e) => { e.target.style.display = 'none' }}
                         />
                       )}
@@ -236,8 +243,8 @@ const Career = () => {
                     </div>
                     <ul className="space-y-2">
                       {exp.highlights.map((highlight, idx) => (
-                        <li key={idx} className="flex gap-2 text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                          <span className="text-zinc-400 dark:text-zinc-600 flex-shrink-0">•</span>
+                        <li key={idx} className="flex gap-2 text-zinc-700 dark:text-zinc-200 leading-relaxed">
+                          <span className="text-zinc-400 dark:text-zinc-500 flex-shrink-0">•</span>
                           <span>{highlight}</span>
                         </li>
                       ))}
