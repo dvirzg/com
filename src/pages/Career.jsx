@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, FileText } from 'lucide-react'
 
 const Career = () => {
   const [showStickyTitle, setShowStickyTitle] = useState(false)
@@ -51,6 +51,7 @@ const Career = () => {
       location: 'Toronto, ON',
       period: 'Jan - Aug 2024',
       logo: '/logos/intact.png',
+      logoStyle: 'contain',
       highlights: [
         'Prevented $3.1M annual logistical costs by applying causal ML for optimal interventions and success probabilities',
         'Increased prediction accuracy from 40% to 80% on sparse, high-dimensional data using autoencoders and external behavioral and socioeconomic datasets',
@@ -63,6 +64,7 @@ const Career = () => {
       location: 'Waterloo, ON',
       period: 'Sep 2024 – Apr 2025',
       logo: '/logos/watai-icon.jpeg',
+      logoStyle: 'cover',
       highlights: [
         'Led a 15-student team building personalized diabetes causal time-series models with healthcare startup Gluroo',
         'Created a simulator for insulin timing and dosage using personalized blood glucose trajectory modeling',
@@ -126,6 +128,15 @@ const Career = () => {
             <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
               Career
             </h1>
+            <a
+              href="https://dvirzg.com/resume"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
+            >
+              <FileText size={16} />
+              PDF Resume
+            </a>
           </div>
 
           {/* Education */}
@@ -136,7 +147,7 @@ const Career = () => {
                 <img
                   src="/logos/waterloo.png"
                   alt="University of Waterloo logo"
-                  className="w-24 h-24 rounded-lg object-contain bg-white dark:bg-zinc-900 p-3 border border-zinc-200 dark:border-zinc-800"
+                  className="w-20 h-20 rounded-lg object-cover"
                   onError={(e) => { e.target.style.display = 'none' }}
                 />
               </div>
@@ -163,14 +174,14 @@ const Career = () => {
                           <img
                             src={exp.secondaryLogo}
                             alt={`${exp.company} secondary logo`}
-                            className="w-20 h-20 rounded-lg object-contain bg-white dark:bg-zinc-900 p-2 border border-zinc-200 dark:border-zinc-800"
+                            className="w-[68px] h-[68px] rounded-lg object-cover"
                             onError={(e) => { e.target.style.display = 'none' }}
                           />
-                          <span className="text-xl text-zinc-400 dark:text-zinc-600 -my-1">⊂</span>
+                          <span className="text-lg text-zinc-400 dark:text-zinc-600 -my-1">⊂</span>
                           <img
                             src={exp.logo}
                             alt={`${exp.company} logo`}
-                            className="w-20 h-20 rounded-lg object-contain bg-white dark:bg-zinc-900 p-2 border border-zinc-200 dark:border-zinc-800"
+                            className="w-[68px] h-[68px] rounded-lg object-cover"
                             onError={(e) => { e.target.style.display = 'none' }}
                           />
                         </div>
@@ -178,7 +189,7 @@ const Career = () => {
                         <img
                           src={exp.logo}
                           alt={`${exp.company} logo`}
-                          className="w-24 h-24 rounded-lg object-contain bg-white dark:bg-zinc-900 p-3 border border-zinc-200 dark:border-zinc-800"
+                          className={`w-20 h-20 rounded-lg ${exp.logoStyle === 'contain' ? 'object-contain' : 'object-cover'}`}
                           onError={(e) => { e.target.style.display = 'none' }}
                         />
                       )}
@@ -233,7 +244,7 @@ const Career = () => {
                       <img
                         src={project.logo}
                         alt={`${project.name} logo`}
-                        className="w-10 h-10 rounded-lg object-contain bg-white dark:bg-zinc-900 p-1.5 border border-zinc-200 dark:border-zinc-800 flex-shrink-0"
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                         onError={(e) => { e.target.style.display = 'none' }}
                       />
                     )}
