@@ -90,16 +90,20 @@ const Home = () => {
             {landingPage?.subtitle || 'Welcome to my personal website.'}
           </p>
           <div className="flex justify-center">
-            <img
-              src="/pulses.gif"
-              alt="Wave interference animation"
-              className="object-contain dark:invert"
-              style={{
-                height: '40px',
-                imageRendering: 'crisp-edges',
-                mixBlendMode: isDark ? 'normal' : 'multiply'
-              }}
-            />
+            <div style={{
+              mixBlendMode: isDark ? 'normal' : 'darken',
+              display: 'inline-block'
+            }}>
+              <img
+                src="/pulses.gif"
+                alt="Wave interference animation"
+                className="object-contain dark:invert"
+                style={{
+                  height: '40px',
+                  imageRendering: 'crisp-edges'
+                }}
+              />
+            </div>
           </div>
         </motion.div>
 
