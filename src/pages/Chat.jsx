@@ -1,14 +1,72 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { encryptFile, decryptFile, downloadDecryptedFile } from '../lib/encryption'
-import { motion, AnimatePresence } from 'framer-motion'
+import {
+  encryptFile,
+  decryptFile,
+  downloadDecryptedFile,
+  encryptMessage,
+  decryptMessage,
+  hasEncryptionPassword,
+  setEncryptionPassword,
+  clearEncryptionPassword
+} from '../lib/encryption'
+
+// Component to decrypt and display a message
+const DecryptedMessage = ({ message }) => {
+  const [decryptedText, setDecryptedText] = useState('')
+  const [isDecrypting, setIsDecrypting] = useState(true)
+  const [decryptError, setDecryptError] = useState(false)
+
+  useEffect(() => {
+    const decrypt = async () => {
+      if (!message.message || !message.message_iv) {
+        setIsDecrypting(false)
+        return
+      }
+
+      try {
+        const text = await decryptMessage(message.message, message.message_iv)
+        setDecryptedText(text)
+        setDecryptError(false)
+      } catch (error) {
+        console.error('Failed to decrypt message:', error)
+        setDecryptError(true)
+      } finally {
+        setIsDecrypting(false)
+      }
+    }
+
+    decrypt()
+  }, [message.id, message.message, message.message_iv])
+
+  if (!message.message) return null
+
+  if (isDecrypting) {
+    return <p className="text-sm text-gray-500 italic">Decrypting...</p>
+  }
+
+  if (decryptError) {
+    return (
+      <p className="text-sm text-red-500 italic">
+        Failed to decrypt (wrong password?)
+      </p>
+    )
+  }
+
+  return <p className="text-sm whitespace-pre-wrap break-words">{decryptedText}</p>
+}
 
 const Chat = () => {
   const navigate = useNavigate()
-  const { user, isAdmin, getFirstName } = useAuth()
-  const [loading, setLoading] = useState(true)
+  const { user, isAdmin } = useAuth()
+  const [loading, setLoading] = useState(false) // Start with false to debug
+
+  // Password state
+  const [passwordEntered, setPasswordEntered] = useState(false)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   // Chat state
   const [rooms, setRooms] = useState([])
@@ -27,71 +85,14 @@ const Chat = () => {
   const messagesEndRef = useRef(null)
   const messageInputRef = useRef(null)
 
-  // Check admin access
-  useEffect(() => {
-    if (!user || !isAdmin()) {
-      navigate('/')
-    }
-  }, [user, isAdmin, navigate])
+  // Define all functions first before useEffects
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
+  }, [])
 
-  // Load chat rooms
-  useEffect(() => {
-    if (!user || !isAdmin()) return
-
-    loadRooms()
-  }, [user, isAdmin])
-
-  // Load messages when room changes
-  useEffect(() => {
-    if (!currentRoom) return
-
-    loadMessages(currentRoom.id)
-
-    // Subscribe to real-time messages
-    const channel = supabase
-      .channel(`chat:${currentRoom.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `room_id=eq.${currentRoom.id}`
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new])
-          scrollToBottom()
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `room_id=eq.${currentRoom.id}`
-        },
-        (payload) => {
-          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id))
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [currentRoom])
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const loadRooms = async () => {
+  const loadRooms = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('chat_rooms')
@@ -114,9 +115,9 @@ const Chat = () => {
       console.error('Error loading rooms:', error)
       setLoading(false)
     }
-  }
+  }, [])
 
-  const loadMessages = async (roomId) => {
+  const loadMessages = useCallback(async (roomId) => {
     try {
       const { data, error } = await supabase
         .from('chat_messages')
@@ -129,6 +130,26 @@ const Chat = () => {
     } catch (error) {
       console.error('Error loading messages:', error)
     }
+  }, [])
+
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault()
+
+    if (!passwordInput.trim()) {
+      setPasswordError('Please enter a password')
+      return
+    }
+
+    // Set the password
+    setEncryptionPassword(passwordInput.trim())
+    setPasswordEntered(true)
+    setPasswordError('')
+    setPasswordInput('')
+  }
+
+  const handleLogout = () => {
+    clearEncryptionPassword()
+    setPasswordEntered(false)
   }
 
   const createRoom = async () => {
@@ -244,18 +265,26 @@ const Chat = () => {
 
     try {
       let fileData = null
+      let encryptedMessageData = null
 
-      // Upload file if selected
+      // Encrypt and upload file if selected
       if (selectedFile) {
         fileData = await uploadFile(selectedFile)
       }
 
-      // Insert message
+      // Encrypt message text if present
+      if (hasMessage) {
+        const { encryptedMessage, iv } = await encryptMessage(messageInput.trim())
+        encryptedMessageData = { encryptedMessage, iv }
+      }
+
+      // Insert message (encrypted)
       const { error } = await supabase.from('chat_messages').insert([
         {
           room_id: currentRoom.id,
           user_id: user.id,
-          message: messageInput.trim() || null,
+          message: encryptedMessageData?.encryptedMessage || null,
+          message_iv: encryptedMessageData?.iv || null,
           file_url: fileData?.path || null,
           file_name: fileData?.name || null,
           file_type: fileData?.type || null,
@@ -277,7 +306,7 @@ const Chat = () => {
       messageInputRef.current?.focus()
     } catch (error) {
       console.error('Error sending message:', error)
-      alert('Failed to send message')
+      alert('Failed to send message: ' + error.message)
     } finally {
       setIsUploading(false)
     }
@@ -357,16 +386,138 @@ const Chat = () => {
     })
   }
 
+  // useEffects - placed after all function definitions
+  // Check admin access
+  useEffect(() => {
+    if (!user || !isAdmin()) {
+      navigate('/')
+    }
+  }, [user, isAdmin, navigate])
+
+  // Check if password is already set
+  useEffect(() => {
+    if (hasEncryptionPassword()) {
+      setPasswordEntered(true)
+    }
+    // If no password is set, we're not loading anymore
+    if (!hasEncryptionPassword()) {
+      setLoading(false)
+    }
+  }, [])
+
+  // Load chat rooms
+  useEffect(() => {
+    if (!user || !isAdmin()) return
+    if (!passwordEntered) return
+
+    loadRooms()
+  }, [user, isAdmin, passwordEntered, loadRooms])
+
+  // Load messages when room changes
+  useEffect(() => {
+    if (!currentRoom) return
+
+    loadMessages(currentRoom.id)
+    setMessages([]) // Clear messages when switching rooms
+
+    // Subscribe to real-time messages
+    const channel = supabase
+      .channel(`chat:${currentRoom.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `room_id=eq.${currentRoom.id}`
+        },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new])
+          scrollToBottom()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `room_id=eq.${currentRoom.id}`
+        },
+        (payload) => {
+          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id))
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentRoom, loadMessages, scrollToBottom])
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+        <div className="text-lg text-black dark:text-white">Loading chat...</div>
       </div>
     )
   }
 
   if (!user || !isAdmin()) {
     return null
+  }
+
+  // Show password entry screen if not entered
+  if (!passwordEntered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-full max-w-md p-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold mb-2">Admin Chat</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Enter the shared encryption password to access encrypted messages and files
+            </p>
+          </div>
+
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => {
+                  setPasswordInput(e.target.value)
+                  setPasswordError('')
+                }}
+                placeholder="Encryption password"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
+                autoFocus
+              />
+              {passwordError && (
+                <p className="mt-2 text-sm text-red-500">{passwordError}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full px-4 py-3 bg-black dark:bg-white text-white dark:text-black rounded-md hover:opacity-80 transition-opacity font-medium"
+            >
+              Unlock Chat
+            </button>
+          </form>
+
+          <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-md">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              <strong>Note:</strong> This password is shared among all admins. All messages and files are encrypted with this password. Make sure you have the correct password from your team.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -471,61 +622,46 @@ const Chat = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <AnimatePresence initial={false}>
-                {messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="group"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <span className="font-medium text-sm">
-                            {getFirstName()}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {formatTime(message.created_at)}
-                          </span>
-                        </div>
-
-                        {message.message && (
-                          <p className="text-sm whitespace-pre-wrap break-words">
-                            {message.message}
-                          </p>
-                        )}
-
-                        {message.file_url && (
-                          <button
-                            onClick={() => downloadFile(message)}
-                            className="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span className="text-xl">📎</span>
-                            <div className="text-left">
-                              <div className="text-sm font-medium">
-                                {message.file_name}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {formatFileSize(message.file_size)}
-                              </div>
-                            </div>
-                          </button>
-                        )}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {messages.map((message) => (
+                <div key={message.id} className="group">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-xs text-gray-500">
+                          {formatTime(message.created_at)}
+                        </span>
                       </div>
 
-                      <button
-                        onClick={() => deleteMessage(message.id)}
-                        className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity text-sm"
-                      >
-                        Delete
-                      </button>
+                      <DecryptedMessage message={message} />
+
+                      {message.file_url && (
+                        <button
+                          onClick={() => downloadFile(message)}
+                          className="mt-2 inline-flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+                        >
+                          <span className="text-xl">📎</span>
+                          <div className="text-left">
+                            <div className="text-sm font-medium">
+                              {message.file_name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {formatFileSize(message.file_size)}
+                            </div>
+                          </div>
+                        </button>
+                      )}
                     </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+
+                    <button
+                      onClick={() => deleteMessage(message.id)}
+                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
               <div ref={messagesEndRef} />
             </div>
 

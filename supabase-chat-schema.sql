@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   room_id UUID REFERENCES chat_rooms(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  message TEXT,
+  message TEXT, -- Encrypted message text (base64)
+  message_iv TEXT, -- Initialization vector for message decryption
   file_url TEXT,
   file_name TEXT,
   file_type TEXT,

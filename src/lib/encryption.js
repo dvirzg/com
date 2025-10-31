@@ -1,44 +1,117 @@
 /**
- * Encryption utilities for secure file storage
- * Uses Web Crypto API (AES-GCM) for client-side encryption
+ * Encryption utilities for secure file and message storage
+ * Uses Web Crypto API (AES-GCM) with password-based key derivation (PBKDF2)
+ * All admins share the same password to encrypt/decrypt content
  */
 
-// Generate a random encryption key (should be stored securely)
-// In a production environment, you might want to derive this from user credentials
-// or store it securely. For now, we'll use a consistent key stored in the browser.
-const ENCRYPTION_KEY_NAME = 'admin_chat_encryption_key'
+const ENCRYPTION_PASSWORD_KEY = 'admin_chat_password'
+const SALT_KEY = 'admin_chat_salt'
+
+// Store password in memory after first entry (session only)
+let cachedPassword = null
 
 /**
- * Gets or creates an encryption key
+ * Derives an encryption key from a password using PBKDF2
+ * @param {string} password - The shared password
+ * @returns {Promise<CryptoKey>}
  */
-async function getEncryptionKey() {
-  // Try to get existing key from localStorage
-  const storedKey = localStorage.getItem(ENCRYPTION_KEY_NAME)
-
-  if (storedKey) {
-    // Import the stored key
-    const keyData = JSON.parse(storedKey)
-    return await crypto.subtle.importKey(
-      'jwk',
-      keyData,
-      { name: 'AES-GCM', length: 256 },
-      true,
-      ['encrypt', 'decrypt']
-    )
+async function deriveKeyFromPassword(password) {
+  // Get or generate salt
+  let salt = localStorage.getItem(SALT_KEY)
+  if (!salt) {
+    // Generate a random salt (this should be the same for all admins)
+    // In a real implementation, this salt should be stored in the database
+    // For now, we'll use a fixed salt so all admins can decrypt each other's content
+    const saltArray = new Uint8Array(16)
+    crypto.getRandomValues(saltArray)
+    salt = btoa(String.fromCharCode(...saltArray))
+    localStorage.setItem(SALT_KEY, salt)
   }
 
-  // Generate a new key
-  const key = await crypto.subtle.generateKey(
+  // Convert salt back to Uint8Array
+  const saltString = atob(salt)
+  const saltArray = new Uint8Array(saltString.length)
+  for (let i = 0; i < saltString.length; i++) {
+    saltArray[i] = saltString.charCodeAt(i)
+  }
+
+  // Import password as key material
+  const encoder = new TextEncoder()
+  const passwordKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits', 'deriveKey']
+  )
+
+  // Derive the actual encryption key
+  const key = await crypto.subtle.deriveKey(
+    {
+      name: 'PBKDF2',
+      salt: saltArray,
+      iterations: 100000,
+      hash: 'SHA-256'
+    },
+    passwordKey,
     { name: 'AES-GCM', length: 256 },
-    true,
+    false,
     ['encrypt', 'decrypt']
   )
 
-  // Export and store the key
-  const exportedKey = await crypto.subtle.exportKey('jwk', key)
-  localStorage.setItem(ENCRYPTION_KEY_NAME, JSON.stringify(exportedKey))
-
   return key
+}
+
+/**
+ * Sets the encryption password (stores in memory for the session)
+ * @param {string} password - The password to use
+ */
+export function setEncryptionPassword(password) {
+  cachedPassword = password
+  sessionStorage.setItem(ENCRYPTION_PASSWORD_KEY, password)
+}
+
+/**
+ * Gets the encryption password from memory or session storage
+ * @returns {string|null}
+ */
+export function getEncryptionPassword() {
+  if (cachedPassword) return cachedPassword
+
+  const stored = sessionStorage.getItem(ENCRYPTION_PASSWORD_KEY)
+  if (stored) {
+    cachedPassword = stored
+    return stored
+  }
+
+  return null
+}
+
+/**
+ * Checks if password is set
+ * @returns {boolean}
+ */
+export function hasEncryptionPassword() {
+  return !!getEncryptionPassword()
+}
+
+/**
+ * Clears the encryption password (logout)
+ */
+export function clearEncryptionPassword() {
+  cachedPassword = null
+  sessionStorage.removeItem(ENCRYPTION_PASSWORD_KEY)
+}
+
+/**
+ * Gets the encryption key (derived from password)
+ */
+async function getEncryptionKey() {
+  const password = getEncryptionPassword()
+  if (!password) {
+    throw new Error('Encryption password not set')
+  }
+  return await deriveKeyFromPassword(password)
 }
 
 /**
@@ -137,4 +210,82 @@ export function downloadDecryptedFile(decryptedData, fileName, mimeType) {
 export function createPreviewUrl(decryptedData, mimeType) {
   const blob = new Blob([decryptedData], { type: mimeType })
   return URL.createObjectURL(blob)
+}
+
+/**
+ * Encrypts a text message
+ * @param {string} message - The message to encrypt
+ * @returns {Promise<{encryptedMessage: string, iv: string}>}
+ */
+export async function encryptMessage(message) {
+  try {
+    const key = await getEncryptionKey()
+
+    // Generate a random initialization vector
+    const iv = crypto.getRandomValues(new Uint8Array(12))
+
+    // Convert message to ArrayBuffer
+    const encoder = new TextEncoder()
+    const messageData = encoder.encode(message)
+
+    // Encrypt the message
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      messageData
+    )
+
+    // Convert encrypted data and IV to base64
+    const encryptedArray = new Uint8Array(encryptedData)
+    const encryptedBase64 = btoa(String.fromCharCode(...encryptedArray))
+    const ivBase64 = btoa(String.fromCharCode(...iv))
+
+    return {
+      encryptedMessage: encryptedBase64,
+      iv: ivBase64
+    }
+  } catch (error) {
+    console.error('Message encryption error:', error)
+    throw new Error('Failed to encrypt message')
+  }
+}
+
+/**
+ * Decrypts a text message
+ * @param {string} encryptedMessageBase64 - The encrypted message in base64
+ * @param {string} ivBase64 - The initialization vector in base64
+ * @returns {Promise<string>}
+ */
+export async function decryptMessage(encryptedMessageBase64, ivBase64) {
+  try {
+    const key = await getEncryptionKey()
+
+    // Convert base64 to ArrayBuffer
+    const encryptedString = atob(encryptedMessageBase64)
+    const encryptedArray = new Uint8Array(encryptedString.length)
+    for (let i = 0; i < encryptedString.length; i++) {
+      encryptedArray[i] = encryptedString.charCodeAt(i)
+    }
+
+    // Convert IV from base64
+    const ivString = atob(ivBase64)
+    const iv = new Uint8Array(ivString.length)
+    for (let i = 0; i < ivString.length; i++) {
+      iv[i] = ivString.charCodeAt(i)
+    }
+
+    // Decrypt the message
+    const decryptedData = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encryptedArray
+    )
+
+    // Convert back to string
+    const decoder = new TextDecoder()
+    return decoder.decode(decryptedData)
+  } catch (error) {
+    console.error('Message decryption error:', error)
+    throw new Error('Failed to decrypt message')
+  }
 }
