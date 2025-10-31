@@ -13,6 +13,7 @@ import AdminPanel from '../pages/AdminPanel'
 import CustomPage from '../pages/CustomPage'
 import PageEditor from '../pages/PageEditor'
 import Career from '../pages/Career'
+import Chat from '../pages/Chat'
 import Loading from '../components/Loading'
 
 const AppRouter = () => {
@@ -41,6 +42,7 @@ const AppRouter = () => {
       <Route path="/career" element={<Career />} />
       <Route path="/edit-landing" element={<EditLandingPage />} />
       <Route path="/admin" element={<AdminPanel />} />
+      <Route path="/chat" element={<Chat />} />
       <Route path="/admin/pages/new" element={<PageEditor />} />
       <Route path="/admin/pages/edit/:slug" element={<PageEditor />} />
       <Route path="/:slug" element={<CustomPage />} />

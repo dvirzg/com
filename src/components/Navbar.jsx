@@ -65,6 +65,7 @@ const Navbar = () => {
   })
 
   if (isAdmin()) {
+    tabs.push({ name: 'Chat', path: '/chat' })
     tabs.push({ name: 'Admin', path: '/admin' })
   }
 
