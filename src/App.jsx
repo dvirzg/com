@@ -1,11 +1,16 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { NotesProvider } from './contexts/NotesContext'
 import { BACKGROUND_COLORS } from './constants/colors'
 import Navbar from './components/Navbar'
 import AppRouter from './components/AppRouter'
+
+// Lazy load Analytics to avoid blocking initial render
+const Analytics = lazy(() =>
+  import('@vercel/analytics/react').then(module => ({ default: module.Analytics }))
+)
 
 function App() {
   return (
@@ -14,7 +19,9 @@ function App() {
         <NotesProvider>
           <BrowserRouter>
             <AppContent />
-            <Analytics />
+            <Suspense fallback={null}>
+              <Analytics />
+            </Suspense>
           </BrowserRouter>
         </NotesProvider>
       </AuthProvider>

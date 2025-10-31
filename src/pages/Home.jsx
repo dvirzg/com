@@ -43,14 +43,20 @@ const ScrollArrow = () => {
   )
 }
 
+// Cache landing page data to avoid refetching on route changes
+let cachedLandingPage = null
+
 const Home = () => {
   const { isAdmin } = useAuth()
   const { isDark } = useTheme()
-  const [landingPage, setLandingPage] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [landingPage, setLandingPage] = useState(cachedLandingPage)
+  const [loading, setLoading] = useState(!cachedLandingPage)
 
   useEffect(() => {
-    loadLandingPage()
+    // Only fetch if we don't have cached data
+    if (!cachedLandingPage) {
+      loadLandingPage()
+    }
   }, [])
 
   const loadLandingPage = async () => {
@@ -61,6 +67,7 @@ const Home = () => {
       .single()
 
     if (!error && data) {
+      cachedLandingPage = data
       setLandingPage(data)
     }
     setLoading(false)

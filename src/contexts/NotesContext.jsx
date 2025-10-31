@@ -143,8 +143,11 @@ export const NotesProvider = ({ children }) => {
     fetchDrafts()
   }
 
+  // Lazy load notes - only fetch when explicitly called via refetch()
+  // This prevents loading all notes on app init for better performance
   useEffect(() => {
-    fetchNotes()
+    // Don't auto-fetch on mount - let pages call refetch() when needed
+    setLoading(false)
   }, [])
 
   return (

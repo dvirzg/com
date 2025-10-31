@@ -28,6 +28,8 @@ const Notes = () => {
 
   useEffect(() => {
     loadCategories()
+    // Fetch notes when the Notes page is accessed
+    refetch()
   }, [])
 
   useEffect(() => {
