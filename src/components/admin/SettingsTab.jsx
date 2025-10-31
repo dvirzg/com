@@ -13,7 +13,8 @@ const FONT_OPTIONS = [
   { value: 'inter', label: 'Inter' },
   { value: 'montserrat', label: 'Montserrat' },
   { value: 'clashDisplay', label: 'Clash Display' },
-  { value: 'playfairDisplay', label: 'Playfair Display' }
+  { value: 'playfairDisplay', label: 'Playfair Display' },
+  { value: 'ddin', label: 'D-DIN' }
 ]
 
 const BACKGROUND_COLOR_OPTIONS = [
