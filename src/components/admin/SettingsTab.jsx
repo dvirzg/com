@@ -15,7 +15,8 @@ const FONT_OPTIONS = [
   { value: 'clashDisplay', label: 'Clash Display' },
   { value: 'playfairDisplay', label: 'Playfair Display' },
   { value: 'ddin', label: 'D-DIN' },
-  { value: 'besley', label: 'Besley' }
+  { value: 'besley', label: 'Besley' },
+  { value: 'sourceSerif4', label: 'Source Serif 4' }
 ]
 
 const BACKGROUND_COLOR_OPTIONS = [
