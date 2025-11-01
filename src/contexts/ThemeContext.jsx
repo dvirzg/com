@@ -15,7 +15,8 @@ const FONT_FAMILIES = {
   inter: "Inter, system-ui, sans-serif",
   montserrat: "Montserrat, system-ui, sans-serif",
   clashDisplay: "'Clash Display', Impact, sans-serif",
-  playfairDisplay: "'Playfair Display', Georgia, serif"
+  playfairDisplay: "'Playfair Display', Georgia, serif",
+  besley: "Besley, Georgia, serif"
 }
 
 export const ThemeProvider = ({ children }) => {
