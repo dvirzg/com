@@ -16,7 +16,8 @@ const FONT_OPTIONS = [
   { value: 'playfairDisplay', label: 'Playfair Display' },
   { value: 'ddin', label: 'D-DIN' },
   { value: 'besley', label: 'Besley' },
-  { value: 'sourceSerif4', label: 'Source Serif 4' }
+  { value: 'sourceSerif4', label: 'Source Serif 4' },
+  { value: 'cmuSerif', label: 'CMU Serif' }
 ]
 
 const BACKGROUND_COLOR_OPTIONS = [

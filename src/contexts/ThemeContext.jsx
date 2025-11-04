@@ -17,7 +17,8 @@ const FONT_FAMILIES = {
   clashDisplay: "'Clash Display', Impact, sans-serif",
   playfairDisplay: "'Playfair Display', Georgia, serif",
   besley: "Besley, Georgia, serif",
-  sourceSerif4: "'Source Serif 4', Georgia, serif"
+  sourceSerif4: "'Source Serif 4', Georgia, serif",
+  cmuSerif: "'CMU Serif', Georgia, serif"
 }
 
 export const ThemeProvider = ({ children }) => {
