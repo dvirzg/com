@@ -8,17 +8,18 @@ export const useTheme = () => useContext(ThemeContext)
 
 const FONT_FAMILIES = {
   system: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  georgia: "Georgia, 'Times New Roman', serif",
-  garamond: "Garamond, 'Garamond MT', Bookman, 'Bookman Old Style', serif",
-  canela: "Canela, Georgia, serif",
-  geist: "Geist, system-ui, sans-serif",
-  inter: "Inter, system-ui, sans-serif",
-  montserrat: "Montserrat, system-ui, sans-serif",
-  clashDisplay: "'Clash Display', Impact, sans-serif",
-  playfairDisplay: "'Playfair Display', Georgia, serif",
-  besley: "Besley, Georgia, serif",
-  sourceSerif4: "'Source Serif 4', Georgia, serif",
-  cmuSerif: "'CMU Serif', Georgia, serif"
+  georgia: "Georgia, serif",
+  garamond: "Garamond, serif",
+  canela: "'Cormorant Garamond', serif",
+  geist: "'Geist', sans-serif",
+  inter: "'Inter', sans-serif",
+  montserrat: "'Montserrat', sans-serif",
+  clashDisplay: "'Bebas Neue', sans-serif",
+  playfairDisplay: "'Playfair Display', serif",
+  ddin: "'IBM Plex Sans Condensed', sans-serif",
+  besley: "'Besley', serif",
+  sourceSerif4: "'Source Serif 4', serif",
+  cmuSerif: "'CMU Serif', serif"
 }
 
 export const ThemeProvider = ({ children }) => {
