@@ -271,7 +271,7 @@ const Note = () => {
                 const id = generateHeadingId(text, index)
                 return <h6 id={id} className="text-sm font-bold my-2 scroll-mt-24">{children}</h6>
               },
-              p: ({children}) => <p className="my-2">{children}</p>,
+              p: ({children}) => <p className="mb-6" style={{ fontSize: '18px', lineHeight: '27px' }}>{children}</p>,
               code({ node, inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
                 const language = match ? match[1] : ''
