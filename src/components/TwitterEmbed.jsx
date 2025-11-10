@@ -1,41 +1,42 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState, useRef, memo } from 'react'
 
-const TwitterEmbed = ({ url }) => {
-  const containerRef = useRef(null)
+const TwitterEmbed = memo(({ url }) => {
+  const [html, setHtml] = useState('')
+  const loadedRef = useRef(false)
 
   useEffect(() => {
-    // Load Twitter widget script if not already loaded
-    if (!window.twttr) {
-      const script = document.createElement('script')
-      script.src = 'https://platform.twitter.com/widgets.js'
-      script.async = true
-      document.body.appendChild(script)
-    }
+    if (loadedRef.current) return
 
-    // Wait for script to load and create embed
-    const checkAndEmbed = () => {
-      if (window.twttr?.widgets && containerRef.current) {
-        containerRef.current.innerHTML = ''
-        window.twttr.widgets.createTweet(
-          extractTweetId(url),
-          containerRef.current,
-          { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
-        )
-      } else {
-        setTimeout(checkAndEmbed, 100)
-      }
-    }
-
-    checkAndEmbed()
+    loadedRef.current = true
+    fetch(`https://publish.twitter.com/oembed?url=${encodeURIComponent(url)}`)
+      .then(res => res.json())
+      .then(data => {
+        setHtml(data.html)
+        setTimeout(() => {
+          if (!window.twttr) {
+            const script = document.createElement('script')
+            script.src = 'https://platform.twitter.com/widgets.js'
+            script.async = true
+            document.body.appendChild(script)
+          } else {
+            window.twttr.widgets.load()
+          }
+        }, 100)
+      })
+      .catch(err => console.error('Failed to load tweet:', err))
   }, [url])
 
-  return <div ref={containerRef} className="my-8 mx-auto max-w-2xl" />
-}
+  if (!html) return null
 
-const extractTweetId = (url) => {
-  const match = url.match(/status\/(\d+)/)
-  return match ? match[1] : null
-}
+  return (
+    <div
+      className="my-8 mx-auto max-w-2xl"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  )
+})
+
+TwitterEmbed.displayName = 'TwitterEmbed'
 
 export const isTwitterUrl = (url) => {
   return url && (url.includes('twitter.com') || url.includes('x.com')) && url.includes('/status/')

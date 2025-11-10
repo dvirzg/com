@@ -29,25 +29,10 @@ const Note = () => {
   const [loading, setLoading] = useState(true)
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false })
   const [publishing, setPublishing] = useState(false)
-  const [showStickyTitle, setShowStickyTitle] = useState(false)
-  const titleRef = useRef(null)
 
   useEffect(() => {
     loadNote()
   }, [id])
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (titleRef.current) {
-        const titleRect = titleRef.current.getBoundingClientRect()
-        // Show sticky title when main title scrolls past navbar (about 80px from top)
-        setShowStickyTitle(titleRect.top < 80)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [note])
 
   const loadNote = async () => {
     // For admins, use getNoteForEdit to get drafts too
@@ -106,18 +91,6 @@ const Note = () => {
 
   return (
     <>
-      {/* Sticky Title Header */}
-      <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
-        showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 className="text-lg font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
-              <ReactMarkdown components={{ p: 'span' }}>{note?.title}</ReactMarkdown>
-            </h1>
-          </div>
-        </div>
-      </div>
 
       <div className="min-h-screen transition-colors relative">
         {/* Table of Contents Sidebar - Fixed to left side */}
@@ -129,7 +102,7 @@ const Note = () => {
         <article className="max-w-4xl mx-auto overflow-x-hidden px-6 pt-24 pb-12">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
+            <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
               <ReactMarkdown components={{ p: 'span' }}>{note?.title}</ReactMarkdown>
             </h1>
             {!note?.published && isAdmin() && (
