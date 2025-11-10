@@ -30,7 +30,7 @@ const TwitterEmbed = memo(({ url }) => {
 
   return (
     <div
-      className="my-8 mx-auto max-w-2xl"
+      className="my-8 flex justify-center"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
