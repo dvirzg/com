@@ -220,28 +220,29 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   }
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={onHover}
-      onMouseLeave={() => onHover(null)}
-    >
+    <div className="relative">
       <div
-        ref={blockRef}
-        tabIndex={0}
-        draggable={!isEditing}
-        onDragStart={(e) => onDragStart(e, index)}
-        onDragOver={(e) => onDragOver(e, index)}
-        onDrop={(e) => onDrop(e, index)}
-        className={`relative group outline-none transition-colors ${
-          (isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''
-        } ${
-          isDraggedOver ? 'border-t-2 border-blue-500' : ''
-        }`}
-        onKeyDown={handleBlockKeyDown}
-        onClick={onSelect}
+        className="relative pr-16"
+        onMouseEnter={onHover}
+        onMouseLeave={() => onHover(null)}
       >
-      {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
-        <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
+        <div
+          ref={blockRef}
+          tabIndex={0}
+          draggable={!isEditing}
+          onDragStart={(e) => onDragStart(e, index)}
+          onDragOver={(e) => onDragOver(e, index)}
+          onDrop={(e) => onDrop(e, index)}
+          className={`relative group outline-none transition-colors ${
+            (isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''
+          } ${
+            isDraggedOver ? 'border-t-2 border-blue-500' : ''
+          }`}
+          onKeyDown={handleBlockKeyDown}
+          onClick={onSelect}
+        >
+        {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
+          <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
           {/* Drag handle - always visible */}
           <div
             className="p-2 cursor-grab active:cursor-grabbing text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
@@ -526,6 +527,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
           </button>
         </div>
       )}
+        </div>
       </div>
     </div>
   )

@@ -123,7 +123,7 @@ const Career = () => {
       <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
         showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
       }`}>
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-3xl mx-auto px-6 py-4">
           <h1 className="text-xl md:text-2xl font-bold text-zinc-900 dark:text-white">
             Career
           </h1>
@@ -131,7 +131,7 @@ const Career = () => {
       </div>
 
       <div className="min-h-screen pt-24 pb-12 px-6 transition-colors">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
@@ -165,7 +165,7 @@ const Career = () => {
           <section className="mb-16">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Education</h2>
             <div className="relative">
-              <div className="absolute -left-32 top-0 hidden lg:block">
+              <div className="absolute -left-28 top-0 hidden lg:block">
                 <img
                   src="/logos/waterloo.png"
                   alt="University of Waterloo logo"
@@ -190,7 +190,7 @@ const Career = () => {
               {experiences.map((exp, index) => (
                 <div key={index} className="relative">
                   {exp.logo && (
-                    <div className="absolute -left-32 top-0 hidden lg:block">
+                    <div className="absolute -left-28 top-0 hidden lg:block">
                       {exp.secondaryLogo ? (
                         <div className="flex flex-col items-center gap-1">
                           <img
