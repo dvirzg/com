@@ -315,11 +315,14 @@ const Note = () => {
                 )
               },
               a({ href, children }) {
+                if (isTwitterUrl(href)) {
+                  return <TwitterEmbed url={href} />
+                }
                 return (
-                  <a 
-                    href={href} 
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors" 
-                    target="_blank" 
+                  <a
+                    href={href}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
+                    target="_blank"
                     rel="noopener noreferrer"
                   >
                     {children}
