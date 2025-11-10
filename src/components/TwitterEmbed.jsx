@@ -29,7 +29,7 @@ const TwitterEmbed = ({ url }) => {
     checkAndEmbed()
   }, [url])
 
-  return <div ref={containerRef} className="my-4" />
+  return <div ref={containerRef} className="my-8 mx-auto max-w-2xl" />
 }
 
 const extractTweetId = (url) => {
