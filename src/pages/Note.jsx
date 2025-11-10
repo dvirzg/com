@@ -98,8 +98,9 @@ const Note = () => {
           <TableOfContents content={note?.content} />
         </aside>
 
-        {/* Main content - Centered exactly as before */}
-        <article className="max-w-4xl mx-auto overflow-x-hidden px-6 pt-24 pb-12">
+        {/* Main content - Standard container width */}
+        <div className="pt-24 pb-12 px-6">
+          <article className="max-w-3xl mx-auto overflow-x-hidden">
         <div className="flex items-start justify-between mb-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
@@ -359,7 +360,8 @@ const Note = () => {
             })
           })()}
         </div>
-      </article>
+          </article>
+        </div>
       </div>
 
       <ConfirmDialog
