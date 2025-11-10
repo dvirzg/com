@@ -10,11 +10,11 @@ import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image a
 import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
 import { useAuth } from '../contexts/AuthContext'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover, onDragStart, onDragOver, onDrop, isDraggedOver, index }) => {
+const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover, onDragStart, onDragOver, onDrop, isDraggedOver, isDragging, index }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState(content)
   const [uploading, setUploading] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
+  const [isFileDragging, setIsFileDragging] = useState(false)
   const [showDropZone, setShowDropZone] = useState(false)
   const textareaRef = useRef(null)
   const blockRef = useRef(null)
@@ -191,7 +191,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   const handleDragEnter = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsDragging(true)
+    setIsFileDragging(true)
   }
 
   const handleDragLeave = (e) => {
@@ -199,7 +199,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     e.stopPropagation()
     // Only hide if leaving the entire drop zone area
     if (e.currentTarget.contains(e.relatedTarget)) return
-    setIsDragging(false)
+    setIsFileDragging(false)
   }
 
   const handleDragOver = (e) => {
@@ -210,7 +210,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   const handleDrop = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsDragging(false)
+    setIsFileDragging(false)
     setShowDropZone(false)
 
     const file = e.dataTransfer.files?.[0]
@@ -220,9 +220,15 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   }
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onDragOver={(e) => onDragOver(e, index)}
+      onDrop={(e) => onDrop(e, index)}
+    >
       <div
-        className="relative pr-16"
+        className={`relative pr-16 transition-opacity ${isDragging ? 'opacity-40' : ''} ${
+          isDraggedOver ? 'border-t-2 border-blue-500' : ''
+        }`}
         onMouseEnter={onHover}
         onMouseLeave={() => onHover(null)}
       >
@@ -231,12 +237,8 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
           tabIndex={0}
           draggable={!isEditing}
           onDragStart={(e) => onDragStart(e, index)}
-          onDragOver={(e) => onDragOver(e, index)}
-          onDrop={(e) => onDrop(e, index)}
           className={`relative group outline-none transition-colors ${
             (isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''
-          } ${
-            isDraggedOver ? 'border-t-2 border-blue-500' : ''
           }`}
           onKeyDown={handleBlockKeyDown}
           onClick={onSelect}
@@ -490,7 +492,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
               <div className="w-8 h-8 border-2 border-zinc-400 border-t-zinc-900 dark:border-t-white rounded-full animate-spin"></div>
               <div className="text-sm text-zinc-600 dark:text-zinc-400">Uploading...</div>
             </div>
-          ) : isDragging ? (
+          ) : isFileDragging ? (
             <div className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg -m-2 p-8">
               <ImageIcon size={32} className="text-blue-600 dark:text-blue-400" />
               <div className="text-sm font-medium text-blue-600 dark:text-blue-400">Drop to upload</div>
@@ -732,6 +734,23 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
   const handleDragStart = (e, index) => {
     setDraggedIndex(index)
     e.dataTransfer.effectAllowed = 'move'
+
+    // Create a simple drag preview showing just the text content
+    const dragPreview = document.createElement('div')
+    dragPreview.textContent = blocks[index].substring(0, 50) + (blocks[index].length > 50 ? '...' : '')
+    dragPreview.style.position = 'absolute'
+    dragPreview.style.top = '-1000px'
+    dragPreview.style.padding = '8px 12px'
+    dragPreview.style.backgroundColor = 'white'
+    dragPreview.style.border = '1px solid #e5e7eb'
+    dragPreview.style.borderRadius = '6px'
+    dragPreview.style.fontSize = '14px'
+    dragPreview.style.maxWidth = '300px'
+    document.body.appendChild(dragPreview)
+    // Position cursor at right edge of preview, vertically centered
+    const previewWidth = 300 // maxWidth
+    e.dataTransfer.setDragImage(dragPreview, previewWidth, 20)
+    setTimeout(() => document.body.removeChild(dragPreview), 0)
   }
 
   const handleDragOver = (e, index) => {
@@ -847,6 +866,7 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           isDraggedOver={draggedOverIndex === index}
+          isDragging={draggedIndex === index}
         />
       ))}
     </div>
