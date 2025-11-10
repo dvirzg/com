@@ -222,7 +222,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   return (
     <div className="relative">
       <div
-        className="relative"
+        className="relative pr-16"
         onMouseEnter={onHover}
         onMouseLeave={() => onHover(null)}
       >
