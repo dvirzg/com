@@ -18,6 +18,7 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
 import TableOfContents from '../components/TableOfContents'
+import TwitterEmbed, { isTwitterUrl } from '../components/TwitterEmbed'
 
 const Note = () => {
   const { id } = useParams()
