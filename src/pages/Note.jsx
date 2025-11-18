@@ -13,11 +13,12 @@ import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
+import { isTwitterUrl } from '../lib/utils'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
 import TableOfContents from '../components/TableOfContents'
-import TwitterEmbed, { isTwitterUrl } from '../components/TwitterEmbed'
+import TwitterEmbed from '../components/TwitterEmbed'
 
 const Note = () => {
   const { id } = useParams()

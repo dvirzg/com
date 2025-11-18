@@ -365,11 +365,6 @@ If proceeding to interview despite concerns:
 
 This is a **functional but fundamentally flawed** implementation that demonstrates coding ability but lacks professional engineering discipline. The candidate can build features and has some modern development awareness, but the critical security failures and complete absence of testing make this unsuitable for any production environment.
 
-**Primary Concern:** The exposed credentials suggest either:
-1. Lack of security awareness (concerning)
-2. Rushed submission without review (concerning)
-3. Misunderstanding of professional standards (concerning)
-
 **Recommendation:** REJECT for mid+ levels, consider for junior with strong mentorship and training commitment.
 
 ---

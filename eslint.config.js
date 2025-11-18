@@ -23,7 +23,14 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^_',
+        argsIgnorePattern: '^_',
+        destructuredArrayIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      }],
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
   // Node.js globals for API routes and middleware
@@ -31,6 +38,13 @@ export default defineConfig([
     files: ['api/**/*.js', 'middleware.js'],
     languageOptions: {
       globals: globals.node,
+    },
+  },
+  // Disable fast refresh warnings for context files since they export hooks
+  {
+    files: ['src/contexts/**/*.{js,jsx}', 'src/components/TwitterEmbed.jsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 ])
