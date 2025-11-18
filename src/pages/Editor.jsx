@@ -57,7 +57,7 @@ const Editor = () => {
         try {
           const parsedAlignment = typeof note.alignment === 'string' ? JSON.parse(note.alignment) : note.alignment
           setAlignment(parsedAlignment)
-        } catch (e) {
+        } catch (_e) {
           setAlignment([])
         }
       } else {

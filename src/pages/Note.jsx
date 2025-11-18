@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Edit, Trash2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
@@ -11,7 +11,6 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
-import { useTheme } from '../contexts/ThemeContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -196,7 +195,7 @@ const Note = () => {
             if (note?.alignment) {
               try {
                 alignments = typeof note.alignment === 'string' ? JSON.parse(note.alignment) : note.alignment
-              } catch (e) {
+              } catch (_e) {
                 alignments = []
               }
             }
@@ -247,7 +246,7 @@ const Note = () => {
                 return <h6 id={id} className="text-sm font-bold my-2 scroll-mt-24">{children}</h6>
               },
               p: ({children}) => <p className="mb-6" style={{ fontSize: '18px', lineHeight: '27px' }}>{children}</p>,
-              code({ node, inline, className, children, ...props }) {
+              code({ inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
                 const language = match ? match[1] : ''
                 

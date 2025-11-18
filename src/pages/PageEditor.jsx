@@ -15,7 +15,7 @@ const PageEditor = () => {
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(!!slug)
   const [pageId, setPageId] = useState(null)
-  const [isEditMode, setIsEditMode] = useState(!!slug)
+  const [isEditMode, _setIsEditMode] = useState(!!slug)
 
   useEffect(() => {
     if (!user || !isAdmin()) {

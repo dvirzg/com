@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       const indexPath = join(process.cwd(), 'dist', 'index.html')
       const html = readFileSync(indexPath, 'utf-8')
       return res.status(200).setHeader('Content-Type', 'text/html').send(html)
-    } catch (err) {
+    } catch (_err) {
       return res.status(500).send('Error loading page')
     }
   }

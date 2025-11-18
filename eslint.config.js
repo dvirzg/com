@@ -23,7 +23,14 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+    },
+  },
+  // Node.js globals for API routes and middleware
+  {
+    files: ['api/**/*.js', 'middleware.js'],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ])

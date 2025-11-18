@@ -31,7 +31,7 @@ export const ThemeProvider = ({ children }) => {
 
   const [font, setFont] = useState('system')
   const [backgroundColor, setBackgroundColor] = useState('white')
-  const [isLoadingFont, setIsLoadingFont] = useState(true)
+  const [_isLoadingFont, setIsLoadingFont] = useState(true)
 
   // Fetch font and background color from database on mount
   useEffect(() => {
