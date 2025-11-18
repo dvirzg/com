@@ -41,7 +41,7 @@ const SublinksTab = () => {
     // Handle file upload
     if (formData.type === 'file' && selectedFile) {
       const fileExt = selectedFile.name.split('.').pop()
-      const fileName = `${formData.slug.toLowerCase().replace(/\s+/g, '-')}.${fileExt}`
+      const fileName = `${formData.slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.${fileExt}`
       filePath = `files/${fileName}`
 
       const { error: uploadError } = await supabase.storage
@@ -68,7 +68,7 @@ const SublinksTab = () => {
 
     const { error } = await supabase.from('sublinks').insert([
       {
-        slug: formData.slug.toLowerCase().replace(/\s+/g, '-'),
+        slug: formData.slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         url: finalUrl,
         type: formData.type,
         file_path: filePath,
@@ -89,7 +89,7 @@ const SublinksTab = () => {
   const handleUpdate = async (id, slug, url) => {
     const { error } = await supabase
       .from('sublinks')
-      .update({ slug: slug.toLowerCase().replace(/\s+/g, '-'), url })
+      .update({ slug: slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''), url })
       .eq('id', id)
 
     if (error) {
