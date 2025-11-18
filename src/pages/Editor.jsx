@@ -17,7 +17,7 @@ const Editor = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [alignment, setAlignment] = useState([])
-  const [isEditing, setIsEditing] = useState(false)
+  const [_isEditing, setIsEditing] = useState(false)
   const [noteId, setNoteId] = useState(null)
   const [initialLoading, setInitialLoading] = useState(false)
   const [publishedAt, setPublishedAt] = useState('')

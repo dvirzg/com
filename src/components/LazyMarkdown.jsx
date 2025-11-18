@@ -5,11 +5,11 @@ const SyntaxHighlighter = lazy(() =>
   import('react-syntax-highlighter').then(mod => ({ default: mod.Prism }))
 )
 
-// Lazy load heavy plugins
-const remarkMath = lazy(() => import('remark-math'))
-const remarkGfm = lazy(() => import('remark-gfm'))
-const remarkBreaks = lazy(() => import('remark-breaks'))
-const rehypeKatex = lazy(() => import('rehype-katex'))
+// Lazy load heavy plugins (for future use)
+// const _remarkMath = lazy(() => import('remark-math'))
+// const _remarkGfm = lazy(() => import('remark-gfm'))
+// const _remarkBreaks = lazy(() => import('remark-breaks'))
+// const _rehypeKatex = lazy(() => import('rehype-katex'))
 
 // Import styles lazily
 const loadKatexStyles = () => import('katex/dist/katex.min.css')

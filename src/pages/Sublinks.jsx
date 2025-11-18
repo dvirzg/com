@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { useTheme } from '../contexts/ThemeContext'
-import { BACKGROUND_COLORS } from '../constants/colors'
 import { logger } from '../lib/logger'
 import ScrollToTop from '../components/ScrollToTop'
 

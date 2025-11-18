@@ -1,13 +1,10 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
 
 const ProfileSetup = () => {
   const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { user } = useAuth()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -35,7 +32,7 @@ const ProfileSetup = () => {
         // Refresh the page to update the auth context
         window.location.reload()
       }
-    } catch (err) {
+    } catch (_err) {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)

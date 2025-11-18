@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { BACKGROUND_COLORS } from '../constants/colors'
 import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
 import SettingsTab from '../components/admin/SettingsTab'

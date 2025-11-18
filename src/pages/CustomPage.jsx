@@ -11,7 +11,6 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { BACKGROUND_COLORS } from '../constants/colors'
 import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
 
