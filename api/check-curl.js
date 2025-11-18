@@ -2,35 +2,10 @@ import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from './lib/logger.js'
+import { isAutomatedRequest } from './lib/utils.js'
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
-
-// Detect if request is from curl, wget, or automated tools
-function isAutomatedRequest(userAgent) {
-  if (!userAgent) return false
-
-  const automatedPatterns = [
-    /curl/i,
-    /wget/i,
-    /python-requests/i,
-    /httpie/i,
-    /postman/i,
-    /insomnia/i,
-    /axios/i,
-    /node-fetch/i,
-    /go-http-client/i,
-    /java/i,
-    /apache-httpclient/i,
-    /okhttp/i,
-    /bot/i,
-    /crawler/i,
-    /spider/i,
-    /scraper/i
-  ]
-
-  return automatedPatterns.some(pattern => pattern.test(userAgent))
-}
 
 export default async function handler(req, res) {
   const userAgent = req.headers['user-agent'] || ''
