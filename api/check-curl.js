@@ -36,10 +36,8 @@ export default async function handler(req, res) {
 
     if (error) {
       logger.error('Error fetching curl behavior:', error)
-      // Default to serving HTML on error
-      const indexPath = join(process.cwd(), 'dist', 'index.html')
-      const html = readFileSync(indexPath, 'utf-8')
-      return res.status(200).setHeader('Content-Type', 'text/html').send(html)
+      // Return error response instead of silently falling back
+      return res.status(500).setHeader('Content-Type', 'text/plain').send('Error loading configuration')
     }
 
     const curlBehavior = data?.curl_behavior || 'block'
@@ -62,9 +60,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     logger.error('Error in check-curl:', err)
-    // Default to serving HTML on error
-    const indexPath = join(process.cwd(), 'dist', 'index.html')
-    const html = readFileSync(indexPath, 'utf-8')
-    return res.status(200).setHeader('Content-Type', 'text/html').send(html)
+    return res.status(500).setHeader('Content-Type', 'text/plain').send('Internal server error')
   }
 }
