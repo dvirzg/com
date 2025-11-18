@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { logger } from '../../lib/logger'
 import ConfirmDialog from '../ConfirmDialog'
 
 const PagesTab = () => {
@@ -21,7 +22,7 @@ const PagesTab = () => {
       .order('nav_order', { ascending: true })
 
     if (error) {
-      console.error('Error fetching pages:', error)
+      logger.error('Error fetching pages:', error)
     } else {
       setPages(data || [])
     }

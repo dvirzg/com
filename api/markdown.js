@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { logger } from './lib/logger.js'
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
@@ -62,7 +63,7 @@ export default async function handler(req, res) {
       .send(response)
 
   } catch (err) {
-    console.error('Error fetching markdown:', err)
+    logger.error('Error fetching markdown:', err)
     return res.status(500).send('Error fetching markdown content')
   }
 }

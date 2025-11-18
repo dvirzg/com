@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { logger } from './logger'
 
 /**
  * Upload a file to Supabase Storage and return the public URL
@@ -40,7 +41,7 @@ export const uploadMedia = async (file, userId) => {
       })
 
     if (error) {
-      console.error('Upload error:', error)
+      logger.error('Upload error:', error)
       return { url: null, error: error.message }
     }
 
@@ -51,7 +52,7 @@ export const uploadMedia = async (file, userId) => {
 
     return { url: publicUrl, error: null }
   } catch (error) {
-    console.error('Upload error:', error)
+    logger.error('Upload error:', error)
     return { url: null, error: error.message || 'Upload failed' }
   }
 }

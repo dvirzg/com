@@ -279,11 +279,7 @@ const Note = () => {
                     title={title} 
                     className="max-w-full h-auto rounded-lg shadow-sm hover:shadow-md transition-shadow" 
                     onError={(e) => {
-                      console.log('Image failed to load:', src);
                       e.target.style.display = 'none';
-                    }}
-                    onLoad={() => {
-                      console.log('Image loaded successfully:', src);
                     }}
                   />
                 )

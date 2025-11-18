@@ -73,7 +73,6 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   }
 
   const finishEditing = () => {
-    console.log('finishEditing called with text:', text)
     onChange(text)
     setIsEditing(false)
   }
@@ -383,11 +382,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
                       title={title} 
                       className="max-w-full h-auto rounded-lg shadow-sm hover:shadow-md transition-shadow" 
                       onError={(e) => {
-                        console.log('Image failed to load:', src);
                         e.target.style.display = 'none';
-                      }}
-                      onLoad={() => {
-                        console.log('Image loaded successfully:', src);
                       }}
                     />
                   ),
@@ -597,7 +592,6 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
   }, [alignments])
 
   const handleBlockChange = (index, newContent) => {
-    console.log('handleBlockChange called:', { index, newContent, currentBlocks: blocks })
     const newBlocks = [...blocks]
     newBlocks[index] = newContent
     setBlocks(newBlocks)

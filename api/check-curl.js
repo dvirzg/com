@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { logger } from './lib/logger.js'
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
       .single()
 
     if (error) {
-      console.error('Error fetching curl behavior:', error)
+      logger.error('Error fetching curl behavior:', error)
       // Default to serving HTML on error
       const indexPath = join(process.cwd(), 'dist', 'index.html')
       const html = readFileSync(indexPath, 'utf-8')
@@ -123,7 +124,7 @@ export default async function handler(req, res) {
     }
 
   } catch (err) {
-    console.error('Error in check-curl:', err)
+    logger.error('Error in check-curl:', err)
     // Default to serving HTML on error
     const indexPath = join(process.cwd(), 'dist', 'index.html')
     const html = readFileSync(indexPath, 'utf-8')

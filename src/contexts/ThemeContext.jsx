@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { BACKGROUND_COLORS } from '../constants/colors'
+import { logger } from '../lib/logger'
 
 const ThemeContext = createContext({})
 
@@ -43,7 +44,7 @@ export const ThemeProvider = ({ children }) => {
           .single()
 
         if (error) {
-          console.error('Error fetching settings:', error)
+          logger.error('Error fetching settings:', error)
           setFont('system')
           setBackgroundColor('white')
         } else if (data) {
@@ -51,7 +52,7 @@ export const ThemeProvider = ({ children }) => {
           setBackgroundColor(data.background_color || 'white')
         }
       } catch (err) {
-        console.error('Error fetching settings:', err)
+        logger.error('Error fetching settings:', err)
         setFont('system')
         setBackgroundColor('white')
       } finally {

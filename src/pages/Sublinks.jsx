@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
+import { logger } from '../lib/logger'
 import ScrollToTop from '../components/ScrollToTop'
 
 const Sublinks = () => {
@@ -48,7 +49,7 @@ const Sublinks = () => {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching sublinks:', error)
+      logger.error('Error fetching sublinks:', error)
     } else {
       setSublinks(data || [])
     }
@@ -85,7 +86,7 @@ const Sublinks = () => {
           .remove([existingSublink.file_path])
 
         if (removeError) {
-          console.error('Error removing existing file:', removeError)
+          logger.error('Error removing existing file:', removeError)
         }
       }
 
@@ -94,7 +95,7 @@ const Sublinks = () => {
         .upload(filePath, selectedFile, { upsert: true })
 
       if (uploadError) {
-        console.error('Upload error details:', uploadError)
+        logger.error('Upload error details:', uploadError)
         alert('Error uploading file: ' + uploadError.message)
         setUploadProgress(false)
         return
@@ -139,7 +140,7 @@ const Sublinks = () => {
     }
 
     if (error) {
-      console.error('Error creating/updating sublink:', error)
+      logger.error('Error creating/updating sublink:', error)
       alert('Error creating sublink: ' + error.message)
       setUploadProgress(false)
       return
@@ -179,7 +180,7 @@ const Sublinks = () => {
     if (sublink?.file_path) {
       const { error: storageError } = await supabase.storage.from('sublinks').remove([sublink.file_path])
       if (storageError) {
-        console.error('Error deleting file from storage:', storageError)
+        logger.error('Error deleting file from storage:', storageError)
         storageDeleted = false
         alert('Warning: Could not delete file from storage: ' + storageError.message + '\nWill still attempt to delete the database entry.')
       }
@@ -189,7 +190,7 @@ const Sublinks = () => {
     const { error: dbError } = await supabase.from('sublinks').delete().eq('id', id)
 
     if (dbError) {
-      console.error('Error deleting sublink from database:', dbError)
+      logger.error('Error deleting sublink from database:', dbError)
       alert('Error deleting sublink from database: ' + dbError.message + '\n\nThis might be due to permission issues. Please check:\n1. You are logged in as an admin\n2. RLS policies are properly configured\n3. Try deleting from Supabase dashboard')
       return
     }
@@ -198,9 +199,9 @@ const Sublinks = () => {
 
     // Provide feedback on what was deleted
     if (dbDeleted && storageDeleted) {
-      console.log('Successfully deleted sublink and file')
+      logger.log('Successfully deleted sublink and file')
     } else if (dbDeleted && !storageDeleted) {
-      console.log('Deleted sublink from database but file deletion failed')
+      logger.log('Deleted sublink from database but file deletion failed')
       alert('Sublink deleted, but the associated file may still exist in storage. You may need to manually delete it.')
     }
 
