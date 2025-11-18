@@ -9,8 +9,10 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon, GripVertical } from 'lucide-react'
 import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover, onDragStart, onDragOver, onDrop, isDraggedOver, isDragging, index }) => {
+  const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState(content)
   const [uploading, setUploading] = useState(false)
@@ -155,7 +157,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     const { url, error } = await uploadMedia(file, userId)
 
     if (error) {
-      alert(`Upload failed: ${error}`)
+      showToast(`Upload failed: ${error}`, 'error')
       setUploading(false)
       return
     }
@@ -537,6 +539,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
 
 const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentChange }) => {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const editorRef = useRef(null)
   const [blocks, setBlocks] = useState(() => {
     if (!initialContent || initialContent.trim() === '') return ['']
@@ -714,7 +717,7 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
 
   const handleMultiSelectDelete = () => {
     if (selectedIndices.size >= blocks.length) {
-      alert('Cannot delete all blocks')
+      showToast('Cannot delete all blocks', 'error')
       return
     }
     const newBlocks = blocks.filter((_, i) => !selectedIndices.has(i))

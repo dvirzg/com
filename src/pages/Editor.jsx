@@ -4,6 +4,7 @@ import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotes } from '../contexts/NotesContext'
+import { useToast } from '../contexts/ToastContext'
 import NotionEditor from '../components/NotionEditor'
 
 const Editor = () => {
@@ -11,6 +12,7 @@ const Editor = () => {
   const [searchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
   const { refetch, getNoteForEdit } = useNotes()
+  const { showToast } = useToast()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [alignment, setAlignment] = useState([])
@@ -115,7 +117,7 @@ const Editor = () => {
       .single()
 
     if (error) {
-      alert('Error creating category: ' + error.message)
+      showToast('Error creating category: ' + error.message, 'error')
     } else {
       setAllCategories([...allCategories, data])
       setSelectedCategories([...selectedCategories, data])
@@ -158,11 +160,11 @@ const Editor = () => {
 
   const handleSaveDraft = async () => {
     if (!title.trim()) {
-      alert('Please enter a title')
+      showToast('Please enter a title', 'error')
       return
     }
     if (!content.trim()) {
-      alert('Please write some content')
+      showToast('Please write some content', 'error')
       return
     }
 
@@ -181,7 +183,7 @@ const Editor = () => {
         .eq('id', noteId)
 
       if (error) {
-        alert('Error saving draft: ' + error.message)
+        showToast('Error saving draft: ' + error.message, 'error')
       } else {
         await saveCategoriesForNote(noteId)
         refetch()
@@ -199,7 +201,7 @@ const Editor = () => {
       ]).select()
 
       if (error) {
-        alert('Error saving draft: ' + error.message)
+        showToast('Error saving draft: ' + error.message, 'error')
       } else {
         await saveCategoriesForNote(data[0].id)
         refetch()
@@ -211,11 +213,11 @@ const Editor = () => {
 
   const handlePublish = async () => {
     if (!title.trim()) {
-      alert('Please enter a title')
+      showToast('Please enter a title', 'error')
       return
     }
     if (!content.trim()) {
-      alert('Please write some content')
+      showToast('Please write some content', 'error')
       return
     }
 
@@ -240,7 +242,7 @@ const Editor = () => {
         .eq('id', noteId)
 
       if (error) {
-        alert('Error publishing note: ' + error.message)
+        showToast('Error publishing note: ' + error.message, 'error')
       } else {
         await saveCategoriesForNote(noteId)
         refetch()
@@ -259,7 +261,7 @@ const Editor = () => {
       ]).select()
 
       if (error) {
-        alert('Error publishing note: ' + error.message)
+        showToast('Error publishing note: ' + error.message, 'error')
       } else {
         await saveCategoriesForNote(data[0].id)
         refetch()

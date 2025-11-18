@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { NotesProvider } from './contexts/NotesContext'
+import { ToastProvider } from './contexts/ToastContext'
 import { BACKGROUND_COLORS } from './constants/colors'
 import Navbar from './components/Navbar'
 import AppRouter from './components/AppRouter'
@@ -15,16 +16,18 @@ const Analytics = lazy(() =>
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <NotesProvider>
-          <BrowserRouter>
-            <AppContent />
-            <Suspense fallback={null}>
-              <Analytics />
-            </Suspense>
-          </BrowserRouter>
-        </NotesProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <NotesProvider>
+            <BrowserRouter>
+              <AppContent />
+              <Suspense fallback={null}>
+                <Analytics />
+              </Suspense>
+            </BrowserRouter>
+          </NotesProvider>
+        </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
   )
 }
