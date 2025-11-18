@@ -7,6 +7,7 @@ import { ToastProvider } from './contexts/ToastContext'
 import { BACKGROUND_COLORS } from './constants/colors'
 import Navbar from './components/Navbar'
 import AppRouter from './components/AppRouter'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy load Analytics to avoid blocking initial render
 const Analytics = lazy(() =>
@@ -15,20 +16,22 @@ const Analytics = lazy(() =>
 
 function App() {
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <NotesProvider>
-            <BrowserRouter>
-              <AppContent />
-              <Suspense fallback={null}>
-                <Analytics />
-              </Suspense>
-            </BrowserRouter>
-          </NotesProvider>
-        </AuthProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <NotesProvider>
+              <BrowserRouter>
+                <AppContent />
+                <Suspense fallback={null}>
+                  <Analytics />
+                </Suspense>
+              </BrowserRouter>
+            </NotesProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 
