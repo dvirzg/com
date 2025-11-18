@@ -1,37 +1,43 @@
 import { supabase } from '../lib/supabase'
 
+export interface Category {
+  id: string
+  name: string
+  created_at?: string
+}
+
 export const categoryService = {
-  async getAllCategories() {
+  async getAllCategories(): Promise<Category[]> {
     const { data, error } = await supabase
       .from('categories')
       .select('*')
       .order('name')
 
     if (error) return []
-    return data
+    return data as Category[]
   },
 
-  async createCategory(name) {
+  async createCategory(name: string): Promise<{ data: Category | null; error: Error | null }> {
     const { data, error } = await supabase
       .from('categories')
       .insert([{ name }])
       .select()
       .single()
 
-    return { data, error }
+    return { data: data as Category || null, error }
   },
 
-  async getNoteCategories(noteId) {
+  async getNoteCategories(noteId: string): Promise<Category[]> {
     const { data, error } = await supabase
       .from('note_categories')
       .select('category_id, categories(id, name)')
       .eq('note_id', noteId)
 
     if (error) return []
-    return data.map(nc => nc.categories)
+    return data.map((nc: any) => nc.categories) as Category[]
   },
 
-  async saveNoteCategories(noteId, categoryIds) {
+  async saveNoteCategories(noteId: string, categoryIds: string[]): Promise<{ error: Error | null }> {
     // Delete existing associations
     await supabase
       .from('note_categories')

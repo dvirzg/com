@@ -1,7 +1,32 @@
 import { supabase } from '../lib/supabase'
 
+export interface Note {
+  id: string
+  title: string
+  content: string
+  alignment?: string
+  published: boolean
+  published_at?: string
+  created_at: string
+  updated_at: string
+  categories?: Category[]
+}
+
+export interface Category {
+  id: string
+  name: string
+}
+
+export interface NoteData {
+  title: string
+  content: string
+  alignment?: string
+  published?: boolean
+  published_at?: string
+}
+
 export const noteService = {
-  async getNote(id) {
+  async getNote(id: string): Promise<Note | null> {
     const { data, error } = await supabase
       .from('notes')
       .select('*, categories(id, name)')
@@ -10,10 +35,10 @@ export const noteService = {
       .single()
 
     if (error) return null
-    return data
+    return data as Note
   },
 
-  async getNoteForEdit(id) {
+  async getNoteForEdit(id: string): Promise<Note | null> {
     const { data, error } = await supabase
       .from('notes')
       .select('*, categories(id, name)')
@@ -21,19 +46,19 @@ export const noteService = {
       .single()
 
     if (error) return null
-    return data
+    return data as Note
   },
 
-  async createNote(noteData) {
+  async createNote(noteData: NoteData): Promise<{ data: Note | null; error: Error | null }> {
     const { data, error } = await supabase
       .from('notes')
       .insert([noteData])
       .select()
 
-    return { data: data?.[0], error }
+    return { data: data?.[0] as Note || null, error }
   },
 
-  async updateNote(id, noteData) {
+  async updateNote(id: string, noteData: Partial<NoteData>): Promise<{ error: Error | null }> {
     const { error } = await supabase
       .from('notes')
       .update(noteData)
@@ -42,7 +67,7 @@ export const noteService = {
     return { error }
   },
 
-  async deleteNote(id) {
+  async deleteNote(id: string): Promise<{ error: Error | null }> {
     const { error } = await supabase
       .from('notes')
       .delete()
@@ -51,7 +76,7 @@ export const noteService = {
     return { error }
   },
 
-  async getAllNotes(published = true) {
+  async getAllNotes(published: boolean | null = true): Promise<Note[]> {
     const query = supabase
       .from('notes')
       .select('*')
@@ -64,6 +89,6 @@ export const noteService = {
     const { data, error } = await query
 
     if (error) return []
-    return data
+    return data as Note[]
   }
 }

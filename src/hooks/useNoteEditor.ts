@@ -1,12 +1,35 @@
 import { useState, useCallback } from 'react'
-import { noteService } from '../services/noteService'
+import { noteService, NoteData } from '../services/noteService'
 import { useToast } from '../contexts/ToastContext'
 
-export const useNoteEditor = () => {
+interface SaveResult {
+  error?: string | Error
+  data?: { id: string }
+}
+
+interface UseNoteEditorReturn {
+  loading: boolean
+  saveDraft: (
+    noteData: NoteData,
+    noteId: string | null,
+    onSuccess?: (savedNote: { id: string }) => void | Promise<void>
+  ) => Promise<SaveResult>
+  publishNote: (
+    noteData: NoteData & { published_at?: string },
+    noteId: string | null,
+    onSuccess?: (savedNote: { id: string }) => void | Promise<void>
+  ) => Promise<SaveResult>
+}
+
+export const useNoteEditor = (): UseNoteEditorReturn => {
   const { showToast } = useToast()
   const [loading, setLoading] = useState(false)
 
-  const saveDraft = useCallback(async (noteData, noteId = null, onSuccess) => {
+  const saveDraft = useCallback(async (
+    noteData: NoteData,
+    noteId: string | null = null,
+    onSuccess?: (savedNote: { id: string }) => void | Promise<void>
+  ): Promise<SaveResult> => {
     if (!noteData.title.trim()) {
       showToast('Please enter a title', 'error')
       return { error: 'Title required' }
@@ -18,7 +41,7 @@ export const useNoteEditor = () => {
 
     setLoading(true)
 
-    const payload = {
+    const payload: NoteData = {
       ...noteData,
       published: false
     }
@@ -38,13 +61,17 @@ export const useNoteEditor = () => {
     }
 
     if (onSuccess) {
-      onSuccess(result.data || { id: noteId })
+      await onSuccess(result.data || { id: noteId! })
     }
 
     return result
   }, [showToast])
 
-  const publishNote = useCallback(async (noteData, noteId = null, onSuccess) => {
+  const publishNote = useCallback(async (
+    noteData: NoteData & { published_at?: string },
+    noteId: string | null = null,
+    onSuccess?: (savedNote: { id: string }) => void | Promise<void>
+  ): Promise<SaveResult> => {
     if (!noteData.title.trim()) {
       showToast('Please enter a title', 'error')
       return { error: 'Title required' }
@@ -60,7 +87,7 @@ export const useNoteEditor = () => {
       ? new Date(noteData.published_at).toISOString()
       : new Date().toISOString()
 
-    const payload = {
+    const payload: NoteData = {
       ...noteData,
       published: true,
       published_at: publishedAtTimestamp
@@ -81,7 +108,7 @@ export const useNoteEditor = () => {
     }
 
     if (onSuccess) {
-      onSuccess(result.data || { id: noteId })
+      await onSuccess(result.data || { id: noteId! })
     }
 
     return result

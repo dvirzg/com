@@ -1,11 +1,24 @@
 import { useState, useEffect, useCallback } from 'react'
-import { categoryService } from '../services/categoryService'
+import { categoryService, Category } from '../services/categoryService'
 import { useToast } from '../contexts/ToastContext'
 
-export const useCategoryManager = (noteId) => {
+interface UseCategoryManagerReturn {
+  allCategories: Category[]
+  selectedCategories: Category[]
+  newCategoryInput: string
+  setNewCategoryInput: (value: string) => void
+  showCategoryInput: boolean
+  setShowCategoryInput: (value: boolean) => void
+  handleAddCategory: () => Promise<void>
+  handleRemoveCategory: (categoryId: string) => void
+  handleToggleCategory: (category: Category) => void
+  saveCategories: (noteId: string) => Promise<{ error: Error | null }>
+}
+
+export const useCategoryManager = (noteId: string | null): UseCategoryManagerReturn => {
   const { showToast } = useToast()
-  const [allCategories, setAllCategories] = useState([])
-  const [selectedCategories, setSelectedCategories] = useState([])
+  const [allCategories, setAllCategories] = useState<Category[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
   const [newCategoryInput, setNewCategoryInput] = useState('')
   const [showCategoryInput, setShowCategoryInput] = useState(false)
 
@@ -24,7 +37,7 @@ export const useCategoryManager = (noteId) => {
     setAllCategories(data)
   }
 
-  const loadNoteCategories = async (id) => {
+  const loadNoteCategories = async (id: string) => {
     const data = await categoryService.getNoteCategories(id)
     setSelectedCategories(data)
   }
@@ -47,7 +60,7 @@ export const useCategoryManager = (noteId) => {
 
     if (error) {
       showToast('Error creating category: ' + error.message, 'error')
-    } else {
+    } else if (data) {
       setAllCategories([...allCategories, data])
       setSelectedCategories([...selectedCategories, data])
       setNewCategoryInput('')
@@ -55,11 +68,11 @@ export const useCategoryManager = (noteId) => {
     }
   }, [newCategoryInput, allCategories, selectedCategories, showToast])
 
-  const handleRemoveCategory = useCallback((categoryId) => {
+  const handleRemoveCategory = useCallback((categoryId: string) => {
     setSelectedCategories(selectedCategories.filter(c => c.id !== categoryId))
   }, [selectedCategories])
 
-  const handleToggleCategory = useCallback((category) => {
+  const handleToggleCategory = useCallback((category: Category) => {
     const isSelected = selectedCategories.find(c => c.id === category.id)
     if (isSelected) {
       setSelectedCategories(selectedCategories.filter(c => c.id !== category.id))
@@ -68,7 +81,7 @@ export const useCategoryManager = (noteId) => {
     }
   }, [selectedCategories])
 
-  const saveCategories = useCallback(async (noteId) => {
+  const saveCategories = useCallback(async (noteId: string) => {
     const categoryIds = selectedCategories.map(cat => cat.id)
     return await categoryService.saveNoteCategories(noteId, categoryIds)
   }, [selectedCategories])
