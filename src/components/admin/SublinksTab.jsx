@@ -44,12 +44,29 @@ const SublinksTab = () => {
       const fileName = `${formData.slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.${fileExt}`
       filePath = `files/${fileName}`
 
+      // Check if file already exists
+      const { data: existingFiles } = await supabase.storage
+        .from('sublinks')
+        .list('files', { search: fileName })
+
+      if (existingFiles && existingFiles.length > 0) {
+        // File exists, try to remove it first
+        const { error: removeError } = await supabase.storage
+          .from('sublinks')
+          .remove([filePath])
+
+        if (removeError) {
+          console.error('Error removing existing file:', removeError)
+        }
+      }
+
       const { error: uploadError } = await supabase.storage
         .from('sublinks')
-        .upload(filePath, selectedFile, { upsert: true })
+        .upload(filePath, selectedFile)
 
       if (uploadError) {
-        alert('Error uploading file: ' + uploadError.message)
+        console.error('Upload error details:', uploadError)
+        alert('Error uploading file: ' + uploadError.message + '\nTry using a different slug or manually delete the existing file from storage.')
         setUploadProgress(false)
         return
       }
@@ -108,7 +125,11 @@ const SublinksTab = () => {
 
     // Delete file from storage if it exists
     if (sublink?.file_path) {
-      await supabase.storage.from('sublinks').remove([sublink.file_path])
+      const { error: storageError } = await supabase.storage.from('sublinks').remove([sublink.file_path])
+      if (storageError) {
+        console.error('Error deleting file from storage:', storageError)
+        alert('Warning: Could not delete file from storage: ' + storageError.message)
+      }
     }
 
     const { error } = await supabase.from('sublinks').delete().eq('id', id)
