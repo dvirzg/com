@@ -45,7 +45,7 @@ const SublinksTab = () => {
       .from('sublinks')
       .select('*')
       .eq('slug', normalizedSlug)
-      .single()
+      .maybeSingle()
 
     // Handle file upload
     if (formData.type === 'file' && selectedFile) {
