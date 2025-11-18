@@ -63,17 +63,38 @@ const Sublinks = () => {
     let finalUrl = formData.url
     let filePath = null
 
+    const normalizedSlug = formData.slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+
+    // Check if a sublink with this slug already exists
+    const { data: existingSublink } = await supabase
+      .from('sublinks')
+      .select('*')
+      .eq('slug', normalizedSlug)
+      .single()
+
     // Handle file upload
     if (formData.type === 'file' && selectedFile) {
       const fileExt = selectedFile.name.split('.').pop()
-      const fileName = `${formData.slug.toLowerCase().replace(/\s+/g, '-')}.${fileExt}`
+      const fileName = `${normalizedSlug}.${fileExt}`
       filePath = `files/${fileName}`
+
+      // If there's an existing sublink with a file, delete the old file first
+      if (existingSublink?.file_path) {
+        const { error: removeError } = await supabase.storage
+          .from('sublinks')
+          .remove([existingSublink.file_path])
+
+        if (removeError) {
+          console.error('Error removing existing file:', removeError)
+        }
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('sublinks')
         .upload(filePath, selectedFile, { upsert: true })
 
       if (uploadError) {
+        console.error('Upload error details:', uploadError)
         alert('Error uploading file: ' + uploadError.message)
         setUploadProgress(false)
         return
@@ -91,23 +112,29 @@ const Sublinks = () => {
       return
     }
 
-    const { error } = await supabase.from('sublinks').insert([
+    // Use upsert to handle both insert and update cases
+    const { error } = await supabase.from('sublinks').upsert([
       {
-        slug: formData.slug.toLowerCase().replace(/\s+/g, '-'),
+        slug: normalizedSlug,
         url: finalUrl,
         type: formData.type,
         file_path: filePath,
       },
-    ])
+    ], {
+      onConflict: 'slug'
+    })
 
     if (error) {
+      console.error('Error creating/updating sublink:', error)
       alert('Error creating sublink: ' + error.message)
-    } else {
-      setFormData({ slug: '', url: '', type: 'url' })
-      setSelectedFile(null)
-      setShowAddForm(false)
-      fetchSublinks()
+      setUploadProgress(false)
+      return
     }
+
+    setFormData({ slug: '', url: '', type: 'url' })
+    setSelectedFile(null)
+    setShowAddForm(false)
+    fetchSublinks()
     setUploadProgress(false)
   }
 
@@ -131,18 +158,39 @@ const Sublinks = () => {
     // Find the sublink to check if it has a file to delete
     const sublink = sublinks.find(s => s.id === id)
 
+    let storageDeleted = true
+    let dbDeleted = false
+
     // Delete file from storage if it exists
     if (sublink?.file_path) {
-      await supabase.storage.from('sublinks').remove([sublink.file_path])
+      const { error: storageError } = await supabase.storage.from('sublinks').remove([sublink.file_path])
+      if (storageError) {
+        console.error('Error deleting file from storage:', storageError)
+        storageDeleted = false
+        alert('Warning: Could not delete file from storage: ' + storageError.message + '\nWill still attempt to delete the database entry.')
+      }
     }
 
-    const { error } = await supabase.from('sublinks').delete().eq('id', id)
+    // Delete from database
+    const { error: dbError } = await supabase.from('sublinks').delete().eq('id', id)
 
-    if (error) {
-      alert('Error deleting sublink: ' + error.message)
-    } else {
-      fetchSublinks()
+    if (dbError) {
+      console.error('Error deleting sublink from database:', dbError)
+      alert('Error deleting sublink from database: ' + dbError.message + '\n\nThis might be due to permission issues. Please check:\n1. You are logged in as an admin\n2. RLS policies are properly configured\n3. Try deleting from Supabase dashboard')
+      return
     }
+
+    dbDeleted = true
+
+    // Provide feedback on what was deleted
+    if (dbDeleted && storageDeleted) {
+      console.log('Successfully deleted sublink and file')
+    } else if (dbDeleted && !storageDeleted) {
+      console.log('Deleted sublink from database but file deletion failed')
+      alert('Sublink deleted, but the associated file may still exist in storage. You may need to manually delete it.')
+    }
+
+    fetchSublinks()
   }
 
   const handleFileChange = (e) => {
