@@ -10,7 +10,7 @@ import ScrollToTop from '../components/ScrollToTop'
 
 const Sublinks = () => {
   const navigate = useNavigate()
-  const { isAdmin } = useAuth()
+  const { user, isAdmin } = useAuth()
   const [sublinks, setSublinks] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
