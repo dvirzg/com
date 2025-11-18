@@ -112,17 +112,31 @@ const Sublinks = () => {
       return
     }
 
-    // Use upsert to handle both insert and update cases
-    const { error } = await supabase.from('sublinks').upsert([
-      {
-        slug: normalizedSlug,
-        url: finalUrl,
-        type: formData.type,
-        file_path: filePath,
-      },
-    ], {
-      onConflict: 'slug'
-    })
+    // Insert or update based on whether the slug already exists
+    let error
+    if (existingSublink) {
+      // Update the existing sublink
+      const result = await supabase
+        .from('sublinks')
+        .update({
+          url: finalUrl,
+          type: formData.type,
+          file_path: filePath,
+        })
+        .eq('id', existingSublink.id)
+      error = result.error
+    } else {
+      // Insert new sublink
+      const result = await supabase.from('sublinks').insert([
+        {
+          slug: normalizedSlug,
+          url: finalUrl,
+          type: formData.type,
+          file_path: filePath,
+        },
+      ])
+      error = result.error
+    }
 
     if (error) {
       console.error('Error creating/updating sublink:', error)
