@@ -13,7 +13,7 @@ import ReactMarkdown from 'react-markdown'
 
 const Notes = () => {
   const { notes, loading, refetch, deleteNote } = useNotes()
-  const { user, isAdmin } = useAuth()
+  const { isAdmin } = useAuth()
   const { isDark, backgroundColor } = useTheme()
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, noteId: null, noteTitle: '' })
   const [allCategories, setAllCategories] = useState([])

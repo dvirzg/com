@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { logger } from '../lib/logger'
 
 const NotesContext = createContext({})
 
@@ -62,7 +63,7 @@ export const NotesProvider = ({ children }) => {
       }))
       setDrafts(draftsWithCategories)
     } else {
-      console.error('Error fetching drafts:', error)
+      logger.error('Error fetching drafts:', error)
     }
     setDraftsLoading(false)
   }

@@ -11,8 +11,6 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { useTheme } from '../contexts/ThemeContext'
-import { BACKGROUND_COLORS } from '../constants/colors'
 import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
 
@@ -111,7 +109,7 @@ const CustomPage = () => {
             remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
             rehypePlugins={[rehypeKatex]}
             components={{
-              code({ node, inline, className, children, ...props }) {
+              code({ inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '')
                 const language = match ? match[1] : ''
 

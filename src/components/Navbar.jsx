@@ -1,11 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Moon, Sun } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
-import { supabase } from '../lib/supabase'
+import { pageService } from '../services/pageService'
 
 const Navbar = () => {
   const { user, signOut, isAdmin, getFirstName } = useAuth()
@@ -18,6 +18,7 @@ const Navbar = () => {
 
   useEffect(() => {
     loadCustomPages()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -38,39 +39,35 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [lastScrollY])
 
-  const loadCustomPages = async () => {
-    const { data } = await supabase
-      .from('pages')
-      .select('slug, title, nav_order')
-      .eq('show_in_nav', true)
-      .order('nav_order', { ascending: true })
+  const loadCustomPages = useCallback(async () => {
+    const data = await pageService.getNavPages()
+    setCustomPages(data)
+  }, [])
 
-    if (data) {
-      setCustomPages(data)
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { name: 'Notes', path: '/notes' },
+      { name: 'Career', path: '/career' },
+    ]
+
+    if (isAdmin()) {
+      baseTabs.push({ name: 'Drafts', path: '/drafts' })
     }
-  }
 
-  const tabs = [
-    { name: 'Notes', path: '/notes' },
-    { name: 'Career', path: '/career' },
-  ]
+    customPages.forEach((page) => {
+      baseTabs.push({ name: page.title, path: `/${page.slug}` })
+    })
 
-  if (isAdmin()) {
-    tabs.push({ name: 'Drafts', path: '/drafts' })
-  }
+    if (isAdmin()) {
+      baseTabs.push({ name: 'Admin', path: '/admin' })
+    }
 
-  // Add custom pages to tabs
-  customPages.forEach((page) => {
-    tabs.push({ name: page.title, path: `/${page.slug}` })
-  })
+    return baseTabs
+  }, [customPages, isAdmin])
 
-  if (isAdmin()) {
-    tabs.push({ name: 'Admin', path: '/admin' })
-  }
+  const isActive = useCallback((path) => location.pathname === path, [location.pathname])
 
-  const isActive = (path) => location.pathname === path
-
-  const handleLogoClick = (e) => {
+  const handleLogoClick = useCallback((e) => {
     if (location.pathname === '/') {
       e.preventDefault()
       // Find the home page container and scroll it to the top
@@ -82,11 +79,13 @@ const Navbar = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     }
-  }
+  }, [location.pathname])
 
-  const bgColor = isDark
+  const bgColor = useMemo(() => isDark
     ? 'rgba(0, 0, 0, 0.8)'
-    : `${BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white}B3` // B3 = 70% opacity in hex
+    : `${BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white}B3`, // B3 = 70% opacity in hex
+    [isDark, backgroundColor]
+  )
 
   return (
     <nav

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
@@ -7,11 +7,36 @@ import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon, GripVertical } from 'lucide-react'
-import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
-import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../contexts/ToastContext'
+import { uploadMedia, generateMarkdown } from '../../lib/mediaUpload'
+import { useToast } from '../../contexts/ToastContext'
 
-const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNavigate, onAddBelow, isLast, isSelected, isMultiSelected, onSelect, onMultiSelect, canDelete, isAnyBlockEditing, isAnyBlockSelected, onEditingChange, userId, isHovered, onHover, onDragStart, onDragOver, onDrop, isDraggedOver, isDragging, index }) => {
+const EditorBlock = memo(({
+  content,
+  alignment,
+  onChange,
+  onAlignmentChange,
+  onDelete,
+  onNavigate,
+  onAddBelow,
+  isLast,
+  isSelected,
+  isMultiSelected,
+  onSelect,
+  onMultiSelect,
+  canDelete,
+  isAnyBlockEditing,
+  isAnyBlockSelected,
+  onEditingChange,
+  userId,
+  isHovered,
+  onHover,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  isDraggedOver,
+  isDragging,
+  index
+}) => {
   const { showToast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [text, setText] = useState(content)
@@ -26,7 +51,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     if (onEditingChange) {
       onEditingChange(isEditing)
     }
-  }, [isEditing])
+  }, [isEditing, onEditingChange])
 
   useEffect(() => {
     setText(content)
@@ -53,21 +78,17 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   }
 
   const handleClick = (e) => {
-    // Cmd+click or Ctrl+click for multi-select
     if (e.metaKey || e.ctrlKey) {
       e.preventDefault()
       onMultiSelect()
     } else if (!isSelected && !isMultiSelected) {
-      // First click: select the block
       onSelect()
     } else if ((isSelected || isMultiSelected) && !isEditing) {
-      // Second click on already selected block: start editing
       setIsEditing(true)
     }
   }
 
   const handleDoubleClick = () => {
-    // Double click: select and start editing immediately
     onSelect()
     setIsEditing(true)
   }
@@ -78,15 +99,12 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   }
 
   const handleBlur = (e) => {
-    // Don't blur if clicking the add button or within the drop zone
     if (e?.relatedTarget?.classList?.contains('add-block-btn')) {
       return
     }
-    // Check if clicking within the drop zone
     if (e?.relatedTarget && blockRef.current?.contains(e.relatedTarget)) {
       return
     }
-    // Only finish editing if we're still in editing mode
     if (isEditing) {
       finishEditing()
       setShowDropZone(false)
@@ -110,9 +128,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       e.preventDefault()
       onDelete()
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      // Stop propagation to prevent block navigation when editing
       e.stopPropagation()
-      // Allow default textarea behavior for cursor movement
     }
   }
 
@@ -122,7 +138,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       setIsEditing(true)
     } else if (e.key === 'Escape' && !isEditing) {
       e.preventDefault()
-      onSelect(null) // Deselect
+      onSelect(null)
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       onNavigate('up', e.shiftKey)
@@ -161,7 +177,6 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       return
     }
 
-    // Generate markdown and insert into text
     const markdown = generateMarkdown(url, file.name, file.type)
     const newText = text ? `${text}\n${markdown}` : markdown
     setText(newText)
@@ -185,7 +200,6 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     if (file) {
       handleFileUpload(file)
     }
-    // Reset input so same file can be selected again
     e.target.value = ''
   }
 
@@ -198,7 +212,6 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   const handleDragLeave = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    // Only hide if leaving the entire drop zone area
     if (e.currentTarget.contains(e.relatedTarget)) return
     setIsFileDragging(false)
   }
@@ -246,7 +259,6 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
         >
         {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
           <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
-          {/* Drag handle - always visible */}
           <div
             className="p-2 cursor-grab active:cursor-grabbing text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
             title="Drag to reorder"
@@ -376,11 +388,11 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
                   br: () => <br />,
                   hr: () => <hr className="my-4 border-zinc-300 dark:border-zinc-700" />,
                   img: ({src, alt, title}) => (
-                    <img 
-                      src={src} 
-                      alt={alt} 
-                      title={title} 
-                      className="max-w-full h-auto rounded-lg shadow-sm hover:shadow-md transition-shadow" 
+                    <img
+                      src={src}
+                      alt={alt}
+                      title={title}
+                      className="max-w-full h-auto rounded-lg shadow-sm hover:shadow-md transition-shadow"
                       onError={(e) => {
                         e.target.style.display = 'none';
                       }}
@@ -432,7 +444,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
                   code({ inline, className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || '')
                     const language = match ? match[1] : ''
-                    
+
                     if (!inline && language) {
                       return (
                         <SyntaxHighlighter
@@ -446,7 +458,7 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
                         </SyntaxHighlighter>
                       )
                     }
-                    
+
                     return (
                       <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                         {children}
@@ -474,7 +486,6 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
         </div>
       )}
 
-      {/* Drop zone - shows when button is clicked and block is selected or editing */}
       {showDropZone && (isSelected || isEditing) && (
         <div
           className="mt-2 p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-900/30 transition-colors cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -530,344 +541,8 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       </div>
     </div>
   )
-}
+})
 
-const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentChange }) => {
-  const { user } = useAuth()
-  const { showToast } = useToast()
-  const editorRef = useRef(null)
-  const [blocks, setBlocks] = useState(() => {
-    if (!initialContent || initialContent.trim() === '') return ['']
-    return initialContent.split('\n\n')
-  })
-  const [alignments, setAlignments] = useState(() => {
-    if (!initialAlignment || Object.keys(initialAlignment).length === 0) {
-      // Default all blocks to left alignment
-      const initialBlocks = !initialContent || initialContent.trim() === '' ? [''] : initialContent.split('\n\n')
-      return initialBlocks.map(() => 'left')
-    }
-    return initialAlignment
-  })
-  const [selectedIndex, setSelectedIndex] = useState(null)
-  const [selectedIndices, setSelectedIndices] = useState(new Set())
-  const [editingIndex, setEditingIndex] = useState(null)
-  const [hoveredIndex, setHoveredIndex] = useState(null)
-  const [draggedIndex, setDraggedIndex] = useState(null)
-  const [draggedOverIndex, setDraggedOverIndex] = useState(null)
+EditorBlock.displayName = 'EditorBlock'
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (editorRef.current && !editorRef.current.contains(event.target)) {
-        setSelectedIndex(null)
-        setSelectedIndices(new Set())
-      }
-    }
-
-    const handleKeyDown = (event) => {
-      // Cmd+A or Ctrl+A to select all
-      if ((event.metaKey || event.ctrlKey) && event.key === 'a' && editingIndex === null) {
-        event.preventDefault()
-        const allIndices = new Set(blocks.map((_, i) => i))
-        setSelectedIndices(allIndices)
-        setSelectedIndex(null)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [blocks, editingIndex])
-
-  useEffect(() => {
-    onChange(blocks.join('\n\n'))
-  }, [blocks])
-
-  useEffect(() => {
-    if (onAlignmentChange) {
-      onAlignmentChange(alignments)
-    }
-  }, [alignments])
-
-  const handleBlockChange = (index, newContent) => {
-    const newBlocks = [...blocks]
-    newBlocks[index] = newContent
-    setBlocks(newBlocks)
-  }
-
-  const handleAlignmentChange = (index, newAlignment) => {
-    const newAlignments = [...alignments]
-    newAlignments[index] = newAlignment
-    setAlignments(newAlignments)
-  }
-
-  const addNewBlockAfter = (index) => {
-    const newBlocks = [...blocks]
-    const newAlignments = [...alignments]
-    newBlocks.splice(index + 1, 0, '')
-    newAlignments.splice(index + 1, 0, 'left')
-    setBlocks(newBlocks)
-    setAlignments(newAlignments)
-    setSelectedIndex(index + 1)
-  }
-
-  const handleDelete = (index) => {
-    // Only allow deletion if there's more than one block
-    if (blocks.length <= 1) return
-    const newBlocks = blocks.filter((_, i) => i !== index)
-    const newAlignments = alignments.filter((_, i) => i !== index)
-    setBlocks(newBlocks)
-    setAlignments(newAlignments)
-    setSelectedIndex(index > 0 ? index - 1 : 0)
-  }
-
-  const handleNavigate = (index, direction, isShiftKey) => {
-    if (isShiftKey) {
-      // Shift+arrow: extend selection
-      const newIndices = new Set(selectedIndices)
-      if (selectedIndex !== null) {
-        newIndices.add(selectedIndex)
-      }
-      newIndices.add(index)
-
-      if (direction === 'up' && index > 0) {
-        newIndices.add(index - 1)
-      } else if (direction === 'down' && index < blocks.length - 1) {
-        newIndices.add(index + 1)
-      }
-
-      setSelectedIndices(newIndices)
-      if (direction === 'up' && index > 0) {
-        setSelectedIndex(index - 1)
-      } else if (direction === 'down' && index < blocks.length - 1) {
-        setSelectedIndex(index + 1)
-      }
-    } else {
-      // Regular arrow: move selection
-      setSelectedIndices(new Set())
-      if (direction === 'up' && index > 0) {
-        setSelectedIndex(index - 1)
-      } else if (direction === 'down' && index < blocks.length - 1) {
-        setSelectedIndex(index + 1)
-      }
-    }
-  }
-
-  const handleSelect = (index, deselect) => {
-    if (deselect === null) {
-      setSelectedIndex(null)
-      setSelectedIndices(new Set())
-    } else {
-      setSelectedIndex(index)
-      setSelectedIndices(new Set())
-    }
-  }
-
-  const handleMultiSelect = (index) => {
-    const newIndices = new Set(selectedIndices)
-    if (newIndices.has(index)) {
-      newIndices.delete(index)
-    } else {
-      newIndices.add(index)
-    }
-    setSelectedIndices(newIndices)
-    setSelectedIndex(null)
-  }
-
-  const handleAlignmentChangeForBlock = (index, newAlignment) => {
-    if (selectedIndices.size > 0) {
-      // Apply to all selected blocks
-      const newAlignments = [...alignments]
-      selectedIndices.forEach(i => {
-        newAlignments[i] = newAlignment
-      })
-      setAlignments(newAlignments)
-    } else {
-      // Apply to single block
-      handleAlignmentChange(index, newAlignment)
-    }
-  }
-
-  const handleEditingChange = (index, isEditing) => {
-    if (isEditing) {
-      setEditingIndex(index)
-    } else if (editingIndex === index) {
-      setEditingIndex(null)
-    }
-  }
-
-  const isAnyBlockEditing = editingIndex !== null
-  const isAnyBlockSelected = selectedIndex !== null || selectedIndices.size > 0
-
-  const handleMultiSelectAlignmentChange = (newAlignment) => {
-    const newAlignments = [...alignments]
-    selectedIndices.forEach(i => {
-      newAlignments[i] = newAlignment
-    })
-    setAlignments(newAlignments)
-  }
-
-  const handleMultiSelectDelete = () => {
-    if (selectedIndices.size >= blocks.length) {
-      showToast('Cannot delete all blocks', 'error')
-      return
-    }
-    const newBlocks = blocks.filter((_, i) => !selectedIndices.has(i))
-    const newAlignments = alignments.filter((_, i) => !selectedIndices.has(i))
-    setBlocks(newBlocks)
-    setAlignments(newAlignments)
-    setSelectedIndices(new Set())
-  }
-
-  const handleHover = (index) => {
-    // Only allow hover if no blocks are selected or editing
-    if (!isAnyBlockEditing && !isAnyBlockSelected) {
-      setHoveredIndex(index)
-    }
-  }
-
-  const handleDragStart = (e, index) => {
-    setDraggedIndex(index)
-    e.dataTransfer.effectAllowed = 'move'
-
-    // Create a simple drag preview showing just the text content
-    const dragPreview = document.createElement('div')
-    dragPreview.textContent = blocks[index].substring(0, 50) + (blocks[index].length > 50 ? '...' : '')
-    dragPreview.style.position = 'absolute'
-    dragPreview.style.top = '-1000px'
-    dragPreview.style.padding = '8px 12px'
-    dragPreview.style.backgroundColor = 'white'
-    dragPreview.style.border = '1px solid #e5e7eb'
-    dragPreview.style.borderRadius = '6px'
-    dragPreview.style.fontSize = '14px'
-    dragPreview.style.maxWidth = '300px'
-    document.body.appendChild(dragPreview)
-    // Position cursor at right edge of preview, vertically centered
-    const previewWidth = 300 // maxWidth
-    e.dataTransfer.setDragImage(dragPreview, previewWidth, 20)
-    setTimeout(() => document.body.removeChild(dragPreview), 0)
-  }
-
-  const handleDragOver = (e, index) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    if (draggedIndex !== null && draggedIndex !== index) {
-      setDraggedOverIndex(index)
-    }
-  }
-
-  const handleDrop = (e, dropIndex) => {
-    e.preventDefault()
-
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null)
-      setDraggedOverIndex(null)
-      return
-    }
-
-    // Reorder blocks and alignments
-    const newBlocks = [...blocks]
-    const newAlignments = [...alignments]
-
-    const [movedBlock] = newBlocks.splice(draggedIndex, 1)
-    const [movedAlignment] = newAlignments.splice(draggedIndex, 1)
-
-    newBlocks.splice(dropIndex, 0, movedBlock)
-    newAlignments.splice(dropIndex, 0, movedAlignment)
-
-    setBlocks(newBlocks)
-    setAlignments(newAlignments)
-    setDraggedIndex(null)
-    setDraggedOverIndex(null)
-  }
-
-  return (
-    <div
-      ref={editorRef}
-      className="relative"
-      onMouseLeave={() => setHoveredIndex(null)}
-    >
-      {/* Floating toolbar for multi-select */}
-      {selectedIndices.size > 1 && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-2 flex gap-2 z-50">
-          <div className="flex items-center gap-1 border-r border-zinc-200 dark:border-zinc-800 pr-2">
-            <span className="text-sm text-zinc-600 dark:text-zinc-400 px-2">
-              {selectedIndices.size} selected
-            </span>
-          </div>
-          <button
-            onClick={() => handleMultiSelectAlignmentChange('left')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
-            title="Align left"
-          >
-            <AlignLeft size={16} />
-          </button>
-          <button
-            onClick={() => handleMultiSelectAlignmentChange('center')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
-            title="Align center"
-          >
-            <AlignCenter size={16} />
-          </button>
-          <button
-            onClick={() => handleMultiSelectAlignmentChange('right')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
-            title="Align right"
-          >
-            <AlignRight size={16} />
-          </button>
-          <button
-            onClick={() => handleMultiSelectAlignmentChange('justify')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
-            title="Justify"
-          >
-            <AlignJustify size={16} />
-          </button>
-          <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800" />
-          <button
-            onClick={handleMultiSelectDelete}
-            className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors"
-            title="Delete selected blocks"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      )}
-
-      {blocks.map((block, index) => (
-        <Block
-          key={index}
-          index={index}
-          content={block}
-          alignment={alignments[index] || 'left'}
-          onChange={(newContent) => handleBlockChange(index, newContent)}
-          onAlignmentChange={(newAlignment) => handleAlignmentChangeForBlock(index, newAlignment)}
-          onDelete={() => handleDelete(index)}
-          onNavigate={(direction, isShiftKey) => handleNavigate(index, direction, isShiftKey)}
-          onAddBelow={() => addNewBlockAfter(index)}
-          onSelect={(deselect) => handleSelect(index, deselect)}
-          onMultiSelect={() => handleMultiSelect(index)}
-          onEditingChange={(isEditing) => handleEditingChange(index, isEditing)}
-          isSelected={selectedIndex === index}
-          isMultiSelected={selectedIndices.has(index)}
-          isLast={index === blocks.length - 1}
-          canDelete={blocks.length > 1}
-          isAnyBlockEditing={isAnyBlockEditing && editingIndex !== index}
-          isAnyBlockSelected={isAnyBlockSelected && selectedIndex !== index && !selectedIndices.has(index)}
-          userId={user?.id}
-          isHovered={hoveredIndex === index}
-          onHover={() => handleHover(index)}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          isDraggedOver={draggedOverIndex === index}
-          isDragging={draggedIndex === index}
-        />
-      ))}
-    </div>
-  )
-}
-
-export default NotionEditor
+export default EditorBlock

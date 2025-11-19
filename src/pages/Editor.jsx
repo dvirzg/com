@@ -1,31 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import 'katex/dist/katex.min.css'
-import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotes } from '../contexts/NotesContext'
 import NotionEditor from '../components/NotionEditor'
+import { useCategoryManager } from '../hooks/useCategoryManager'
+import { useNoteEditor } from '../hooks/useNoteEditor'
 
 const Editor = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
   const { refetch, getNoteForEdit } = useNotes()
+  const { loading, saveDraft, publishNote } = useNoteEditor()
+
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [alignment, setAlignment] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  const [_isEditing, setIsEditing] = useState(false)
   const [noteId, setNoteId] = useState(null)
   const [initialLoading, setInitialLoading] = useState(false)
   const [publishedAt, setPublishedAt] = useState('')
-  const [selectedCategories, setSelectedCategories] = useState([])
-  const [allCategories, setAllCategories] = useState([])
-  const [newCategoryInput, setNewCategoryInput] = useState('')
-  const [showCategoryInput, setShowCategoryInput] = useState(false)
+
+  const categoryManager = useCategoryManager(noteId)
 
   useEffect(() => {
-    loadCategories()
     const editId = searchParams.get('edit')
     if (editId) {
       setIsEditing(true)
@@ -34,46 +33,26 @@ const Editor = () => {
     }
   }, [searchParams])
 
-  const loadCategories = async () => {
-    const { data } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name')
-    if (data) {
-      setAllCategories(data)
-    }
-  }
-
   const loadNote = async (id) => {
     setInitialLoading(true)
     const note = await getNoteForEdit(id)
     if (note) {
       setTitle(note.title || '')
       setContent(note.content)
-      // Parse alignment data if it exists
       if (note.alignment) {
         try {
           const parsedAlignment = typeof note.alignment === 'string' ? JSON.parse(note.alignment) : note.alignment
           setAlignment(parsedAlignment)
-        } catch (e) {
+        } catch (_e) {
           setAlignment([])
         }
       } else {
         setAlignment([])
       }
-      // Set published_at if it exists, format for datetime-local input
       if (note.published_at) {
         const date = new Date(note.published_at)
         const formatted = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
         setPublishedAt(formatted)
-      }
-      // Load categories for this note
-      const { data: noteCategories } = await supabase
-        .from('note_categories')
-        .select('category_id, categories(id, name)')
-        .eq('note_id', id)
-      if (noteCategories) {
-        setSelectedCategories(noteCategories.map(nc => nc.categories))
       }
     } else {
       navigate('/notes')
@@ -91,182 +70,41 @@ const Editor = () => {
     return null
   }
 
-  const handleAddCategory = async () => {
-    const categoryName = newCategoryInput.trim()
-    if (!categoryName) return
-
-    // Check if category already exists
-    const existing = allCategories.find(c => c.name.toLowerCase() === categoryName.toLowerCase())
-    if (existing) {
-      // Add to selected if not already there
-      if (!selectedCategories.find(c => c.id === existing.id)) {
-        setSelectedCategories([...selectedCategories, existing])
-      }
-      setNewCategoryInput('')
-      setShowCategoryInput(false)
-      return
-    }
-
-    // Create new category
-    const { data, error } = await supabase
-      .from('categories')
-      .insert([{ name: categoryName }])
-      .select()
-      .single()
-
-    if (error) {
-      alert('Error creating category: ' + error.message)
-    } else {
-      setAllCategories([...allCategories, data])
-      setSelectedCategories([...selectedCategories, data])
-      setNewCategoryInput('')
-      setShowCategoryInput(false)
-    }
-  }
-
-  const handleRemoveCategory = (categoryId) => {
-    setSelectedCategories(selectedCategories.filter(c => c.id !== categoryId))
-  }
-
-  const handleToggleCategory = (category) => {
-    const isSelected = selectedCategories.find(c => c.id === category.id)
-    if (isSelected) {
-      setSelectedCategories(selectedCategories.filter(c => c.id !== category.id))
-    } else {
-      setSelectedCategories([...selectedCategories, category])
-    }
-  }
-
-  const saveCategoriesForNote = async (noteId) => {
-    // Delete existing category associations
-    await supabase
-      .from('note_categories')
-      .delete()
-      .eq('note_id', noteId)
-
-    // Insert new category associations
-    if (selectedCategories.length > 0) {
-      const insertData = selectedCategories.map(cat => ({
-        note_id: noteId,
-        category_id: cat.id
-      }))
-      await supabase
-        .from('note_categories')
-        .insert(insertData)
-    }
-  }
-
   const handleSaveDraft = async () => {
-    if (!title.trim()) {
-      alert('Please enter a title')
-      return
-    }
-    if (!content.trim()) {
-      alert('Please write some content')
-      return
+    const noteData = {
+      title,
+      content,
+      alignment: JSON.stringify(alignment)
     }
 
-    setLoading(true)
+    const result = await saveDraft(noteData, noteId, async (savedNote) => {
+      await categoryManager.saveCategories(savedNote.id)
+      refetch()
+      navigate('/drafts')
+    })
 
-    if (isEditing && noteId) {
-      // Update existing note as draft
-      const { error } = await supabase
-        .from('notes')
-        .update({
-          title,
-          content,
-          alignment: JSON.stringify(alignment),
-          published: false,
-        })
-        .eq('id', noteId)
-
-      if (error) {
-        alert('Error saving draft: ' + error.message)
-      } else {
-        await saveCategoriesForNote(noteId)
-        refetch()
-        navigate('/drafts')
-      }
-    } else {
-      // Create new draft
-      const { data, error } = await supabase.from('notes').insert([
-        {
-          title,
-          content,
-          alignment: JSON.stringify(alignment),
-          published: false,
-        },
-      ]).select()
-
-      if (error) {
-        alert('Error saving draft: ' + error.message)
-      } else {
-        await saveCategoriesForNote(data[0].id)
-        refetch()
-        navigate('/drafts')
-      }
+    if (!result.error) {
+      // Success handled in callback
     }
-    setLoading(false)
   }
 
   const handlePublish = async () => {
-    if (!title.trim()) {
-      alert('Please enter a title')
-      return
-    }
-    if (!content.trim()) {
-      alert('Please write some content')
-      return
+    const noteData = {
+      title,
+      content,
+      alignment: JSON.stringify(alignment),
+      published_at: publishedAt
     }
 
-    setLoading(true)
+    const result = await publishNote(noteData, noteId, async (savedNote) => {
+      await categoryManager.saveCategories(savedNote.id)
+      refetch()
+      navigate('/notes')
+    })
 
-    // Prepare the published_at timestamp
-    const publishedAtTimestamp = publishedAt
-      ? new Date(publishedAt).toISOString()
-      : new Date().toISOString()
-
-    if (isEditing && noteId) {
-      // Update existing note and publish
-      const { error } = await supabase
-        .from('notes')
-        .update({
-          title,
-          content,
-          alignment: JSON.stringify(alignment),
-          published: true,
-          published_at: publishedAtTimestamp,
-        })
-        .eq('id', noteId)
-
-      if (error) {
-        alert('Error publishing note: ' + error.message)
-      } else {
-        await saveCategoriesForNote(noteId)
-        refetch()
-        navigate('/notes')
-      }
-    } else {
-      // Create new note and publish
-      const { data, error } = await supabase.from('notes').insert([
-        {
-          title,
-          content,
-          alignment: JSON.stringify(alignment),
-          published: true,
-          published_at: publishedAtTimestamp,
-        },
-      ]).select()
-
-      if (error) {
-        alert('Error publishing note: ' + error.message)
-      } else {
-        await saveCategoriesForNote(data[0].id)
-        refetch()
-        navigate('/notes')
-      }
+    if (!result.error) {
+      // Success handled in callback
     }
-    setLoading(false)
   }
 
   return (
@@ -336,14 +174,14 @@ const Editor = () => {
                   Categories:
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {selectedCategories.map(cat => (
+                  {categoryManager.selectedCategories.map(cat => (
                     <span
                       key={cat.id}
                       className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-full"
                     >
                       {cat.name}
                       <button
-                        onClick={() => handleRemoveCategory(cat.id)}
+                        onClick={() => categoryManager.handleRemoveCategory(cat.id)}
                         className="hover:text-red-500"
                       >
                         ×
@@ -352,19 +190,19 @@ const Editor = () => {
                   ))}
                 </div>
 
-                {!showCategoryInput && (
+                {!categoryManager.showCategoryInput && (
                   <div className="flex flex-wrap gap-2">
-                    {allCategories.filter(cat => !selectedCategories.find(sc => sc.id === cat.id)).map(cat => (
+                    {categoryManager.allCategories.filter(cat => !categoryManager.selectedCategories.find(sc => sc.id === cat.id)).map(cat => (
                       <button
                         key={cat.id}
-                        onClick={() => handleToggleCategory(cat)}
+                        onClick={() => categoryManager.handleToggleCategory(cat)}
                         className="px-3 py-1 text-sm bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                       >
                         + {cat.name}
                       </button>
                     ))}
                     <button
-                      onClick={() => setShowCategoryInput(true)}
+                      onClick={() => categoryManager.setShowCategoryInput(true)}
                       className="px-3 py-1 text-sm bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors"
                     >
                       + New category
@@ -372,27 +210,27 @@ const Editor = () => {
                   </div>
                 )}
 
-                {showCategoryInput && (
+                {categoryManager.showCategoryInput && (
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      value={newCategoryInput}
-                      onChange={(e) => setNewCategoryInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                      value={categoryManager.newCategoryInput}
+                      onChange={(e) => categoryManager.setNewCategoryInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && categoryManager.handleAddCategory()}
                       placeholder="Category name..."
                       className="px-3 py-1.5 text-sm bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-zinc-600"
                       autoFocus
                     />
                     <button
-                      onClick={handleAddCategory}
+                      onClick={categoryManager.handleAddCategory}
                       className="px-3 py-1.5 text-sm bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg hover:opacity-80"
                     >
                       Add
                     </button>
                     <button
                       onClick={() => {
-                        setShowCategoryInput(false)
-                        setNewCategoryInput('')
+                        categoryManager.setShowCategoryInput(false)
+                        categoryManager.setNewCategoryInput('')
                       }}
                       className="px-3 py-1.5 text-sm bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white rounded-lg hover:opacity-80"
                     >
