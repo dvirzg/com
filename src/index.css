@@ -21,6 +21,48 @@
   html.dark *::-webkit-scrollbar-track { background: #1a1a1a; }
   html.dark *::-webkit-scrollbar-thumb { background: #3a3a3a; border: 2px solid #1a1a1a; }
   html.dark *::-webkit-scrollbar-thumb:hover { background: #4a4a4a; }
+
+  /* Notebook HTML output styles */
+  .notebook-html-output {
+    font-size: 0.875rem;
+    overflow-x: auto;
+  }
+
+  .notebook-html-output table {
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 0.875rem;
+    width: 100%;
+  }
+
+  .notebook-html-output table th,
+  .notebook-html-output table td {
+    border: 1px solid #e4e4e7;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  html.dark .notebook-html-output table th,
+  html.dark .notebook-html-output table td {
+    border-color: #3f3f46;
+  }
+
+  .notebook-html-output table thead th {
+    background-color: #f4f4f5;
+    font-weight: 600;
+  }
+
+  html.dark .notebook-html-output table thead th {
+    background-color: #27272a;
+  }
+
+  .notebook-html-output table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+
+  html.dark .notebook-html-output table tbody tr:nth-child(even) {
+    background-color: #18181b;
+  }
 }
 
 @variant dark (&:where(.dark, .dark *));

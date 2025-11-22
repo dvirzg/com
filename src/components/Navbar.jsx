@@ -47,6 +47,7 @@ const Navbar = () => {
   const tabs = useMemo(() => {
     const baseTabs = [
       { name: 'Notes', path: '/notes' },
+      { name: 'Browse', path: '/browse' },
       { name: 'Career', path: '/career' },
     ]
 

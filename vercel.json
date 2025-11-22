@@ -7,6 +7,14 @@
       "destination": "/api/markdown"
     },
     {
+      "source": "/api/notebooks",
+      "destination": "/api/notebooks"
+    },
+    {
+      "source": "/api/notebook-content",
+      "destination": "/api/notebook-content"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/check-curl?path=$1"
     }

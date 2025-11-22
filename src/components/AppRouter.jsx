@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import Home from '../pages/Home'
 import Notes from '../pages/Notes'
 import Note from '../pages/Note'
+import Browse from '../pages/Browse'
 import Login from '../pages/Login'
 import ProfileSetup from '../pages/ProfileSetup'
 import Editor from '../pages/Editor'
@@ -35,6 +36,7 @@ const AppRouter = () => {
       <Route path="/profile-setup" element={<ProfileSetup />} />
       <Route path="/notes" element={<Notes />} />
       <Route path="/notes/:id" element={<Note />} />
+      <Route path="/browse" element={<Browse />} />
       <Route path="/editor" element={<Editor />} />
       <Route path="/drafts" element={<Drafts />} />
       <Route path="/career" element={<Career />} />
