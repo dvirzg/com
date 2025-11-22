@@ -60,7 +60,15 @@ const Browse = () => {
     } catch (err) {
       console.error('Error fetching structure:', err)
       console.error('Error details:', err.message)
-      setError(`Failed to load notebooks: ${err.message}`)
+
+      // Check if it's a connection error (API server not running)
+      if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('HTTP error! status: 404')) {
+        setError('API server is not running. Please start it with: npm run dev:api')
+      } else if (err.message.includes('The string did not match the expected pattern')) {
+        setError('API server is not running. Please start it with: npm run dev:api')
+      } else {
+        setError(`Failed to load notebooks: ${err.message}`)
+      }
     } finally {
       setLoading(false)
     }
