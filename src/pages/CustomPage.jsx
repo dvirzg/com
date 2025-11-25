@@ -48,8 +48,12 @@ const CustomPage = () => {
       .single()
 
     if (sublinkData) {
-      // It's a sublink, redirect immediately
-      window.location.href = sublinkData.url
+      // Handle file sublinks through proxy, URL sublinks directly
+      if (sublinkData.type === 'file') {
+        window.location.href = `/api/file-proxy?slug=${slug}`
+      } else {
+        window.location.href = sublinkData.url
+      }
       return
     }
 

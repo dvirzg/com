@@ -98,12 +98,9 @@ const Sublinks = () => {
         return
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('sublinks')
-        .getPublicUrl(filePath)
-
-      finalUrl = publicUrl
+      // For files, we'll use a placeholder URL since files are served through the proxy
+      // The actual serving is handled by /api/file-proxy based on file_path
+      finalUrl = `/api/file-proxy?slug=${normalizedSlug}`
     } else if (formData.type === 'url' && !formData.url) {
       alert('Please provide a URL')
       setUploadProgress(false)
