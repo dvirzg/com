@@ -8,9 +8,82 @@ import { getMarkdownForPath } from './lib/markdown.js'
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
 
+// MIME type mapping for common file extensions
+const MIME_TYPES = {
+  'pdf': 'application/pdf',
+  'jpg': 'image/jpeg',
+  'jpeg': 'image/jpeg',
+  'png': 'image/png',
+  'gif': 'image/gif',
+  'webp': 'image/webp',
+  'svg': 'image/svg+xml',
+  'mp4': 'video/mp4',
+  'webm': 'video/webm',
+  'mov': 'video/quicktime',
+  'avi': 'video/x-msvideo',
+}
+
+// Allowed file extensions (must match upload validation in UI)
+const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'mp4', 'webm', 'mov', 'avi']
+
 export default async function handler(req, res) {
   const userAgent = req.headers['user-agent'] || ''
   const requestPath = req.query.path || '/'
+
+  // Create Supabase client
+  const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+  // Check if this is a file sublink first (for ALL requests, not just automated)
+  const slug = requestPath.replace(/^\//, '') // Remove leading slash
+  if (slug) {
+    const { data: sublinkData, error: sublinkError } = await supabase
+      .from('sublinks')
+      .select('type, file_path')
+      .eq('slug', slug)
+      .single()
+
+    // If it's a file sublink, serve the file directly
+    if (!sublinkError && sublinkData && sublinkData.type === 'file' && sublinkData.file_path) {
+      try {
+        // Download the file from Supabase Storage
+        const { data: fileData, error: downloadError } = await supabase
+          .storage
+          .from('sublinks')
+          .download(sublinkData.file_path)
+
+        if (downloadError) {
+          logger.error('Error downloading file from Supabase:', downloadError)
+          return res.status(404).send('File not found')
+        }
+
+        // Get file extension and validate it's allowed
+        const fileExt = sublinkData.file_path.split('.').pop().toLowerCase()
+
+        // Validate file extension against allowed list
+        if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+          logger.error('Attempted to serve disallowed file type:', fileExt)
+          return res.status(403).send('File type not allowed')
+        }
+
+        const contentType = MIME_TYPES[fileExt] || 'application/octet-stream'
+
+        // Convert blob to buffer
+        const buffer = Buffer.from(await fileData.arrayBuffer())
+
+        // Set headers to enable native browser viewing
+        res.setHeader('Content-Type', contentType)
+        res.setHeader('Content-Length', buffer.length)
+        res.setHeader('Content-Disposition', 'inline')
+        res.setHeader('Cache-Control', 'public, max-age=3600')
+        res.setHeader('Accept-Ranges', 'bytes')
+
+        return res.status(200).send(buffer)
+      } catch (err) {
+        logger.error('Error serving file:', err)
+        return res.status(500).send('Error serving file')
+      }
+    }
+  }
 
   // If not an automated request, serve the SPA
   if (!isAutomatedRequest(userAgent)) {
@@ -22,9 +95,6 @@ export default async function handler(req, res) {
       return res.status(500).send('Error loading page')
     }
   }
-
-  // Create Supabase client
-  const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
   try {
     // Get curl behavior setting from database

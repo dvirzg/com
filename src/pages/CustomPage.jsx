@@ -48,8 +48,15 @@ const CustomPage = () => {
       .single()
 
     if (sublinkData) {
-      // It's a sublink, redirect immediately
-      window.location.href = sublinkData.url
+      // File sublinks are handled server-side, so this shouldn't be reached
+      // But if it is, only redirect URL type sublinks
+      if (sublinkData.type === 'url') {
+        window.location.href = sublinkData.url
+        return
+      }
+      // For file sublinks, the server should have already served the file
+      // If we're here, something went wrong - redirect home
+      navigate('/')
       return
     }
 
