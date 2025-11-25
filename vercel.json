@@ -7,10 +7,6 @@
       "destination": "/api/markdown"
     },
     {
-      "source": "/api/file-proxy",
-      "destination": "/api/file-proxy"
-    },
-    {
       "source": "/(.*)",
       "destination": "/api/check-curl?path=$1"
     }

@@ -91,9 +91,9 @@ const SublinksTab = () => {
         return
       }
 
-      // For files, we'll use a placeholder URL since files are served through the proxy
-      // The actual serving is handled by /api/file-proxy based on file_path
-      finalUrl = `/api/file-proxy?slug=${normalizedSlug}`
+      // For files, we'll use a placeholder URL since files are served server-side
+      // The actual serving is handled by check-curl.js based on slug and file_path
+      finalUrl = `/${normalizedSlug}` // Just the slug path - server will handle it
     } else if (formData.type === 'url' && !formData.url) {
       alert('Please provide a URL')
       setUploadProgress(false)
