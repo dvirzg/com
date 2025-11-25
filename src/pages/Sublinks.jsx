@@ -150,7 +150,7 @@ const Sublinks = () => {
   const handleUpdate = async (id, slug, url) => {
     const { error } = await supabase
       .from('sublinks')
-      .update({ slug: slug.toLowerCase().replace(/\s+/g, '-'), url })
+      .update({ slug: slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''), url })
       .eq('id', id)
 
     if (error) {

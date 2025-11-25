@@ -64,29 +64,13 @@ const SublinksTab = () => {
         }
       }
 
-      // Check if file already exists in storage (by name)
-      const { data: existingFiles } = await supabase.storage
-        .from('sublinks')
-        .list('files', { search: fileName })
-
-      if (existingFiles && existingFiles.length > 0) {
-        // File exists, try to remove it first
-        const { error: removeError } = await supabase.storage
-          .from('sublinks')
-          .remove([filePath])
-
-        if (removeError) {
-          console.error('Error removing existing file:', removeError)
-        }
-      }
-
       const { error: uploadError } = await supabase.storage
         .from('sublinks')
-        .upload(filePath, selectedFile)
+        .upload(filePath, selectedFile, { upsert: true })
 
       if (uploadError) {
         console.error('Upload error details:', uploadError)
-        alert('Error uploading file: ' + uploadError.message + '\nTry using a different slug or manually delete the existing file from storage.')
+        alert('Error uploading file: ' + uploadError.message)
         setUploadProgress(false)
         return
       }
