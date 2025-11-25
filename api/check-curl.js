@@ -23,6 +23,9 @@ const MIME_TYPES = {
   'avi': 'video/x-msvideo',
 }
 
+// Allowed file extensions (must match upload validation in UI)
+const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'mp4', 'webm', 'mov', 'avi']
+
 export default async function handler(req, res) {
   const userAgent = req.headers['user-agent'] || ''
   const requestPath = req.query.path || '/'
@@ -53,8 +56,15 @@ export default async function handler(req, res) {
           return res.status(404).send('File not found')
         }
 
-        // Get file extension and determine MIME type
+        // Get file extension and validate it's allowed
         const fileExt = sublinkData.file_path.split('.').pop().toLowerCase()
+
+        // Validate file extension against allowed list
+        if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+          logger.error('Attempted to serve disallowed file type:', fileExt)
+          return res.status(403).send('File type not allowed')
+        }
+
         const contentType = MIME_TYPES[fileExt] || 'application/octet-stream'
 
         // Convert blob to buffer
