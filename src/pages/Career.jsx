@@ -133,11 +133,12 @@ const Career = () => {
       <div className="min-h-screen pt-24 pb-12 px-6 transition-colors">
         <div className="max-w-3xl mx-auto">
           <div className="mb-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
               <h1 ref={titleRef} className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white">
                 Career
               </h1>
-              <div className="flex items-center gap-3">
+              {/* Desktop Buttons */}
+              <div className="hidden md:flex items-center gap-3 self-start md:self-auto">
                 <Link
                   to="/linkedin"
                   className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors"
@@ -155,14 +156,41 @@ const Career = () => {
               </div>
             </div>
             {/* Work Authorization */}
-            <p className="text-sm text-zinc-500 dark:text-zinc-500">
+            <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-6">
               Work authorization: 🇺🇸 🇨🇦 🇮🇱 🇪🇺 (🇵🇹)
             </p>
-          </div>
-          <div className="mb-12"></div>
 
-          {/* Education */}
-          <section className="mb-16">
+            {/* Mobile Buttons */}
+            <div className="flex flex-col gap-3 md:hidden">
+              <Link
+                to="/linkedin"
+                className="flex items-center justify-center gap-2 w-full py-3 text-lg font-semibold text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                <Linkedin size={20} />
+                LinkedIn
+              </Link>
+              <Link
+                to="/resume"
+                className="flex items-center justify-center gap-2 w-full py-3 text-lg font-semibold text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                <FileText size={20} />
+                PDF Resume
+              </Link>
+            </div>
+          </div>
+          <div className="mb-8 md:mb-12"></div>
+
+          {/* Mobile-only simple view */}
+          <div className="md:hidden">
+            <p className="text-red-500 dark:text-red-400 text-sm font-medium text-center">
+              View on desktop for full timeline
+            </p>
+          </div>
+
+          {/* Desktop full view */}
+          <div className="hidden md:block">
+            {/* Education */}
+            <section className="mb-16">
             <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Education</h2>
             <div className="relative">
               <div className="absolute -left-28 top-0 hidden lg:block">
@@ -299,22 +327,23 @@ const Career = () => {
             </div>
           </section>
 
-          {/* Skills */}
-          <section>
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Technical Skills</h2>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-500 uppercase tracking-wide mb-2">Languages</h3>
-                <p className="text-zinc-700 dark:text-zinc-300">Python, SQL, R</p>
+            {/* Skills */}
+            <section>
+              <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">Technical Skills</h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-500 uppercase tracking-wide mb-2">Languages</h3>
+                  <p className="text-zinc-700 dark:text-zinc-300">Python, SQL, R</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-500 uppercase tracking-wide mb-2">Tools & Libraries</h3>
+                  <p className="text-zinc-700 dark:text-zinc-300">
+                    Pandas, NumPy, PyTorch, Scikit-learn, Matplotlib, Gurobi, NetworkX, SentenceTransformers, Git, Linux
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-500 uppercase tracking-wide mb-2">Tools & Libraries</h3>
-                <p className="text-zinc-700 dark:text-zinc-300">
-                  Pandas, NumPy, PyTorch, Scikit-learn, Matplotlib, Gurobi, NetworkX, SentenceTransformers, Git, Linux
-                </p>
-              </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
       </div>
     </>
