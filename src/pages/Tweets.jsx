@@ -9,6 +9,7 @@ import ScrollToTop from '../components/ScrollToTop';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKGROUND_COLORS } from '../constants/colors';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 
 const Tweets = () => {
   const [tweets, setTweets] = useState([]);
@@ -17,6 +18,7 @@ const Tweets = () => {
   const [sending, setSending] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, tweetId: null });
   const [showStickyTitle, setShowStickyTitle] = useState(false);
+  const [searchParams] = useSearchParams();
   
   // Reply state
   const [expandedTweetId, setExpandedTweetId] = useState(null);
@@ -50,6 +52,22 @@ const Tweets = () => {
     try {
       const data = await tweetService.getTweets();
       setTweets(data);
+      
+      // Check for ID in URL and expand if found
+      const idFromUrl = searchParams.get('id');
+      if (idFromUrl) {
+        const targetTweet = data.find(t => t.id === idFromUrl);
+        if (targetTweet) {
+          handleTweetClick(targetTweet.id);
+          // Optional: scroll to tweet
+          setTimeout(() => {
+            const element = document.getElementById(`tweet-${targetTweet.id}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 100);
+        }
+      }
     } catch (error) {
       console.error('Failed to load tweets:', error);
     } finally {
@@ -193,7 +211,7 @@ const Tweets = () => {
           ) : (
             <div className="space-y-8">
               {tweets.map((tweet) => (
-                <div key={tweet.id} className="group">
+                <div key={tweet.id} id={`tweet-${tweet.id}`} className="group">
                   <div 
                     className={`relative pl-6 border-l-2 transition-all cursor-pointer ${
                       expandedTweetId === tweet.id 

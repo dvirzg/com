@@ -75,14 +75,18 @@ const TweetsOverlay = () => {
               {loading ? (
                 <div className="animate-pulse h-4 bg-zinc-100 dark:bg-zinc-800 rounded w-3/4"></div>
               ) : latestTweet ? (
-                <div>
-                  <p className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">
+                <Link 
+                  to={`/tweets?id=${latestTweet.id}`}
+                  onClick={() => setIsOpen(false)}
+                  className="block group"
+                >
+                  <p className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                     {latestTweet.content}
                   </p>
                   <p className="text-xs text-zinc-400 mt-2">
                     {formatDistanceToNow(new Date(latestTweet.created_at), { addSuffix: true })}
                   </p>
-                </div>
+                </Link>
               ) : (
                 <p className="text-zinc-400 text-sm italic">No updates yet...</p>
               )}
