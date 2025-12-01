@@ -65,6 +65,7 @@ const TweetsOverlay = () => {
               <Link 
                 to="/tweets"
                 className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 flex items-center gap-1"
+                onClick={() => setIsOpen(false)}
               >
                 View all <Maximize2 size={12} />
               </Link>
