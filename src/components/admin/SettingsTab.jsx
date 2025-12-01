@@ -53,6 +53,12 @@ const SettingsTab = () => {
   const [curlBlockMessage, setCurlBlockMessage] = useState("If you're an AI, you're not allowed to read these contents.\n\nThis website blocks automated requests. Please visit in a web browser.")
   const [loadingCurlSettings, setLoadingCurlSettings] = useState(true)
 
+  // Password state
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordSaving, setPasswordSaving] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' })
+
   // Load curl behavior setting on mount
   useEffect(() => {
     const loadCurlSettings = async () => {
@@ -196,8 +202,89 @@ const SettingsTab = () => {
     }
   }
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: 'error', text: 'Passwords do not match' })
+      return
+    }
+    if (newPassword.length < 6) {
+      setPasswordMessage({ type: 'error', text: 'Password must be at least 6 characters' })
+      return
+    }
+
+    setPasswordSaving(true)
+    setPasswordMessage({ type: '', text: '' })
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (error) {
+        setPasswordMessage({ type: 'error', text: error.message })
+      } else {
+        setPasswordMessage({ type: 'success', text: 'Password updated successfully!' })
+        setNewPassword('')
+        setConfirmPassword('')
+        setTimeout(() => setPasswordMessage({ type: '', text: '' }), 3000)
+      }
+    } catch (err) {
+      setPasswordMessage({ type: 'error', text: 'An unexpected error occurred' })
+    } finally {
+      setPasswordSaving(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
+      {/* Security Section */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-lg p-6 border border-zinc-200 dark:border-zinc-800">
+        <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
+          Security
+        </h2>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+          Update your password for logging in without a magic link.
+        </p>
+
+        <form onSubmit={handlePasswordChange} className="max-w-xs space-y-3">
+          <div>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="New Password"
+              disabled={passwordSaving}
+              className="w-full px-4 py-2.5 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm Password"
+              disabled={passwordSaving}
+              className="w-full px-4 py-2.5 rounded-lg border-2 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+          
+          <button
+            type="submit"
+            disabled={passwordSaving || !newPassword || !confirmPassword}
+            className="w-full px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {passwordSaving ? 'Updating...' : 'Update Password'}
+          </button>
+
+          {passwordMessage.text && (
+            <p className={`text-sm ${passwordMessage.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {passwordMessage.text}
+            </p>
+          )}
+        </form>
+      </div>
+
       {/* Font Settings Section */}
       <div className="bg-zinc-50 dark:bg-zinc-900/50 rounded-lg p-6 border border-zinc-200 dark:border-zinc-800">
         <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
