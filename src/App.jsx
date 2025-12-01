@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
@@ -46,6 +46,11 @@ function AppContent() {
     ? '#000000'
     : BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white
     
+  // Apply background color to body to fix overscroll/rubber-banding
+  useEffect(() => {
+    document.body.style.backgroundColor = bgColor
+  }, [bgColor])
+
   // Hide overlay on Notes, Career, and Tweets pages, AND when mobile menu is open
   const showOverlay = !['/notes', '/career', '/tweets'].some(path => location.pathname.startsWith(path)) && !isMobileMenuOpen
 

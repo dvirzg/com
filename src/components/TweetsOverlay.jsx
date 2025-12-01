@@ -5,6 +5,12 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { tweetService } from '../services/tweetService';
 import { formatDistanceToNow } from 'date-fns';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 const TweetsOverlay = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -108,9 +114,18 @@ const TweetsOverlay = () => {
                   }}
                   className="block group"
                 >
-                  <p className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                    {latestTweet.content}
-                  </p>
+                  <div className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed group-hover:text-zinc-900 dark:group-hover:text-white transition-colors prose dark:prose-invert max-w-none prose-p:my-0 prose-a:text-blue-500 hover:prose-a:text-blue-600">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={{
+                        a: ({node, ...props}) => <span className="text-blue-500 hover:underline" {...props} />,
+                        p: ({node, ...props}) => <p className="mb-0" {...props} />
+                      }}
+                    >
+                      {latestTweet.content}
+                    </ReactMarkdown>
+                  </div>
                   <p className="text-xs text-zinc-400 mt-2">
                     {formatDistanceToNow(new Date(latestTweet.created_at), { addSuffix: true })}
                   </p>

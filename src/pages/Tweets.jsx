@@ -10,6 +10,12 @@ import { useTheme } from '../contexts/ThemeContext';
 import { BACKGROUND_COLORS } from '../constants/colors';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 const Tweets = () => {
   const [tweets, setTweets] = useState([]);
@@ -225,9 +231,26 @@ const Tweets = () => {
                     }`}
                     onClick={() => handleTweetClick(tweet.id)}
                   >
-                    <p className="text-lg text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap mb-2 leading-relaxed">
-                      {tweet.content}
-                    </p>
+                    <div className="text-lg text-zinc-800 dark:text-zinc-200 mb-2 leading-relaxed prose dark:prose-invert max-w-none">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
+                        components={{
+                          a: ({node, ...props}) => (
+                            <a 
+                              {...props} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-blue-600 dark:text-blue-400 hover:underline"
+                              onClick={(e) => e.stopPropagation()} 
+                            />
+                          ),
+                          p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />
+                        }}
+                      >
+                        {tweet.content}
+                      </ReactMarkdown>
+                    </div>
                     <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">
                       {formatDistanceToNow(new Date(tweet.created_at), { addSuffix: true })}
                     </p>
