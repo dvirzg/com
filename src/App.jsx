@@ -45,8 +45,8 @@ function AppContent() {
     ? '#000000'
     : BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white
     
-  // Hide overlay on Notes and Career pages
-  const showOverlay = !['/notes', '/career'].some(path => location.pathname.startsWith(path))
+  // Hide overlay on Notes, Career, and Tweets pages
+  const showOverlay = !['/notes', '/career', '/tweets'].some(path => location.pathname.startsWith(path))
 
   return (
     <div
