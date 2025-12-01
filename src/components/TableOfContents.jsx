@@ -246,7 +246,7 @@ const TableOfContents = ({ content }) => {
     return (
       <button
         onClick={() => setIsVisible(true)}
-        className="fixed left-8 top-24 px-3 py-2 text-xs font-medium text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white uppercase tracking-wide border border-zinc-200 dark:border-zinc-800 rounded-lg transition-colors"
+        className="fixed left-8 top-24 px-3 py-2 text-xs font-medium text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white uppercase tracking-wide border border-zinc-200 dark:border-zinc-800 rounded-lg transition-colors xl:block hidden"
       >
         Contents
       </button>
@@ -261,7 +261,7 @@ const TableOfContents = ({ content }) => {
         </div>
         <button
           onClick={() => setIsVisible(false)}
-          className="p-1 hover:text-zinc-900 dark:hover:text-white text-zinc-400 dark:text-zinc-600 transition-colors"
+          className="p-1 hover:text-zinc-900 dark:hover:text-white text-zinc-400 dark:text-zinc-600 transition-colors xl:block hidden"
           title="Hide table of contents"
         >
           <X size={14} />

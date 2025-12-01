@@ -14,6 +14,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "computer-modern": "^0.1.3",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
     "geist": "^1.5.1",
     "katex": "^0.16.24",
@@ -27,7 +28,8 @@
     "rehype-katex": "^7.0.1",
     "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
-    "remark-math": "^6.0.0"
+    "remark-math": "^6.0.0",
+    "resend": "^6.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

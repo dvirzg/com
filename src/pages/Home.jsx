@@ -118,7 +118,7 @@ const Home = () => {
       </motion.div>
 
       {/* Content Section */}
-      <div className="h-screen flex flex-col items-center justify-start px-6 pt-30">
+      <div className="min-h-screen flex flex-col items-center justify-start px-6 pt-24 md:pt-32 pb-20">
         <div className="text-left max-w-4xl w-full relative">
           {isAdmin() && (
             <Link
