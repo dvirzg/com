@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Edit, Trash2 } from 'lucide-react'
+import { Edit, Trash2, Menu, X, ChevronUp } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
@@ -18,6 +18,7 @@ import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
 import TableOfContents from '../components/TableOfContents'
 import TwitterEmbed from '../components/TwitterEmbed'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const Note = () => {
   const { id } = useParams()
@@ -28,10 +29,24 @@ const Note = () => {
   const [loading, setLoading] = useState(true)
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false })
   const [publishing, setPublishing] = useState(false)
+  const [showMobileToc, setShowMobileToc] = useState(false)
+  const tocRef = useRef(null)
 
   useEffect(() => {
     loadNote()
   }, [id])
+
+  useEffect(() => {
+    // Close mobile ToC when clicking outside
+    const handleClickOutside = (event) => {
+      if (showMobileToc && tocRef.current && !tocRef.current.contains(event.target)) {
+        setShowMobileToc(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showMobileToc])
 
   const loadNote = async () => {
     // For admins, use getNoteForEdit to get drafts too
@@ -90,9 +105,66 @@ const Note = () => {
 
   return (
     <>
-
       <div className="min-h-screen transition-colors relative">
-        {/* Table of Contents Sidebar - Fixed to left side */}
+        {/* Mobile ToC Toggle */}
+        <button
+          onClick={() => setShowMobileToc(!showMobileToc)}
+          className="fixed bottom-6 right-6 z-[70] p-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full shadow-lg xl:hidden hover:scale-105 active:scale-95 transition-transform"
+          aria-label={showMobileToc ? "Close Table of Contents" : "Open Table of Contents"}
+        >
+          {showMobileToc ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        {/* Mobile Scroll To Top - only visible when ToC is open and above the toggle button */}
+        <AnimatePresence>
+          {showMobileToc && (
+            <motion.button
+              initial={{ opacity: 0, y: 10, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.8 }}
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+                setShowMobileToc(false)
+              }}
+              className="fixed bottom-20 right-6 z-[60] p-3 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white rounded-full shadow-lg xl:hidden hover:scale-105 active:scale-95 transition-transform"
+              aria-label="Scroll to Top"
+            >
+              <ChevronUp size={24} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile ToC Drawer */}
+        <AnimatePresence>
+          {showMobileToc && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 xl:hidden"
+                onClick={() => setShowMobileToc(false)}
+              />
+              <motion.div
+                ref={tocRef}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 20 }}
+                className="fixed right-0 top-0 bottom-0 w-80 bg-white dark:bg-zinc-900 z-50 shadow-xl border-l border-zinc-200 dark:border-zinc-800 xl:hidden flex flex-col"
+              >
+                <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+                  <h2 className="font-semibold text-zinc-900 dark:text-white">Table of Contents</h2>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 pb-24">
+                  <TableOfContents content={note?.content} />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Table of Contents Sidebar - Desktop */}
         <aside className="hidden xl:block fixed left-8 top-24 w-64">
           <TableOfContents content={note?.content} />
         </aside>
@@ -368,7 +440,9 @@ const Note = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
-      <ScrollToTop />
+      <div className="hidden xl:block">
+        <ScrollToTop />
+      </div>
     </>
   )
 }
