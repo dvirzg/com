@@ -52,6 +52,11 @@ const Tweets = () => {
     try {
       const data = await tweetService.getTweets();
       setTweets(data);
+
+      // If we have tweets, mark the latest as seen in localStorage
+      if (data.length > 0) {
+        localStorage.setItem('last_seen_tweet_id', data[0].id);
+      }
       
       // Check for ID in URL and expand if found
       const idFromUrl = searchParams.get('id');

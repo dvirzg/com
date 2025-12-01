@@ -14,6 +14,8 @@ const TweetsOverlay = () => {
   const [sending, setSending] = useState(false);
   const { isAdmin } = useAuth();
 
+  const [hasSeenLatest, setHasSeenLatest] = useState(false);
+
   useEffect(() => {
     loadLatestTweet();
   }, []);
@@ -22,12 +24,31 @@ const TweetsOverlay = () => {
     try {
       const tweets = await tweetService.getTweets();
       if (tweets.length > 0) {
-        setLatestTweet(tweets[0]);
+        const latest = tweets[0];
+        setLatestTweet(latest);
+        
+        // Check if this tweet has been seen before
+        const seenTweetId = localStorage.getItem('last_seen_tweet_id');
+        setHasSeenLatest(seenTweetId === latest.id);
       }
     } catch (error) {
       console.error('Failed to load tweets:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpen = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen && latestTweet) {
+      markAsSeen();
+    }
+  };
+
+  const markAsSeen = () => {
+    if (latestTweet) {
+      localStorage.setItem('last_seen_tweet_id', latestTweet.id);
+      setHasSeenLatest(true);
     }
   };
 
@@ -61,13 +82,17 @@ const TweetsOverlay = () => {
             className="mb-4 w-[calc(100vw-3rem)] md:w-80 max-w-[20rem] bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden origin-bottom-right"
           >
             <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-              <h3 className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">Latest Update</h3>
+              <h3 className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">Notifications</h3>
               <Link 
                 to="/tweets"
-                className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 flex items-center gap-1"
-                onClick={() => setIsOpen(false)}
+                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 flex items-center gap-1"
+                onClick={() => {
+                  setIsOpen(false);
+                  markAsSeen();
+                }}
+                title="View all"
               >
-                View all <Maximize2 size={12} />
+                <Maximize2 size={14} />
               </Link>
             </div>
 
@@ -77,7 +102,10 @@ const TweetsOverlay = () => {
               ) : latestTweet ? (
                 <Link 
                   to={`/tweets?id=${latestTweet.id}`}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    markAsSeen();
+                  }}
                   className="block group"
                 >
                   <p className="text-zinc-700 dark:text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
@@ -120,7 +148,7 @@ const TweetsOverlay = () => {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpen}
         className={`h-12 w-12 rounded-full shadow-lg flex items-center justify-center transition-all ${
           isOpen 
             ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white' 
@@ -130,7 +158,7 @@ const TweetsOverlay = () => {
         {isOpen ? <X size={20} /> : (
           <div className="relative">
             <Bell size={20} />
-            {latestTweet && !isOpen && (
+            {latestTweet && !isOpen && !hasSeenLatest && (
               <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900"></span>
             )}
           </div>
