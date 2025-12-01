@@ -43,7 +43,7 @@ const Login = () => {
 
         {sent ? (
           <p className="text-center text-zinc-600 dark:text-zinc-400">
-            We've sent you a magic link. Click it to sign in.
+            Magic link sent.
           </p>
         ) : (
           <form onSubmit={handleLogin} className="space-y-4">
@@ -70,7 +70,7 @@ const Login = () => {
               disabled={loading}
               className="w-full px-4 py-3 font-medium bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:opacity-80 rounded-lg transition-opacity disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send magic link'}
+              {loading ? 'Sending...' : 'Send link'}
             </button>
           </form>
         )}
