@@ -12,6 +12,7 @@ import AdminPanel from '../pages/AdminPanel'
 import CustomPage from '../pages/CustomPage'
 import PageEditor from '../pages/PageEditor'
 import Career from '../pages/Career'
+import Tweets from '../pages/Tweets'
 import Loading from '../components/Loading'
 
 const AppRouter = () => {
@@ -38,6 +39,7 @@ const AppRouter = () => {
       <Route path="/editor" element={<Editor />} />
       <Route path="/drafts" element={<Drafts />} />
       <Route path="/career" element={<Career />} />
+      <Route path="/tweets" element={<Tweets />} />
       <Route path="/edit-landing" element={<EditLandingPage />} />
       <Route path="/admin" element={<AdminPanel />} />
       <Route path="/admin/pages/new" element={<PageEditor />} />

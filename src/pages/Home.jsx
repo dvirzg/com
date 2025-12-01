@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import Loading from '../components/Loading'
+import TweetsOverlay from '../components/TweetsOverlay'
 
 const ScrollArrow = () => {
   const { scrollYProgress } = useScroll()
@@ -176,6 +177,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <TweetsOverlay />
     </div>
   )
 }
