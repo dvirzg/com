@@ -267,7 +267,7 @@ const Tweets = () => {
                           e.stopPropagation();
                           handleDeleteClick(tweet.id);
                         }}
-                        className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-red-500"
+                        className="absolute top-0 right-0 p-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-red-500"
                         title="Delete"
                       >
                         <Trash2 size={16} />
