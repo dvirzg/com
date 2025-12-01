@@ -201,6 +201,12 @@ const Tweets = () => {
                   placeholder="What's on your mind?"
                   className="w-full p-4 pr-12 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 resize-none min-h-[100px]"
                   disabled={sending}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handlePost(e);
+                    }
+                  }}
                 />
                 <button
                   type="submit"
