@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
@@ -40,20 +40,21 @@ function App() {
 function AppContent() {
   const { isDark, backgroundColor } = useTheme()
   const location = useLocation()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const bgColor = isDark
     ? '#000000'
     : BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white
     
-  // Hide overlay on Notes, Career, and Tweets pages
-  const showOverlay = !['/notes', '/career', '/tweets'].some(path => location.pathname.startsWith(path))
+  // Hide overlay on Notes, Career, and Tweets pages, AND when mobile menu is open
+  const showOverlay = !['/notes', '/career', '/tweets'].some(path => location.pathname.startsWith(path)) && !isMobileMenuOpen
 
   return (
     <div
       className="min-h-screen text-zinc-900 dark:text-white transition-colors"
       style={{ backgroundColor: bgColor }}
     >
-      <Navbar />
+      <Navbar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       <AppRouter />
       {showOverlay && <TweetsOverlay />}
     </div>

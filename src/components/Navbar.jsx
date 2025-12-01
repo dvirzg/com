@@ -7,7 +7,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
 import { pageService } from '../services/pageService'
 
-const Navbar = () => {
+const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
   const { user, signOut, isAdmin, getFirstName } = useAuth()
   const { isDark, toggleTheme, backgroundColor } = useTheme()
   const location = useLocation()
@@ -15,7 +15,6 @@ const Navbar = () => {
   const [customPages, setCustomPages] = useState([])
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     loadCustomPages()

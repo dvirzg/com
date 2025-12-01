@@ -183,7 +183,7 @@ const Career = () => {
           {/* Mobile-only simple view */}
           <div className="md:hidden">
             <p className="text-red-500 dark:text-red-400 text-sm font-medium text-center">
-              View on desktop for full timeline
+              View on desktop for full outline
             </p>
           </div>
 
