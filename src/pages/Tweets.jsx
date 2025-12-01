@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Trash2, Send } from 'lucide-react';
+import { Trash2, Send, MessageCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { tweetService } from '../services/tweetService';
 import { formatDistanceToNow } from 'date-fns';
@@ -8,6 +8,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import ScrollToTop from '../components/ScrollToTop';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKGROUND_COLORS } from '../constants/colors';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Tweets = () => {
   const [tweets, setTweets] = useState([]);
@@ -16,6 +17,14 @@ const Tweets = () => {
   const [sending, setSending] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, tweetId: null });
   const [showStickyTitle, setShowStickyTitle] = useState(false);
+  
+  // Reply state
+  const [expandedTweetId, setExpandedTweetId] = useState(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [senderName, setSenderName] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [replies, setReplies] = useState({}); // tweetId -> replies[] (for admin)
+
   const titleRef = useRef(null);
   
   const { isAdmin } = useAuth();
@@ -73,11 +82,56 @@ const Tweets = () => {
       try {
         await tweetService.deleteTweet(deleteDialog.tweetId);
         setTweets(tweets.filter(t => t.id !== deleteDialog.tweetId));
+        if (expandedTweetId === deleteDialog.tweetId) {
+          setExpandedTweetId(null);
+        }
       } catch (error) {
         console.error('Failed to delete tweet:', error);
         alert('Failed to delete tweet');
       }
       setDeleteDialog({ isOpen: false, tweetId: null });
+    }
+  };
+
+  const handleTweetClick = async (tweetId) => {
+    if (expandedTweetId === tweetId) {
+      setExpandedTweetId(null);
+      setReplyContent('');
+      setSenderName('');
+    } else {
+      setExpandedTweetId(tweetId);
+      setReplyContent('');
+      setSenderName('');
+      if (isAdmin()) {
+        loadReplies(tweetId);
+      }
+    }
+  };
+
+  const loadReplies = async (tweetId) => {
+    try {
+      const data = await tweetService.getReplies(tweetId);
+      setReplies(prev => ({ ...prev, [tweetId]: data }));
+    } catch (error) {
+      console.error('Failed to load replies:', error);
+    }
+  };
+
+  const handleSendReply = async (tweet) => {
+    if (!replyContent.trim() || !senderName.trim()) return;
+
+    setSendingReply(true);
+    try {
+      await tweetService.replyToTweet(tweet.id, tweet.content, replyContent, senderName);
+      alert('Reply sent!'); // Simple feedback
+      setExpandedTweetId(null);
+      setReplyContent('');
+      setSenderName('');
+    } catch (error) {
+      console.error('Failed to send reply:', error);
+      alert('Failed to send reply');
+    } finally {
+      setSendingReply(false);
     }
   };
 
@@ -139,23 +193,118 @@ const Tweets = () => {
           ) : (
             <div className="space-y-8">
               {tweets.map((tweet) => (
-                <div key={tweet.id} className="group relative pl-6 border-l-2 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors">
-                  <p className="text-lg text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap mb-2 leading-relaxed">
-                    {tweet.content}
-                  </p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">
-                    {formatDistanceToNow(new Date(tweet.created_at), { addSuffix: true })}
-                  </p>
+                <div key={tweet.id} className="group">
+                  <div 
+                    className={`relative pl-6 border-l-2 transition-all cursor-pointer ${
+                      expandedTweetId === tweet.id 
+                        ? 'border-zinc-900 dark:border-white' 
+                        : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600'
+                    }`}
+                    onClick={() => handleTweetClick(tweet.id)}
+                  >
+                    <p className="text-lg text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap mb-2 leading-relaxed">
+                      {tweet.content}
+                    </p>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500 font-medium uppercase tracking-wider">
+                      {formatDistanceToNow(new Date(tweet.created_at), { addSuffix: true })}
+                    </p>
 
-                  {isAdmin() && (
-                    <button
-                      onClick={() => handleDeleteClick(tweet.id)}
-                      className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-red-500"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
+                    {isAdmin() && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(tweet.id);
+                        }}
+                        className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400 hover:text-red-500"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+
+                  <AnimatePresence>
+                    {expandedTweetId === tweet.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pl-6 overflow-hidden"
+                      >
+                        <div className="pt-4 pb-2">
+                          {!isAdmin() ? (
+                            <div className="flex flex-col gap-2">
+                              <textarea
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                                placeholder="Reply to this thought..."
+                                className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 dark:text-white resize-none min-h-[80px]"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendReply(tweet);
+                                  }
+                                }}
+                              />
+                              <div className="flex justify-between items-center gap-3 px-1">
+                                <div className="flex items-center gap-2 flex-1 max-w-[200px]">
+                                  <span className="text-sm text-zinc-400 dark:text-zinc-500 italic">By</span>
+                                  <input
+                                    type="text"
+                                    value={senderName}
+                                    onChange={(e) => setSenderName(e.target.value)}
+                                    placeholder="your name"
+                                    className="bg-transparent border-b border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 focus:border-zinc-400 dark:focus:border-zinc-500 text-sm text-zinc-600 dark:text-zinc-300 focus:text-zinc-900 dark:focus:text-zinc-100 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600 py-0.5 w-full transition-colors"
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendReply(tweet);
+                                      }
+                                    }}
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => handleSendReply(tweet)}
+                                  disabled={!replyContent.trim() || !senderName.trim() || sendingReply}
+                                  className="px-4 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                >
+                                  {sendingReply ? 'Sending...' : 'Reply'}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3 mt-2">
+                              <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                                <MessageCircle size={12} />
+                                Replies
+                              </h4>
+                              {!replies[tweet.id] ? (
+                                <div className="h-4 w-20 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse"></div>
+                              ) : replies[tweet.id].length === 0 ? (
+                                <p className="text-sm text-zinc-400 italic">No replies yet.</p>
+                              ) : (
+                                <div className="space-y-3">
+                                  {replies[tweet.id].map(reply => (
+                                    <div key={reply.id} className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-lg border border-zinc-100 dark:border-zinc-800/50">
+                                      <div className="flex justify-between items-start mb-1">
+                                        <span className="text-xs font-medium text-zinc-900 dark:text-white">
+                                          {reply.sender || 'Anonymous'}
+                                        </span>
+                                        <span className="text-xs text-zinc-400">
+                                          {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{reply.content}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
@@ -178,4 +327,3 @@ const Tweets = () => {
 };
 
 export default Tweets;
-
