@@ -1,7 +1,30 @@
+import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 
 const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Delete", cancelText = "Cancel" }) => {
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        // If focus is on a button, let the button handle it (e.g. if user tabbed to Cancel)
+        if (e.target instanceof HTMLElement && e.target.tagName === 'BUTTON') {
+          return
+        }
+        e.preventDefault()
+        onConfirm()
+      }
+      // Optional: Add Escape to close
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onConfirm, onClose])
+
   if (!isOpen) return null
 
   return (

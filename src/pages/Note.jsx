@@ -441,7 +441,7 @@ const Note = () => {
         cancelText="Cancel"
       />
       <div className="hidden xl:block">
-        <ScrollToTop />
+      <ScrollToTop />
       </div>
     </>
   )
