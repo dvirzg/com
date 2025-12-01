@@ -88,7 +88,7 @@ const TweetsOverlay = () => {
             className="mb-4 w-[calc(100vw-3rem)] md:w-80 max-w-[20rem] bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden origin-bottom-right"
           >
             <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
-              <h3 className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">Notifications</h3>
+              <h3 className="font-medium text-zinc-900 dark:text-zinc-100 text-sm">Updates</h3>
               <Link 
                 to="/tweets"
                 className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 flex items-center gap-1"

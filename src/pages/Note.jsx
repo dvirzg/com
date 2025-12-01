@@ -172,8 +172,8 @@ const Note = () => {
         {/* Main content - Standard container width */}
         <div className="pt-24 pb-12 px-6">
           <article className="max-w-3xl mx-auto overflow-x-hidden">
-        <div className="flex items-start justify-between mb-4">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4 md:gap-0">
+          <div className="w-full md:w-auto">
             <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 dark:text-white break-words [&_em]:italic [&_strong]:font-bold [&_del]:line-through">
               <ReactMarkdown components={{ p: 'span' }}>{note?.title}</ReactMarkdown>
             </h1>
@@ -184,7 +184,7 @@ const Note = () => {
             )}
           </div>
           {isAdmin() && (
-            <div className="flex gap-2 ml-4">
+            <div className="flex gap-2 md:ml-4 self-start md:self-auto">
               {!note?.published && (
                 <button
                   onClick={handlePublish}

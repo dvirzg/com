@@ -156,12 +156,12 @@ const Career = () => {
               </div>
             </div>
             {/* Work Authorization */}
-            <p className="text-sm text-zinc-500 dark:text-zinc-500 mb-6">
+            <p className="text-base text-zinc-500 dark:text-zinc-500 mb-8">
               Work authorization: 🇺🇸 🇨🇦 🇮🇱 🇪🇺 (🇵🇹)
             </p>
 
             {/* Mobile Buttons */}
-            <div className="flex flex-col gap-3 md:hidden">
+            <div className="flex flex-col gap-6 md:hidden">
               <Link
                 to="/linkedin"
                 className="flex items-center justify-center gap-2 w-full py-3 text-lg font-semibold text-zinc-900 dark:text-white bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
