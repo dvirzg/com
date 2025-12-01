@@ -8,6 +8,8 @@ import { BACKGROUND_COLORS } from './constants/colors'
 import Navbar from './components/Navbar'
 import AppRouter from './components/AppRouter'
 import ErrorBoundary from './components/ErrorBoundary'
+import TweetsOverlay from './components/TweetsOverlay'
+import { useLocation } from 'react-router-dom'
 
 // Lazy load Analytics to avoid blocking initial render
 const Analytics = lazy(() =>
@@ -37,10 +39,14 @@ function App() {
 
 function AppContent() {
   const { isDark, backgroundColor } = useTheme()
+  const location = useLocation()
 
   const bgColor = isDark
     ? '#000000'
     : BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white
+    
+  // Hide overlay on Notes and Career pages
+  const showOverlay = !['/notes', '/career'].some(path => location.pathname.startsWith(path))
 
   return (
     <div
@@ -49,6 +55,7 @@ function AppContent() {
     >
       <Navbar />
       <AppRouter />
+      {showOverlay && <TweetsOverlay />}
     </div>
   )
 }
