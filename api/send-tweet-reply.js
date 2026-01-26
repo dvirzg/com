@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         <blockquote style="border-left: 4px solid #0070f3; padding-left: 1rem; margin-left: 0;">
           ${replyContent}
         </blockquote>
-        <p><a href="https://dvir.com/tweets">View in Admin Panel</a></p>
+        <p><a href="https://dvirzg.com/tweets">View in Admin Panel</a></p>
       `
     });
 
