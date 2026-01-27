@@ -112,7 +112,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             </Link>
 
             {/* Desktop Tabs */}
-            <div className="hidden md:flex gap-1 relative" onMouseLeave={() => setHoveredTab(null)}>
+            <div className="hidden md:flex gap-0 relative" onMouseLeave={() => setHoveredTab(null)}>
               {tabs.map((tab) => (
                 <Link
                   key={tab.path}
