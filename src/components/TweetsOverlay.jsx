@@ -95,7 +95,11 @@ const TweetsOverlay = () => {
   // Showing icon to invite curiosity is good.
   
   return (
-    <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col items-end">
+    <div className={`fixed z-50 flex flex-col items-end transition-all duration-300 ${
+      isInputFocused
+        ? 'bottom-2 right-2 md:bottom-8 md:right-8'
+        : 'bottom-6 right-6 md:bottom-8 md:right-8'
+    }`}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -161,6 +165,8 @@ const TweetsOverlay = () => {
                     type="text"
                     value={newTweet}
                     onChange={(e) => setNewTweet(e.target.value)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     placeholder="Post update..."
                     className="w-full pl-3 pr-10 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 dark:text-white"
                     disabled={sending}

@@ -32,6 +32,7 @@ const Tweets = () => {
   const [senderName, setSenderName] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [replies, setReplies] = useState({}); // tweetId -> replies[] (for admin)
+  const [isTextareaFocused, setIsTextareaFocused] = useState(false);
 
   const titleRef = useRef(null);
   
@@ -164,6 +165,22 @@ const Tweets = () => {
     }
   };
 
+  const handleTextareaFocus = (e) => {
+    setIsTextareaFocused(true);
+    // Scroll the textarea into view when keyboard appears on mobile
+    setTimeout(() => {
+      e.target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+    }, 300); // Delay to allow keyboard animation to start
+  };
+
+  const handleTextareaBlur = () => {
+    setIsTextareaFocused(false);
+  };
+
   const stickyBgColor = isDark
     ? 'rgba(0, 0, 0, 0.8)'
     : `${BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white}B3`;
@@ -198,6 +215,8 @@ const Tweets = () => {
                 <textarea
                   value={newTweet}
                   onChange={(e) => setNewTweet(e.target.value)}
+                  onFocus={handleTextareaFocus}
+                  onBlur={handleTextareaBlur}
                   placeholder="What's on your mind?"
                   className="w-full p-4 pr-12 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 resize-none min-h-[100px]"
                   disabled={sending}
@@ -289,6 +308,8 @@ const Tweets = () => {
                               <textarea
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
+                                onFocus={handleTextareaFocus}
+                                onBlur={handleTextareaBlur}
                                 placeholder="Reply..."
                                 className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:focus:ring-zinc-700 dark:text-white resize-none min-h-[80px]"
                                 onKeyDown={(e) => {
