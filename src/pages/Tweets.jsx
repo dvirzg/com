@@ -5,7 +5,6 @@ import { tweetService } from '../services/tweetService';
 import { formatDistanceToNow } from 'date-fns';
 import Loading from '../components/Loading';
 import ConfirmDialog from '../components/ConfirmDialog';
-import ScrollToTop from '../components/ScrollToTop';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKGROUND_COLORS } from '../constants/colors';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -394,7 +393,6 @@ const Tweets = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
-      <ScrollToTop />
     </>
   );
 };

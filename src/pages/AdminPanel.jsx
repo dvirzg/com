@@ -5,7 +5,6 @@ import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
 import SettingsTab from '../components/admin/SettingsTab'
 import ActivityGraph from '../components/ActivityGraph'
-import ScrollToTop from '../components/ScrollToTop'
 
 const AdminPanel = () => {
   const navigate = useNavigate()
@@ -37,9 +36,9 @@ const AdminPanel = () => {
       <div className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-xl transition-all duration-300 ${
         showStickyTitle ? 'translate-y-0 border-b border-zinc-200/50 dark:border-zinc-800/30' : '-translate-y-full'
       }`}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <h1 className="text-lg font-bold text-zinc-900 dark:text-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4 md:gap-8">
+            <h1 className="text-base md:text-lg font-bold text-zinc-900 dark:text-white">
               Admin Panel
             </h1>
           </div>
@@ -53,7 +52,7 @@ const AdminPanel = () => {
           </h1>
 
           {/* Activity Graph */}
-          <div className="mb-8">
+          <div className="mb-6 md:mb-8">
             <ActivityGraph />
           </div>
 
@@ -101,7 +100,6 @@ const AdminPanel = () => {
           )}
         </div>
       </div>
-      <ScrollToTop />
     </>
   )
 }

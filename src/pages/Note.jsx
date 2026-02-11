@@ -15,7 +15,6 @@ import { supabase } from '../lib/supabase'
 import { isTwitterUrl } from '../lib/utils'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Loading from '../components/Loading'
-import ScrollToTop from '../components/ScrollToTop'
 import TableOfContents from '../components/TableOfContents'
 import TwitterEmbed from '../components/TwitterEmbed'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -440,9 +439,6 @@ const Note = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
-      <div className="hidden xl:block">
-      <ScrollToTop />
-      </div>
     </>
   )
 }

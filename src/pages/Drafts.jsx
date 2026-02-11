@@ -7,7 +7,6 @@ import { useTheme } from '../contexts/ThemeContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
 import ConfirmDialog from '../components/ConfirmDialog'
-import ScrollToTop from '../components/ScrollToTop'
 import ReactMarkdown from 'react-markdown'
 
 const Drafts = () => {
@@ -312,7 +311,6 @@ const Drafts = () => {
         confirmText="Delete"
         cancelText="Cancel"
       />
-      <ScrollToTop />
     </>
   )
 }
