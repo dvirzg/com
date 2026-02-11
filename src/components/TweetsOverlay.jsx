@@ -18,6 +18,7 @@ const TweetsOverlay = () => {
   const [newTweet, setNewTweet] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const { isAdmin } = useAuth();
 
   const [hasSeenLatest, setHasSeenLatest] = useState(false);
@@ -72,6 +73,22 @@ const TweetsOverlay = () => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleInputFocus = (e) => {
+    setIsInputFocused(true);
+    // Scroll the input into view when keyboard appears on mobile
+    setTimeout(() => {
+      e.target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
+    }, 300); // Delay to allow keyboard animation to start
+  };
+
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
   };
 
   // If no tweets and not admin, don't show anything (or maybe just the icon?)
