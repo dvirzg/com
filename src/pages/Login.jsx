@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../contexts/ToastContext'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -10,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const navigate = useNavigate()
+  const toast = useToast()
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -22,9 +24,9 @@ const Login = () => {
       })
 
       if (error) {
-        alert(error.message)
+        toast.error(error.message)
       } else {
-        // Successful login
+        toast.success('Login successful!')
         navigate('/')
       }
     } else {
@@ -39,8 +41,9 @@ const Login = () => {
       })
 
       if (error) {
-        alert(error.message)
+        toast.error(error.message)
       } else {
+        toast.success('Magic link sent! Check your email.')
         setSent(true)
       }
     }

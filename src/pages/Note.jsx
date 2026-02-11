@@ -11,6 +11,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'katex/dist/katex.min.css'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
 import { isTwitterUrl } from '../lib/utils'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -24,6 +25,7 @@ const Note = () => {
   const navigate = useNavigate()
   const { getNote, getNoteForEdit, deleteNote } = useNotes()
   const { isAdmin } = useAuth()
+  const toast = useToast()
   const [note, setNote] = useState(null)
   const [loading, setLoading] = useState(true)
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false })
@@ -66,8 +68,9 @@ const Note = () => {
     if (note?.id) {
       const { error } = await deleteNote(note.id)
       if (error) {
-        alert('Failed to delete note: ' + error.message)
+        toast.error('Failed to delete note: ' + error.message)
       } else {
+        toast.success('Note deleted successfully')
         navigate('/notes')
       }
     }
@@ -91,8 +94,9 @@ const Note = () => {
       .eq('id', note.id)
 
     if (error) {
-      alert('Failed to publish note: ' + error.message)
+      toast.error('Failed to publish note: ' + error.message)
     } else {
+      toast.success('Note published successfully!')
       navigate('/notes')
     }
     setPublishing(false)

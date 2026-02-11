@@ -29,24 +29,52 @@ export const noteService = {
   async getNote(id: string): Promise<Note | null> {
     const { data, error } = await supabase
       .from('notes')
-      .select('*, categories(id, name)')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .eq('id', id)
       .eq('published', true)
       .single()
 
     if (error) return null
-    return data as Note
+
+    // Flatten categories structure
+    const note = {
+      ...data,
+      categories: data.note_categories?.map((nc: any) => nc.categories) || []
+    }
+    return note as Note
   },
 
   async getNoteForEdit(id: string): Promise<Note | null> {
     const { data, error } = await supabase
       .from('notes')
-      .select('*, categories(id, name)')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .eq('id', id)
       .single()
 
     if (error) return null
-    return data as Note
+
+    // Flatten categories structure
+    const note = {
+      ...data,
+      categories: data.note_categories?.map((nc: any) => nc.categories) || []
+    }
+    return note as Note
   },
 
   async createNote(noteData: NoteData): Promise<{ data: Note | null; error: Error | null }> {
@@ -77,18 +105,33 @@ export const noteService = {
   },
 
   async getAllNotes(published: boolean | null = true): Promise<Note[]> {
-    const query = supabase
+    let query = supabase
       .from('notes')
-      .select('*')
+      .select(`
+        *,
+        note_categories (
+          categories (
+            id,
+            name
+          )
+        )
+      `)
       .order('published_at', { ascending: false })
 
     if (published !== null) {
-      query.eq('published', published)
+      query = query.eq('published', published)
     }
 
     const { data, error } = await query
 
     if (error) return []
-    return data as Note[]
+
+    // Flatten categories structure
+    const notes = (data || []).map((note: any) => ({
+      ...note,
+      categories: note.note_categories?.map((nc: any) => nc.categories) || []
+    }))
+
+    return notes as Note[]
   }
 }

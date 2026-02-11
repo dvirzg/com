@@ -100,6 +100,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
           isVisible && !isMobileMenuOpen ? 'translate-y-0' : isMobileMenuOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
         style={{ backgroundColor: bgColor }}
+        aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
@@ -107,6 +108,7 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
               to="/"
               className="text-lg font-medium hover:opacity-70 transition-opacity"
               onClick={handleLogoClick}
+              aria-label="Home"
             >
               Hi, {getFirstName()}
             </Link>
@@ -172,6 +174,8 @@ const Navbar = ({ isMobileMenuOpen, setIsMobileMenuOpen }) => {
             <button
               className="md:hidden p-2 -mr-2 text-zinc-600 dark:text-zinc-300"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>

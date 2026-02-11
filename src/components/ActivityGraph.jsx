@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import Skeleton from './Skeleton'
 
 const ActivityGraph = () => {
   const [activityData, setActivityData] = useState({})
@@ -241,9 +242,18 @@ const ActivityGraph = () => {
   if (loading) {
     return (
       <div className="p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="animate-pulse">
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-32 mb-4"></div>
-          <div className="h-32 bg-zinc-200 dark:bg-zinc-700 rounded"></div>
+        <div className="flex justify-between items-center mb-4">
+          <Skeleton width="120px" height="20px" />
+          <Skeleton width="80px" height="32px" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex gap-1">
+              {Array.from({ length: 53 }).map((_, j) => (
+                <Skeleton key={j} width="12px" height="12px" className="rounded-sm" />
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     )

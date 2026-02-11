@@ -6,7 +6,7 @@ import remarkBreaks from 'remark-breaks'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon, GripVertical } from 'lucide-react'
+import { Trash2, Plus, AlignLeft, AlignCenter, AlignRight, AlignJustify, Image as ImageIcon, GripVertical, Undo, Redo } from 'lucide-react'
 import { uploadMedia, generateMarkdown } from '../lib/mediaUpload'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -18,6 +18,8 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
   const [uploading, setUploading] = useState(false)
   const [isFileDragging, setIsFileDragging] = useState(false)
   const [showDropZone, setShowDropZone] = useState(false)
+  const [touchStartY, setTouchStartY] = useState(null)
+  const [isTouchDragging, setIsTouchDragging] = useState(false)
   const textareaRef = useRef(null)
   const blockRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -220,14 +222,68 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
     }
   }
 
+  const handleTouchStart = (e) => {
+    if (isEditing) return
+    const touch = e.touches[0]
+    setTouchStartY(touch.clientY)
+    setIsTouchDragging(false)
+  }
+
+  const handleTouchMove = (e) => {
+    if (isEditing || !touchStartY) return
+    const touch = e.touches[0]
+    const deltaY = Math.abs(touch.clientY - touchStartY)
+
+    if (deltaY > 10) {
+      setIsTouchDragging(true)
+      // Prevent scrolling when dragging
+      e.preventDefault()
+    }
+  }
+
+  const handleTouchEnd = (e) => {
+    if (!isTouchDragging) {
+      setTouchStartY(null)
+      return
+    }
+
+    const touch = e.changedTouches[0]
+    const element = document.elementFromPoint(touch.clientX, touch.clientY)
+
+    // Find the target block index
+    let targetIndex = null
+    let currentElement = element
+    while (currentElement && !targetIndex) {
+      const blockIndex = currentElement.getAttribute('data-block-index')
+      if (blockIndex !== null) {
+        targetIndex = parseInt(blockIndex)
+        break
+      }
+      currentElement = currentElement.parentElement
+    }
+
+    if (targetIndex !== null && targetIndex !== index) {
+      // Trigger the drop handler
+      const syntheticEvent = {
+        preventDefault: () => {},
+        dataTransfer: { dropEffect: 'move' }
+      }
+      onDrop(syntheticEvent, targetIndex)
+    }
+
+    setTouchStartY(null)
+    setIsTouchDragging(false)
+  }
+
   return (
     <div
       className="relative"
+      data-block-index={index}
       onDragOver={(e) => onDragOver(e, index)}
       onDrop={(e) => onDrop(e, index)}
     >
       <div
-        className={`relative pr-16 transition-opacity ${isDragging ? 'opacity-40' : ''} ${
+        className={`relative pr-12 md:pr-16 transition-opacity ${isDragging || isTouchDragging ? 'opacity-40' : ''} ${
           isDraggedOver ? 'border-t-2 border-blue-500' : ''
         }`}
         onMouseEnter={onHover}
@@ -238,6 +294,9 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
           tabIndex={0}
           draggable={!isEditing}
           onDragStart={(e) => onDragStart(e, index)}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           className={`relative group outline-none transition-colors ${
             (isSelected || isMultiSelected) ? 'bg-zinc-50 dark:bg-zinc-900/30' : ''
           }`}
@@ -245,72 +304,72 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
           onClick={onSelect}
         >
         {!isMultiSelected && (isSelected || isEditing || (isHovered && !isAnyBlockEditing && !isAnyBlockSelected)) && (
-          <div className="absolute -right-14 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10">
+          <div className="absolute -right-14 md:-right-14 -right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1 flex flex-col gap-1 z-10 md:scale-100 scale-90">
           {/* Drag handle - always visible */}
           <div
-            className="p-2 cursor-grab active:cursor-grabbing text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
+            className="p-1.5 md:p-2 cursor-grab active:cursor-grabbing text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors touch-none"
             title="Drag to reorder"
           >
-            <GripVertical size={16} />
+            <GripVertical size={14} className="md:w-4 md:h-4" />
           </div>
           {(isSelected || isEditing) && (
             <>
               <button
                 onClick={() => onAlignmentChange('left')}
-                className={`p-2 rounded transition-colors ${
+                className={`p-1.5 md:p-2 rounded transition-colors min-h-[32px] md:min-h-[36px] ${
                   alignment === 'left'
                     ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                 }`}
                 title="Align left"
               >
-                <AlignLeft size={16} />
+                <AlignLeft size={14} className="md:w-4 md:h-4" />
               </button>
               <button
                 onClick={() => onAlignmentChange('center')}
-                className={`p-2 rounded transition-colors ${
+                className={`p-1.5 md:p-2 rounded transition-colors min-h-[32px] md:min-h-[36px] ${
                   alignment === 'center'
                     ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                 }`}
                 title="Align center"
               >
-                <AlignCenter size={16} />
+                <AlignCenter size={14} className="md:w-4 md:h-4" />
               </button>
               <button
                 onClick={() => onAlignmentChange('right')}
-                className={`p-2 rounded transition-colors ${
+                className={`p-1.5 md:p-2 rounded transition-colors min-h-[32px] md:min-h-[36px] ${
                   alignment === 'right'
                     ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                 }`}
                 title="Align right"
               >
-                <AlignRight size={16} />
+                <AlignRight size={14} className="md:w-4 md:h-4" />
               </button>
               <button
                 onClick={() => onAlignmentChange('justify')}
-                className={`p-2 rounded transition-colors ${
+                className={`p-1.5 md:p-2 rounded transition-colors min-h-[32px] md:min-h-[36px] ${
                   alignment === 'justify'
                     ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-white'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                 }`}
                 title="Justify"
               >
-                <AlignJustify size={16} />
+                <AlignJustify size={14} className="md:w-4 md:h-4" />
               </button>
               <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-0.5" />
               <button
                 onClick={handleImageButtonClick}
                 disabled={uploading}
-                className={`p-2 rounded transition-colors disabled:opacity-50 ${
+                className={`p-1.5 md:p-2 rounded transition-colors disabled:opacity-50 min-h-[32px] md:min-h-[36px] ${
                   showDropZone
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                     : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                 }`}
                 title={showDropZone ? "Hide drop zone" : "Show drop zone for media upload"}
               >
-                <ImageIcon size={16} />
+                <ImageIcon size={14} className="md:w-4 md:h-4" />
               </button>
               <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-0.5" />
             </>
@@ -320,18 +379,18 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
               <button
                 onClick={handleAddClick}
                 onMouseDown={(e) => e.preventDefault()}
-                className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+                className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors min-h-[32px] md:min-h-[36px]"
                 title="Add block below"
               >
-                <Plus size={16} />
+                <Plus size={14} className="md:w-4 md:h-4" />
               </button>
               <button
                 onClick={handleDeleteClick}
                 disabled={!canDelete}
-                className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="p-1.5 md:p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed min-h-[32px] md:min-h-[36px]"
                 title={canDelete ? "Delete block" : "Cannot delete the last block"}
               >
-                <Trash2 size={16} />
+                <Trash2 size={14} className="md:w-4 md:h-4" />
               </button>
             </>
           )}
@@ -477,31 +536,37 @@ const Block = ({ content, alignment, onChange, onAlignmentChange, onDelete, onNa
       {/* Drop zone - shows when button is clicked and block is selected or editing */}
       {showDropZone && (isSelected || isEditing) && (
         <div
-          className="mt-2 p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-900/30 transition-colors cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600"
+          className="mt-2 p-4 md:p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg bg-zinc-50 dark:bg-zinc-900/30 transition-colors cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 active:border-zinc-500 dark:active:border-zinc-500"
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           onClick={handleBrowseClick}
+          onTouchStart={(e) => {
+            e.currentTarget.style.borderColor = 'rgb(113, 113, 122)'
+          }}
+          onTouchEnd={(e) => {
+            e.currentTarget.style.borderColor = ''
+          }}
         >
           {uploading ? (
             <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-8 h-8 border-2 border-zinc-400 border-t-zinc-900 dark:border-t-white rounded-full animate-spin"></div>
-              <div className="text-sm text-zinc-600 dark:text-zinc-400">Uploading...</div>
+              <div className="w-6 h-6 md:w-8 md:h-8 border-2 border-zinc-400 border-t-zinc-900 dark:border-t-white rounded-full animate-spin"></div>
+              <div className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400">Uploading...</div>
             </div>
           ) : isFileDragging ? (
-            <div className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg -m-2 p-8">
-              <ImageIcon size={32} className="text-blue-600 dark:text-blue-400" />
-              <div className="text-sm font-medium text-blue-600 dark:text-blue-400">Drop to upload</div>
+            <div className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg -m-2 p-4 md:p-8">
+              <ImageIcon size={24} className="md:w-8 md:h-8 text-blue-600 dark:text-blue-400" />
+              <div className="text-xs md:text-sm font-medium text-blue-600 dark:text-blue-400">Drop to upload</div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-3 text-zinc-500 dark:text-zinc-500">
-              <ImageIcon size={32} />
-              <div className="flex flex-col items-center gap-1">
-                <div className="text-sm">Drag and drop images or videos here</div>
-                <div className="text-sm">or <span className="text-blue-600 dark:text-blue-400 font-medium">click to browse</span></div>
+            <div className="flex flex-col items-center justify-center gap-2 md:gap-3 text-zinc-500 dark:text-zinc-500">
+              <ImageIcon size={24} className="md:w-8 md:h-8" />
+              <div className="flex flex-col items-center gap-0.5 md:gap-1">
+                <div className="text-xs md:text-sm text-center">Drag and drop images or videos here</div>
+                <div className="text-xs md:text-sm">or <span className="text-blue-600 dark:text-blue-400 font-medium">click to browse</span></div>
               </div>
-              <div className="text-xs">Max 10MB • JPG, PNG, GIF, WebP, MP4, WebM</div>
+              <div className="text-[10px] md:text-xs text-center">Max 10MB • JPG, PNG, GIF, WebP, MP4, WebM</div>
             </div>
           )}
           <input
@@ -555,6 +620,32 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
   const [draggedIndex, setDraggedIndex] = useState(null)
   const [draggedOverIndex, setDraggedOverIndex] = useState(null)
 
+  // Undo/Redo state
+  const [history, setHistory] = useState([])
+  const [historyIndex, setHistoryIndex] = useState(-1)
+  const isUndoRedoAction = useRef(false)
+
+  // Save to history when blocks or alignments change
+  useEffect(() => {
+    if (isUndoRedoAction.current) {
+      isUndoRedoAction.current = false
+      return
+    }
+
+    const newState = { blocks: [...blocks], alignments: [...alignments] }
+    const newHistory = history.slice(0, historyIndex + 1)
+    newHistory.push(newState)
+
+    // Limit history to 50 states to prevent memory issues
+    if (newHistory.length > 50) {
+      newHistory.shift()
+    } else {
+      setHistoryIndex(historyIndex + 1)
+    }
+
+    setHistory(newHistory)
+  }, [blocks, alignments])
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (editorRef.current && !editorRef.current.contains(event.target)) {
@@ -571,6 +662,19 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
         setSelectedIndices(allIndices)
         setSelectedIndex(null)
       }
+
+      // Cmd+Z or Ctrl+Z to undo
+      if ((event.metaKey || event.ctrlKey) && event.key === 'z' && !event.shiftKey && editingIndex === null) {
+        event.preventDefault()
+        handleUndo()
+      }
+
+      // Cmd+Shift+Z or Ctrl+Y to redo
+      if (((event.metaKey || event.ctrlKey) && event.shiftKey && event.key === 'z') ||
+          ((event.ctrlKey) && event.key === 'y')) {
+        event.preventDefault()
+        handleRedo()
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
@@ -579,7 +683,7 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [blocks, editingIndex])
+  }, [blocks, editingIndex, historyIndex])
 
   useEffect(() => {
     onChange(blocks.join('\n\n'))
@@ -783,55 +887,97 @@ const NotionEditor = ({ initialContent, initialAlignment, onChange, onAlignmentC
     setDraggedOverIndex(null)
   }
 
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      isUndoRedoAction.current = true
+      const newIndex = historyIndex - 1
+      const state = history[newIndex]
+      setBlocks(state.blocks)
+      setAlignments(state.alignments)
+      setHistoryIndex(newIndex)
+    }
+  }
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      isUndoRedoAction.current = true
+      const newIndex = historyIndex + 1
+      const state = history[newIndex]
+      setBlocks(state.blocks)
+      setAlignments(state.alignments)
+      setHistoryIndex(newIndex)
+    }
+  }
+
   return (
     <div
       ref={editorRef}
       className="relative"
       onMouseLeave={() => setHoveredIndex(null)}
     >
+      {/* Undo/Redo toolbar */}
+      <div className="fixed top-20 right-6 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1.5 md:p-2 flex gap-1.5 md:gap-2 z-40">
+        <button
+          onClick={handleUndo}
+          disabled={historyIndex <= 0}
+          className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed min-h-[32px] md:min-h-[36px]"
+          title="Undo (Cmd/Ctrl+Z)"
+        >
+          <Undo size={14} className="md:w-4 md:h-4" />
+        </button>
+        <button
+          onClick={handleRedo}
+          disabled={historyIndex >= history.length - 1}
+          className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed min-h-[32px] md:min-h-[36px]"
+          title="Redo (Cmd/Ctrl+Shift+Z)"
+        >
+          <Redo size={14} className="md:w-4 md:h-4" />
+        </button>
+      </div>
+
       {/* Floating toolbar for multi-select */}
       {selectedIndices.size > 1 && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-2 flex gap-2 z-50">
-          <div className="flex items-center gap-1 border-r border-zinc-200 dark:border-zinc-800 pr-2">
-            <span className="text-sm text-zinc-600 dark:text-zinc-400 px-2">
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-white dark:bg-zinc-900 shadow-lg rounded-lg border border-zinc-200 dark:border-zinc-800 p-1.5 md:p-2 flex gap-1.5 md:gap-2 z-50 max-w-[95vw] overflow-x-auto">
+          <div className="flex items-center gap-1 border-r border-zinc-200 dark:border-zinc-800 pr-1.5 md:pr-2">
+            <span className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 px-1.5 md:px-2 whitespace-nowrap">
               {selectedIndices.size} selected
             </span>
           </div>
           <button
             onClick={() => handleMultiSelectAlignmentChange('left')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors min-h-[32px] md:min-h-[36px]"
             title="Align left"
           >
-            <AlignLeft size={16} />
+            <AlignLeft size={14} className="md:w-4 md:h-4" />
           </button>
           <button
             onClick={() => handleMultiSelectAlignmentChange('center')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors min-h-[32px] md:min-h-[36px]"
             title="Align center"
           >
-            <AlignCenter size={16} />
+            <AlignCenter size={14} className="md:w-4 md:h-4" />
           </button>
           <button
             onClick={() => handleMultiSelectAlignmentChange('right')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors min-h-[32px] md:min-h-[36px]"
             title="Align right"
           >
-            <AlignRight size={16} />
+            <AlignRight size={14} className="md:w-4 md:h-4" />
           </button>
           <button
             onClick={() => handleMultiSelectAlignmentChange('justify')}
-            className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+            className="p-1.5 md:p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors min-h-[32px] md:min-h-[36px]"
             title="Justify"
           >
-            <AlignJustify size={16} />
+            <AlignJustify size={14} className="md:w-4 md:h-4" />
           </button>
           <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800" />
           <button
             onClick={handleMultiSelectDelete}
-            className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors"
+            className="p-1.5 md:p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-zinc-600 dark:text-zinc-300 hover:text-red-500 transition-colors min-h-[32px] md:min-h-[36px]"
             title="Delete selected blocks"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} className="md:w-4 md:h-4" />
           </button>
         </div>
       )}

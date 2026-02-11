@@ -78,7 +78,7 @@ const Home = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-scroll transition-colors">
+    <main className="h-screen overflow-y-scroll transition-colors">
       {/* Hero Section */}
       <motion.div
         className="h-screen flex flex-col items-center justify-center px-6"
@@ -176,7 +176,7 @@ const Home = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }
 

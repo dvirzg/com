@@ -11,6 +11,35 @@
 
   html.dark { scrollbar-color: #3a3a3a #1a1a1a; }
 
+  /* Improved focus indicators for accessibility */
+  *:focus {
+    outline: none;
+  }
+
+  *:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  html.dark *:focus-visible {
+    outline-color: #60a5fa;
+  }
+
+  /* Better focus for buttons and links */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  html.dark button:focus-visible,
+  html.dark a:focus-visible,
+  html.dark [role="button"]:focus-visible {
+    outline-color: #60a5fa;
+  }
+
   .katex-display { text-align: center !important; margin: 1rem 0 !important; }
 
   *::-webkit-scrollbar { width: 12px; height: 12px; }

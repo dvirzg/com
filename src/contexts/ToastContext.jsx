@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-import { X } from 'lucide-react'
+import { createContext, useContext, useState, useCallback, useMemo } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import Toast from '../components/Toast'
 
 const ToastContext = createContext()
 
@@ -14,44 +15,55 @@ export const useToast = () => {
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([])
 
-  const showToast = useCallback((message, type = 'error') => {
-    const id = Date.now()
-    setToasts(prev => [...prev, { id, message, type }])
-
-    // Auto dismiss after 5 seconds
-    setTimeout(() => {
-      setToasts(prev => prev.filter(toast => toast.id !== id))
-    }, 5000)
-  }, [])
-
   const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
   }, [])
 
+  const addToast = useCallback((message, type = 'info', duration = 4000) => {
+    const id = Date.now() + Math.random()
+    const toast = { id, message, type, duration }
+
+    setToasts(prev => [...prev, toast])
+
+    if (duration > 0) {
+      setTimeout(() => {
+        removeToast(id)
+      }, duration)
+    }
+
+    return id
+  }, [removeToast])
+
+  const success = useCallback((message, duration) => addToast(message, 'success', duration), [addToast])
+  const error = useCallback((message, duration) => addToast(message, 'error', duration), [addToast])
+  const info = useCallback((message, duration) => addToast(message, 'info', duration), [addToast])
+  const warning = useCallback((message, duration) => addToast(message, 'warning', duration), [addToast])
+  const showToast = useCallback((message, type = 'error') => addToast(message, type, 4000), [addToast])
+
+  const value = useMemo(() => ({
+    success,
+    error,
+    info,
+    warning,
+    showToast,
+    addToast,
+    removeToast
+  }), [success, error, info, warning, showToast, addToast, removeToast])
+
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${
-              toast.type === 'error'
-                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-900 dark:text-red-200'
-                : toast.type === 'success'
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-900 dark:text-green-200'
-                : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200'
-            } animate-slide-in-right`}
-          >
-            <span className="text-sm font-medium flex-1">{toast.message}</span>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="text-current opacity-60 hover:opacity-100 transition-opacity"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        ))}
+      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map(toast => (
+            <Toast
+              key={toast.id}
+              message={toast.message}
+              type={toast.type}
+              onClose={() => removeToast(toast.id)}
+            />
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   )

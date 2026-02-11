@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate, useSearchParams, useBlocker } from 'react-router-dom'
 import 'katex/dist/katex.min.css'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotes } from '../contexts/NotesContext'
 import NotionEditor from '../components/NotionEditor'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { useCategoryManager } from '../hooks/useCategoryManager'
 import { useNoteEditor } from '../hooks/useNoteEditor'
 
@@ -21,8 +22,17 @@ const Editor = () => {
   const [noteId, setNoteId] = useState(null)
   const [initialLoading, setInitialLoading] = useState(false)
   const [publishedAt, setPublishedAt] = useState('')
+  const [isDirty, setIsDirty] = useState(false)
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
 
+  const initialContentRef = useRef({ title: '', content: '', alignment: [] })
   const categoryManager = useCategoryManager(noteId)
+
+  // Block navigation when there are unsaved changes
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  )
 
   useEffect(() => {
     const editId = searchParams.get('edit')
@@ -37,28 +47,75 @@ const Editor = () => {
     setInitialLoading(true)
     const note = await getNoteForEdit(id)
     if (note) {
-      setTitle(note.title || '')
-      setContent(note.content)
+      const loadedTitle = note.title || ''
+      const loadedContent = note.content
+      let loadedAlignment = []
+
+      setTitle(loadedTitle)
+      setContent(loadedContent)
+
       if (note.alignment) {
         try {
           const parsedAlignment = typeof note.alignment === 'string' ? JSON.parse(note.alignment) : note.alignment
           setAlignment(parsedAlignment)
+          loadedAlignment = parsedAlignment
         } catch (_e) {
           setAlignment([])
         }
       } else {
         setAlignment([])
       }
+
       if (note.published_at) {
         const date = new Date(note.published_at)
         const formatted = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
         setPublishedAt(formatted)
       }
+
+      // Store initial content for dirty checking
+      initialContentRef.current = {
+        title: loadedTitle,
+        content: loadedContent,
+        alignment: loadedAlignment
+      }
+      setIsDirty(false)
     } else {
       navigate('/notes')
     }
     setInitialLoading(false)
   }
+
+  // Track changes to detect unsaved modifications
+  useEffect(() => {
+    if (initialLoading) return
+
+    const hasChanges =
+      title !== initialContentRef.current.title ||
+      content !== initialContentRef.current.content ||
+      JSON.stringify(alignment) !== JSON.stringify(initialContentRef.current.alignment)
+
+    setIsDirty(hasChanges)
+  }, [title, content, alignment, initialLoading])
+
+  // Warn before closing tab/window with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty])
+
+  // Handle React Router navigation blocker
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      setShowUnsavedDialog(true)
+    }
+  }, [blocker.state])
 
   if (!user) {
     navigate('/login')
@@ -79,6 +136,9 @@ const Editor = () => {
 
     const result = await saveDraft(noteData, noteId, async (savedNote) => {
       await categoryManager.saveCategories(savedNote.id)
+      // Reset dirty state before navigation
+      setIsDirty(false)
+      initialContentRef.current = { title, content, alignment }
       refetch()
       navigate('/drafts')
     })
@@ -98,6 +158,9 @@ const Editor = () => {
 
     const result = await publishNote(noteData, noteId, async (savedNote) => {
       await categoryManager.saveCategories(savedNote.id)
+      // Reset dirty state before navigation
+      setIsDirty(false)
+      initialContentRef.current = { title, content, alignment }
       refetch()
       navigate('/notes')
     })
@@ -107,8 +170,19 @@ const Editor = () => {
     }
   }
 
+  const handleContinueNavigation = () => {
+    setShowUnsavedDialog(false)
+    setIsDirty(false)
+    blocker.proceed()
+  }
+
+  const handleCancelNavigation = () => {
+    setShowUnsavedDialog(false)
+    blocker.reset()
+  }
+
   return (
-    <div className="min-h-screen transition-colors">
+    <main className="min-h-screen transition-colors">
       <div className="pt-24 pb-12 px-6">
         {initialLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -249,7 +323,17 @@ const Editor = () => {
           </div>
         )}
       </div>
-    </div>
+
+      <ConfirmDialog
+        isOpen={showUnsavedDialog}
+        onClose={handleCancelNavigation}
+        onConfirm={handleContinueNavigation}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Are you sure you want to leave? Your changes will be lost."
+        confirmText="Leave"
+        cancelText="Stay"
+      />
+    </main>
   )
 }
 

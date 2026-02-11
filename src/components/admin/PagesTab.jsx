@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { logger } from '../../lib/logger'
+import { useToast } from '../../contexts/ToastContext'
 import ConfirmDialog from '../ConfirmDialog'
 
 const PagesTab = () => {
   const [pages, setPages] = useState([])
   const [loading, setLoading] = useState(true)
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, pageId: null, pageTitle: '' })
+  const toast = useToast()
 
   useEffect(() => {
     fetchPages()
@@ -36,8 +38,9 @@ const PagesTab = () => {
       .eq('id', id)
 
     if (error) {
-      alert('Error updating page: ' + error.message)
+      toast.error('Error updating page: ' + error.message)
     } else {
+      toast.success('Page visibility updated')
       fetchPages()
     }
   }
@@ -54,8 +57,9 @@ const PagesTab = () => {
         .eq('id', deleteDialog.pageId)
 
       if (error) {
-        alert('Failed to delete page: ' + error.message)
+        toast.error('Failed to delete page: ' + error.message)
       } else {
+        toast.success('Page deleted successfully')
         fetchPages()
       }
     }

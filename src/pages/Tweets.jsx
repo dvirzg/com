@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Trash2, Send, MessageCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { tweetService } from '../services/tweetService';
 import { formatDistanceToNow } from 'date-fns';
 import Loading from '../components/Loading';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Skeleton, { SkeletonText } from '../components/Skeleton';
 import { useTheme } from '../contexts/ThemeContext';
 import { BACKGROUND_COLORS } from '../constants/colors';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,9 +36,10 @@ const Tweets = () => {
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
 
   const titleRef = useRef(null);
-  
+
   const { isAdmin } = useAuth();
   const { isDark, backgroundColor } = useTheme();
+  const toast = useToast();
 
   useEffect(() => {
     loadTweets();
@@ -114,9 +117,10 @@ const Tweets = () => {
         if (expandedTweetId === deleteDialog.tweetId) {
           setExpandedTweetId(null);
         }
+        toast.success('Thought deleted successfully');
       } catch (error) {
         console.error('Failed to delete tweet:', error);
-        alert('Failed to delete tweet');
+        toast.error('Failed to delete thought');
       }
       setDeleteDialog({ isOpen: false, tweetId: null });
     }
@@ -152,13 +156,13 @@ const Tweets = () => {
     setSendingReply(true);
     try {
       await tweetService.replyToTweet(tweet.id, tweet.content, replyContent, senderName);
-      alert('Reply sent!'); // Simple feedback
+      toast.success('Reply sent successfully!');
       setExpandedTweetId(null);
       setReplyContent('');
       setSenderName('');
     } catch (error) {
       console.error('Failed to send reply:', error);
-      alert('Failed to send reply');
+      toast.error('Failed to send reply');
     } finally {
       setSendingReply(false);
     }
@@ -351,7 +355,15 @@ const Tweets = () => {
                                 Replies
                               </h4>
                               {!replies[tweet.id] ? (
-                                <div className="h-4 w-20 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse"></div>
+                                <div className="space-y-3">
+                                  <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-lg border border-zinc-100 dark:border-zinc-800/50">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <Skeleton width="80px" height="14px" />
+                                      <Skeleton width="60px" height="12px" />
+                                    </div>
+                                    <SkeletonText lines={2} />
+                                  </div>
+                                </div>
                               ) : replies[tweet.id].length === 0 ? (
                                 <p className="text-sm text-zinc-400 italic">No replies yet.</p>
                               ) : (

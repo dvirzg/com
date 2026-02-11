@@ -10,8 +10,8 @@ export const categoryService = {
   async getAllCategories(): Promise<Category[]> {
     const { data, error } = await supabase
       .from('categories')
-      .select('*')
-      .order('name')
+      .select('id, name')
+      .order('name', { ascending: true })
 
     if (error) return []
     return data as Category[]
@@ -38,24 +38,27 @@ export const categoryService = {
   },
 
   async saveNoteCategories(noteId: string, categoryIds: string[]): Promise<{ error: Error | null }> {
-    // Delete existing associations
-    await supabase
+    // Use a transaction-like approach: delete and insert in sequence
+    // First, delete existing associations
+    const { error: deleteError } = await supabase
       .from('note_categories')
       .delete()
       .eq('note_id', noteId)
 
-    // Insert new associations
+    if (deleteError) return { error: deleteError }
+
+    // Insert new associations if any
     if (categoryIds.length > 0) {
       const insertData = categoryIds.map(catId => ({
         note_id: noteId,
         category_id: catId
       }))
 
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('note_categories')
         .insert(insertData)
 
-      return { error }
+      return { error: insertError }
     }
 
     return { error: null }

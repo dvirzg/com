@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -22,25 +22,34 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut()
-  }
+  }, [])
 
-  const isAdmin = () => {
+  const isAdmin = useCallback(() => {
     return user?.user_metadata?.is_admin === true
-  }
+  }, [user])
 
-  const isProfileComplete = () => {
+  const isProfileComplete = useCallback(() => {
     return user?.user_metadata?.profile_complete === true
-  }
+  }, [user])
 
-  const getFirstName = () => {
+  const getFirstName = useCallback(() => {
     if (!user) return 'Guest'
     return user.user_metadata?.name || user.user_metadata?.full_name?.split(' ')[0] || 'Guest'
-  }
+  }, [user])
+
+  const value = useMemo(() => ({
+    user,
+    loading,
+    signOut,
+    isAdmin,
+    isProfileComplete,
+    getFirstName
+  }), [user, loading, signOut, isAdmin, isProfileComplete, getFirstName])
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, isAdmin, isProfileComplete, getFirstName }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

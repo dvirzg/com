@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { logger } from '../lib/logger'
 
@@ -12,7 +12,7 @@ export const NotesProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [draftsLoading, setDraftsLoading] = useState(false)
 
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     setLoading(true)
     const { data, error } = await supabase
       .from('notes')
@@ -37,9 +37,9 @@ export const NotesProvider = ({ children }) => {
       setNotes(notesWithCategories)
     }
     setLoading(false)
-  }
+  }, [])
 
-  const fetchDrafts = async () => {
+  const fetchDrafts = useCallback(async () => {
     setDraftsLoading(true)
     const { data, error } = await supabase
       .from('notes')
@@ -66,9 +66,9 @@ export const NotesProvider = ({ children }) => {
       logger.error('Error fetching drafts:', error)
     }
     setDraftsLoading(false)
-  }
+  }, [])
 
-  const getNote = async (id) => {
+  const getNote = useCallback(async (id) => {
     // Check cache first
     if (notes) {
       const cached = notes.find(note => note.id === id)
@@ -97,9 +97,9 @@ export const NotesProvider = ({ children }) => {
       ...data,
       categories: data.note_categories?.map(nc => nc.categories) || []
     }
-  }
+  }, [notes])
 
-  const getNoteForEdit = async (id) => {
+  const getNoteForEdit = useCallback(async (id) => {
     // Fetch note for editing (regardless of published status)
     const { data, error } = await supabase
       .from('notes')
@@ -122,9 +122,9 @@ export const NotesProvider = ({ children }) => {
       ...data,
       categories: data.note_categories?.map(nc => nc.categories) || []
     }
-  }
+  }, [])
 
-  const deleteNote = async (id) => {
+  const deleteNote = useCallback(async (id) => {
     const { error } = await supabase
       .from('notes')
       .delete()
@@ -137,12 +137,12 @@ export const NotesProvider = ({ children }) => {
     }
 
     return { error }
-  }
+  }, [])
 
-  const refetch = () => {
+  const refetch = useCallback(() => {
     fetchNotes()
     fetchDrafts()
-  }
+  }, [fetchNotes, fetchDrafts])
 
   // Lazy load notes - only fetch when explicitly called via refetch()
   // This prevents loading all notes on app init for better performance
@@ -151,8 +151,20 @@ export const NotesProvider = ({ children }) => {
     setLoading(false)
   }, [])
 
+  const value = useMemo(() => ({
+    notes,
+    drafts,
+    loading,
+    draftsLoading,
+    getNote,
+    getNoteForEdit,
+    deleteNote,
+    refetch,
+    fetchDrafts
+  }), [notes, drafts, loading, draftsLoading, getNote, getNoteForEdit, deleteNote, refetch, fetchDrafts])
+
   return (
-    <NotesContext.Provider value={{ notes, drafts, loading, draftsLoading, getNote, getNoteForEdit, deleteNote, refetch, fetchDrafts }}>
+    <NotesContext.Provider value={value}>
       {children}
     </NotesContext.Provider>
   )

@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
-import { Edit, Trash2, X, Filter } from 'lucide-react'
+import { Edit, Trash2, X, Filter, Search } from 'lucide-react'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { BACKGROUND_COLORS } from '../constants/colors'
 import { supabase } from '../lib/supabase'
@@ -15,6 +16,7 @@ const Notes = () => {
   const { notes, loading, refetch, deleteNote } = useNotes()
   const { isAdmin } = useAuth()
   const { isDark, backgroundColor } = useTheme()
+  const toast = useToast()
   const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, noteId: null, noteTitle: '' })
   const [allCategories, setAllCategories] = useState([])
   const [selectedCategories, setSelectedCategories] = useState([])
@@ -24,6 +26,7 @@ const Notes = () => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [showOrderDropdown, setShowOrderDropdown] = useState(false)
   const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const titleRef = useRef(null)
 
   useEffect(() => {
@@ -84,6 +87,16 @@ const Notes = () => {
 
     let filtered = notes
 
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(note => {
+        const titleMatch = note.title.toLowerCase().includes(query)
+        const contentMatch = note.content.toLowerCase().includes(query)
+        return titleMatch || contentMatch
+      })
+    }
+
     // Filter by categories
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(note =>
@@ -122,8 +135,9 @@ const Notes = () => {
     if (deleteDialog.noteId) {
       const { error } = await deleteNote(deleteDialog.noteId)
       if (error) {
-        alert('Failed to delete note: ' + error.message)
+        toast.error('Failed to delete note: ' + error.message)
       } else {
+        toast.success('Note deleted successfully')
         // Force a refetch to ensure UI updates
         refetch()
       }
@@ -186,6 +200,29 @@ const Notes = () => {
               >
                 New Note
               </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Search Box */}
+        <div className="mb-8">
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-600 transition-colors group-focus-within:text-zinc-600 dark:group-focus-within:text-zinc-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search notes by title or content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-12 py-3.5 text-base bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:bg-white dark:focus:bg-zinc-900 focus:border-zinc-300 dark:focus:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all duration-200"
+                title="Clear search"
+              >
+                <X size={16} />
+              </button>
             )}
           </div>
         </div>

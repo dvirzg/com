@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useToast } from '../../contexts/ToastContext'
 
 const SublinksTab = () => {
   const [sublinks, setSublinks] = useState([])
@@ -10,6 +11,7 @@ const SublinksTab = () => {
   const [formData, setFormData] = useState({ slug: '', url: '', type: 'url' })
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadProgress, setUploadProgress] = useState(false)
+  const toast = useToast()
 
   useEffect(() => {
     fetchSublinks()
@@ -70,7 +72,7 @@ const SublinksTab = () => {
 
       if (uploadError) {
         console.error('Upload error details:', uploadError)
-        alert('Error uploading file: ' + uploadError.message)
+        toast.error('Error uploading file: ' + uploadError.message)
         setUploadProgress(false)
         return
       }
@@ -79,7 +81,7 @@ const SublinksTab = () => {
       // The actual serving is handled by check-curl.js based on slug and file_path
       finalUrl = `/${normalizedSlug}` // Just the slug path - server will handle it
     } else if (formData.type === 'url' && !formData.url) {
-      alert('Please provide a URL')
+      toast.warning('Please provide a URL')
       setUploadProgress(false)
       return
     }
@@ -112,7 +114,7 @@ const SublinksTab = () => {
 
     if (error) {
       console.error('Error creating/updating sublink:', error)
-      alert('Error creating sublink: ' + error.message)
+      toast.error('Error creating sublink: ' + error.message)
       setUploadProgress(false)
       return
     }
@@ -131,7 +133,7 @@ const SublinksTab = () => {
       .eq('id', id)
 
     if (error) {
-      alert('Error updating sublink: ' + error.message)
+      toast.error('Error updating sublink: ' + error.message)
     } else {
       setEditingId(null)
       fetchSublinks()
@@ -153,7 +155,7 @@ const SublinksTab = () => {
       if (storageError) {
         console.error('Error deleting file from storage:', storageError)
         storageDeleted = false
-        alert('Warning: Could not delete file from storage: ' + storageError.message + '\nWill still attempt to delete the database entry.')
+        toast.warning('Could not delete file from storage. Database entry will still be removed.')
       }
     }
 
@@ -162,7 +164,7 @@ const SublinksTab = () => {
 
     if (dbError) {
       console.error('Error deleting sublink from database:', dbError)
-      alert('Error deleting sublink from database: ' + dbError.message + '\n\nThis might be due to permission issues. Please check:\n1. You are logged in as an admin\n2. RLS policies are properly configured\n3. Try deleting from Supabase dashboard')
+      toast.error('Failed to delete sublink: ' + dbError.message)
       return
     }
 
@@ -170,10 +172,10 @@ const SublinksTab = () => {
 
     // Provide feedback on what was deleted
     if (dbDeleted && storageDeleted) {
-      console.log('Successfully deleted sublink and file')
+      toast.success('Sublink and file deleted successfully')
     } else if (dbDeleted && !storageDeleted) {
       console.log('Deleted sublink from database but file deletion failed')
-      alert('Sublink deleted, but the associated file may still exist in storage. You may need to manually delete it.')
+      toast.warning('Sublink deleted, but file may still exist in storage')
     }
 
     fetchSublinks()
@@ -193,7 +195,7 @@ const SublinksTab = () => {
       if (isValid) {
         setSelectedFile(file)
       } else {
-        alert('Please select a video, image, or PDF file')
+        toast.warning('Please select a video, image, or PDF file')
         e.target.value = ''
       }
     }

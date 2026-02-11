@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import NotionEditor from '../components/NotionEditor'
 
 const EditLandingPage = () => {
   const navigate = useNavigate()
   const { user, isAdmin } = useAuth()
+  const toast = useToast()
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [content, setContent] = useState('')
@@ -41,7 +43,7 @@ const EditLandingPage = () => {
 
   const handleSave = async () => {
     if (!title.trim() || !subtitle.trim()) {
-      alert('Please enter both title and subtitle')
+      toast.warning('Please enter both title and subtitle')
       return
     }
 
@@ -58,7 +60,7 @@ const EditLandingPage = () => {
       .eq('id', landingPageId)
 
     if (error) {
-      alert('Error saving landing page: ' + error.message)
+      toast.error('Error saving landing page: ' + error.message)
     } else {
       navigate('/')
     }

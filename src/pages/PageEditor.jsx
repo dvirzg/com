@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import NotionEditor from '../components/NotionEditor'
 
 const PageEditor = () => {
   const navigate = useNavigate()
   const { slug } = useParams()
   const { user, isAdmin } = useAuth()
+  const toast = useToast()
   const [title, setTitle] = useState('')
   const [pageSlug, setPageSlug] = useState('')
   const [content, setContent] = useState('')
@@ -47,7 +49,7 @@ const PageEditor = () => {
 
   const handleSave = async () => {
     if (!title.trim() || !pageSlug.trim()) {
-      alert('Please enter both title and slug')
+      toast.warning('Please enter both title and slug')
       return
     }
 
@@ -69,7 +71,7 @@ const PageEditor = () => {
         .eq('id', pageId)
 
       if (error) {
-        alert('Error updating page: ' + error.message)
+        toast.error('Error updating page: ' + error.message)
       } else {
         navigate('/admin')
       }
@@ -85,7 +87,7 @@ const PageEditor = () => {
         }])
 
       if (error) {
-        alert('Error creating page: ' + error.message)
+        toast.error('Error creating page: ' + error.message)
       } else {
         navigate('/admin')
       }

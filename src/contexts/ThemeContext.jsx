@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { BACKGROUND_COLORS } from '../constants/colors'
 import { logger } from '../lib/logger'
@@ -109,10 +109,19 @@ export const ThemeProvider = ({ children }) => {
     document.documentElement.style.setProperty('--bg-color', BACKGROUND_COLORS[backgroundColor] || BACKGROUND_COLORS.white)
   }, [backgroundColor])
 
-  const toggleTheme = () => setIsDark(!isDark)
+  const toggleTheme = useCallback(() => setIsDark(!isDark), [isDark])
+
+  const value = useMemo(() => ({
+    isDark,
+    toggleTheme,
+    font,
+    setFont,
+    backgroundColor,
+    setBackgroundColor
+  }), [isDark, toggleTheme, font, backgroundColor])
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme, font, setFont, backgroundColor, setBackgroundColor }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   )
