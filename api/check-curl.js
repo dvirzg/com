@@ -4,6 +4,7 @@ import { join } from 'path'
 import { logger } from './lib/logger.js'
 import { isAutomatedRequest } from './lib/utils.js'
 import { getMarkdownForPath } from './lib/markdown.js'
+import { parseUserAgent, trackFileView } from './lib/analytics.js'
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
@@ -45,6 +46,13 @@ export default async function handler(req, res) {
     // If it's a file sublink, serve the file directly
     if (!sublinkError && sublinkData && sublinkData.type === 'file' && sublinkData.file_path) {
       try {
+        // Track the file view (fire and forget - don't block the response)
+        trackFileView(supabase, {
+          slug,
+          filePath: sublinkData.file_path,
+          req,
+        }).catch(err => logger.error('Error tracking file view:', err))
+
         // Download the file from Supabase Storage
         const { data: fileData, error: downloadError } = await supabase
           .storage
