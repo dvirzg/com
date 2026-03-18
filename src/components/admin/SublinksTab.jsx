@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload, BarChart3 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import FileViewsAnalytics from '../FileViewsAnalytics'
 
 const SublinksTab = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [sublinks, setSublinks] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingId, setEditingId] = useState(null)
@@ -11,7 +13,20 @@ const SublinksTab = () => {
   const [formData, setFormData] = useState({ slug: '', url: '', type: 'url' })
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadProgress, setUploadProgress] = useState(false)
-  const [analyticsSlug, setAnalyticsSlug] = useState(null)
+
+  // Read analytics slug from URL
+  const analyticsSlug = searchParams.get('analytics')
+
+  // Update URL when showing/hiding analytics
+  const setAnalyticsSlug = (slug) => {
+    const newParams = new URLSearchParams(searchParams)
+    if (slug) {
+      newParams.set('analytics', slug)
+    } else {
+      newParams.delete('analytics')
+    }
+    setSearchParams(newParams, { replace: true })
+  }
 
   useEffect(() => {
     fetchSublinks()

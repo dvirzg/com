@@ -1,17 +1,37 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
 import SettingsTab from '../components/admin/SettingsTab'
 import ActivityGraph from '../components/ActivityGraph'
 
+const VALID_TABS = ['pages', 'sublinks', 'settings']
+
 const AdminPanel = () => {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
-  const [activeTab, setActiveTab] = useState('pages')
+
+  // Read tab from URL, default to 'pages'
+  const tabFromUrl = searchParams.get('tab')
+  const initialTab = VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'pages'
+  const [activeTab, setActiveTab] = useState(initialTab)
+
   const [showStickyTitle, setShowStickyTitle] = useState(false)
   const titleRef = useRef(null)
+
+  // Update URL when tab changes
+  const handleTabChange = (tab) => {
+    setActiveTab(tab)
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('tab', tab)
+    // Remove analytics param when switching away from sublinks
+    if (tab !== 'sublinks') {
+      newParams.delete('analytics')
+    }
+    setSearchParams(newParams, { replace: true })
+  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,7 +79,7 @@ const AdminPanel = () => {
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-800">
           <button
-            onClick={() => setActiveTab('pages')}
+            onClick={() => handleTabChange('pages')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'pages'
                 ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
@@ -69,7 +89,7 @@ const AdminPanel = () => {
             Pages
           </button>
           <button
-            onClick={() => setActiveTab('sublinks')}
+            onClick={() => handleTabChange('sublinks')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'sublinks'
                 ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
@@ -79,7 +99,7 @@ const AdminPanel = () => {
             Sublinks
           </button>
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabChange('settings')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'settings'
                 ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'

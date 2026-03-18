@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { X, Eye, Globe, Monitor, Smartphone, Tablet, Bot, Clock, MapPin, ArrowRight } from 'lucide-react'
 
@@ -6,6 +6,18 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
   const [views, setViews] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState(null)
+
+  // Handle Escape key to close modal
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') {
+      onClose()
+    }
+  }, [onClose])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   useEffect(() => {
     fetchViews()
