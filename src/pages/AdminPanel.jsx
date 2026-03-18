@@ -4,9 +4,10 @@ import { useAuth } from '../contexts/AuthContext'
 import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
 import SettingsTab from '../components/admin/SettingsTab'
+import AnalyticsTab from '../components/admin/AnalyticsTab'
 import ActivityGraph from '../components/ActivityGraph'
 
-const VALID_TABS = ['pages', 'sublinks', 'settings']
+const VALID_TABS = ['pages', 'sublinks', 'analytics', 'settings']
 
 const AdminPanel = () => {
   const navigate = useNavigate()
@@ -99,6 +100,16 @@ const AdminPanel = () => {
             Sublinks
           </button>
           <button
+            onClick={() => handleTabChange('analytics')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'analytics'
+                ? 'border-zinc-900 dark:border-white text-zinc-900 dark:text-white'
+                : 'border-transparent text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+          >
+            Analytics
+          </button>
+          <button
             onClick={() => handleTabChange('settings')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'settings'
@@ -115,6 +126,8 @@ const AdminPanel = () => {
             <PagesTab />
           ) : activeTab === 'sublinks' ? (
             <SublinksTab />
+          ) : activeTab === 'analytics' ? (
+            <AnalyticsTab />
           ) : (
             <SettingsTab />
           )}

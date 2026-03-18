@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { usePageTracking } from '../hooks/usePageTracking'
 import Home from '../pages/Home'
 import Notes from '../pages/Notes'
 import Note from '../pages/Note'
@@ -17,6 +18,9 @@ import Loading from '../components/Loading'
 
 const AppRouter = () => {
   const { user, loading, isProfileComplete } = useAuth()
+
+  // Track page views
+  usePageTracking()
 
   // Show loading while checking auth status
   if (loading) {
