@@ -30,20 +30,22 @@ const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', '
 export default async function handler(req, res) {
   const userAgent = req.headers['user-agent'] || ''
   const requestPath = req.query.path || '/'
+  const isAutomated = isAutomatedRequest(userAgent)
 
   // Create Supabase client
   const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-  // Check if this is a file sublink first (for ALL requests, not just automated)
   const slug = requestPath.replace(/^\//, '') // Remove leading slash
-  if (slug) {
+
+  // For automated requests (curl/wget), serve files directly
+  if (isAutomated && slug) {
     const { data: sublinkData, error: sublinkError } = await supabase
       .from('sublinks')
       .select('type, file_path')
       .eq('slug', slug)
       .single()
 
-    // If it's a file sublink, serve the file directly
+    // If it's a file sublink, serve the file directly for automated requests
     if (!sublinkError && sublinkData && sublinkData.type === 'file' && sublinkData.file_path) {
       try {
         // Track the file view (fire and forget - don't block the response)
@@ -93,8 +95,8 @@ export default async function handler(req, res) {
     }
   }
 
-  // If not an automated request, serve the SPA
-  if (!isAutomatedRequest(userAgent)) {
+  // For browser requests, serve the SPA (FileViewer will handle file display with tracking)
+  if (!isAutomated) {
     try {
       const indexPath = join(process.cwd(), 'dist', 'index.html')
       const html = readFileSync(indexPath, 'utf-8')

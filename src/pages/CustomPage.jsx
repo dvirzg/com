@@ -13,12 +13,14 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Loading from '../components/Loading'
 import ScrollToTop from '../components/ScrollToTop'
+import FileViewer from './FileViewer'
 
 const CustomPage = () => {
   const { slug } = useParams()
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
   const [page, setPage] = useState(null)
+  const [isFileSublink, setIsFileSublink] = useState(false)
   const [loading, setLoading] = useState(true)
   const [showStickyTitle, setShowStickyTitle] = useState(false)
   const titleRef = useRef(null)
@@ -48,16 +50,17 @@ const CustomPage = () => {
       .single()
 
     if (sublinkData) {
-      // File sublinks are handled server-side, so this shouldn't be reached
-      // But if it is, only redirect URL type sublinks
       if (sublinkData.type === 'url') {
+        // Redirect URL sublinks
         window.location.href = sublinkData.url
         return
       }
-      // For file sublinks, the server should have already served the file
-      // If we're here, something went wrong - redirect home
-      navigate('/')
-      return
+      if (sublinkData.type === 'file') {
+        // File sublinks - render FileViewer (with session tracking)
+        setIsFileSublink(true)
+        setLoading(false)
+        return
+      }
     }
 
     // Otherwise, try to load it as a custom page
@@ -77,6 +80,11 @@ const CustomPage = () => {
 
   if (loading) {
     return <Loading />
+  }
+
+  // Render FileViewer for file sublinks (enables session tracking)
+  if (isFileSublink) {
+    return <FileViewer />
   }
 
   return (
