@@ -1,26 +1,55 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { Users, Clock, MousePointer, Globe, Monitor, Smartphone, Tablet, Bot, ArrowRight, ExternalLink } from 'lucide-react'
+import { Users, Clock, MousePointer, Globe, Monitor, Smartphone, Tablet, Bot, ArrowRight, ExternalLink, X, Filter } from 'lucide-react'
 
 const AnalyticsTab = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [sessions, setSessions] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedSession, setSelectedSession] = useState(null)
 
+  // Get IP filter from URL
+  const ipFilter = searchParams.get('ip')
+
+  // Clear IP filter
+  const clearIpFilter = useCallback(() => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.delete('ip')
+    setSearchParams(newParams, { replace: true })
+  }, [searchParams, setSearchParams])
+
+  // Handle Escape key to clear filter
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && ipFilter) {
+        clearIpFilter()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [ipFilter, clearIpFilter])
+
   useEffect(() => {
     fetchAnalytics()
-  }, [])
+  }, [ipFilter])
 
   const fetchAnalytics = async () => {
     setLoading(true)
 
-    // Fetch recent page views grouped by session
-    const { data, error } = await supabase
+    // Build query - filter by IP if present
+    let query = supabase
       .from('page_views')
       .select('*')
       .order('entered_at', { ascending: false })
       .limit(500)
+
+    if (ipFilter) {
+      query = query.eq('ip_address', ipFilter)
+    }
+
+    const { data, error } = await query
 
     if (!error && data) {
       // Group by session
@@ -40,6 +69,7 @@ const AnalyticsTab = () => {
             device: view.device_type,
             browser: view.browser,
             os: view.os,
+            ipAddress: view.ip_address,
           })
         }
         const session = sessionMap.get(view.session_id)
@@ -167,6 +197,23 @@ const AnalyticsTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* IP Filter Indicator */}
+      {ipFilter && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <Filter size={16} className="text-blue-600 dark:text-blue-400" />
+          <span className="text-sm text-blue-800 dark:text-blue-200">
+            Showing sessions from IP: <code className="font-mono bg-blue-100 dark:bg-blue-800 px-1.5 py-0.5 rounded">{ipFilter}</code>
+          </span>
+          <button
+            onClick={clearIpFilter}
+            className="ml-auto p-1 hover:bg-blue-100 dark:hover:bg-blue-800 rounded transition-colors"
+            title="Clear filter"
+          >
+            <X size={16} className="text-blue-600 dark:text-blue-400" />
+          </button>
+        </div>
+      )}
+
       {/* Summary Stats */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -256,7 +303,7 @@ const AnalyticsTab = () => {
       {/* Recent Sessions */}
       <div>
         <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-3">
-          Recent Sessions
+          {ipFilter ? 'Sessions from this visitor' : 'Recent Sessions'}
         </h3>
         <div className="space-y-2">
           {sessions.slice(0, 20).map((session) => (
@@ -330,7 +377,9 @@ const AnalyticsTab = () => {
 
           {sessions.length === 0 && (
             <div className="text-center py-8 text-zinc-500">
-              No sessions recorded yet
+              {ipFilter
+                ? 'No page view sessions found for this IP. They may have only accessed files directly.'
+                : 'No sessions recorded yet'}
             </div>
           )}
         </div>

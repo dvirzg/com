@@ -61,7 +61,7 @@ const FileViewer = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-zinc-900">
         <div className="text-zinc-500">Loading...</div>
       </div>
     )
@@ -69,7 +69,7 @@ const FileViewer = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-zinc-900">
         <div className="text-center">
           <div className="text-zinc-500 mb-4">{error}</div>
           <button
@@ -83,38 +83,43 @@ const FileViewer = () => {
     )
   }
 
-  // Render based on file type
+  // Render based on file type - full screen, covering navbar
   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileType)
   const isVideo = ['mp4', 'webm', 'mov', 'avi'].includes(fileType)
   const isPdf = fileType === 'pdf'
 
+  // For PDFs, add parameters to fit the page in view
+  const pdfUrl = isPdf ? `${fileUrl}#view=Fit&toolbar=1` : fileUrl
+
   return (
-    <div className="min-h-screen bg-zinc-100 dark:bg-zinc-900">
+    <div className="fixed inset-0 z-[100] bg-neutral-800">
       {isPdf && (
-        <embed
-          src={fileUrl}
-          type="application/pdf"
-          className="w-full h-screen"
+        <iframe
+          src={pdfUrl}
+          title={slug}
+          className="w-full h-full border-0"
+          allow="fullscreen"
         />
       )}
 
       {isImage && (
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full h-full flex items-center justify-center p-2 sm:p-4">
           <img
             src={fileUrl}
             alt={slug}
-            className="max-w-full max-h-screen object-contain"
+            className="max-w-full max-h-full w-auto h-auto object-contain"
           />
         </div>
       )}
 
       {isVideo && (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-black">
+        <div className="w-full h-full flex items-center justify-center">
           <video
             src={fileUrl}
             controls
             autoPlay
-            className="max-w-full max-h-screen"
+            playsInline
+            className="max-w-full max-h-full w-auto h-auto"
           >
             Your browser does not support video playback.
           </video>

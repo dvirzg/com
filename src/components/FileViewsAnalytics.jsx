@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { X, Eye, Globe, Monitor, Smartphone, Tablet, Bot, Clock, MapPin, ArrowRight } from 'lucide-react'
+import { X, Eye, Globe, Monitor, Smartphone, Tablet, Bot, Clock, MapPin, ArrowRight, ExternalLink } from 'lucide-react'
 
 const FileViewsAnalytics = ({ slug, onClose }) => {
+  const [, setSearchParams] = useSearchParams()
   const [views, setViews] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState(null)
@@ -111,6 +113,16 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
     if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`
 
     return date.toLocaleDateString()
+  }
+
+  // Navigate to analytics tab filtered by IP
+  const viewVisitorHistory = (ipAddress) => {
+    if (!ipAddress) return
+    onClose()
+    setSearchParams({
+      tab: 'analytics',
+      ip: ipAddress,
+    }, { replace: true })
   }
 
   return (
@@ -229,20 +241,23 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
                 <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
                   <Clock size={14} />
                   Recent Views
+                  <span className="text-xs font-normal text-zinc-500">(click to view full history)</span>
                 </h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {views.slice(0, 20).map((view) => (
                     <div
                       key={view.id}
-                      className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-sm"
+                      onClick={() => viewVisitorHistory(view.ip_address)}
+                      className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors group"
                     >
                       <div className="flex items-center gap-3">
                         {getDeviceIcon(view.device_type)}
                         <div>
-                          <div className="text-zinc-900 dark:text-white">
+                          <div className="text-zinc-900 dark:text-white flex items-center gap-2">
                             {view.city && view.country
                               ? `${view.city}, ${view.country}`
                               : view.country || 'Unknown location'}
+                            <ExternalLink size={12} className="opacity-0 group-hover:opacity-50 transition-opacity" />
                           </div>
                           <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             {view.browser} on {view.os}

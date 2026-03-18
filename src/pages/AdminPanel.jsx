@@ -14,20 +14,22 @@ const AdminPanel = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { user, isAdmin } = useAuth()
 
-  // Read tab from URL, default to 'pages'
+  // Derive active tab directly from URL (not state) so it updates when URL changes
   const tabFromUrl = searchParams.get('tab')
-  const initialTab = VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'pages'
-  const [activeTab, setActiveTab] = useState(initialTab)
+  const activeTab = VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'pages'
 
   const [showStickyTitle, setShowStickyTitle] = useState(false)
   const titleRef = useRef(null)
 
   // Update URL when tab changes
   const handleTabChange = (tab) => {
-    setActiveTab(tab)
     const newParams = new URLSearchParams(searchParams)
     newParams.set('tab', tab)
-    // Remove analytics param when switching away from sublinks
+    // Remove ip filter when switching away from analytics
+    if (tab !== 'analytics') {
+      newParams.delete('ip')
+    }
+    // Remove analytics slug when switching away from sublinks
     if (tab !== 'sublinks') {
       newParams.delete('analytics')
     }
