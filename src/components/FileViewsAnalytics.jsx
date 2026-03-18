@@ -115,13 +115,13 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
     return date.toLocaleDateString()
   }
 
-  // Navigate to analytics tab filtered by IP
-  const viewVisitorHistory = (ipAddress) => {
-    if (!ipAddress) return
+  // Navigate to analytics tab with a filter
+  const navigateToAnalytics = (filterKey, filterValue) => {
+    if (!filterValue) return
     onClose()
     setSearchParams({
       tab: 'analytics',
-      ip: ipAddress,
+      [filterKey]: filterValue,
     }, { replace: true })
   }
 
@@ -186,9 +186,13 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
                   <h3 className="text-sm font-medium text-zinc-900 dark:text-white mb-3">
                     Devices
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {Object.entries(stats.devices).map(([device, count]) => (
-                      <div key={device} className="flex items-center justify-between text-sm">
+                      <div
+                        key={device}
+                        onClick={() => navigateToAnalytics('device', device)}
+                        className="flex items-center justify-between text-sm p-1.5 -mx-1.5 rounded cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors"
+                      >
                         <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-300">
                           {getDeviceIcon(device)}
                           <span className="capitalize">{device}</span>
@@ -205,9 +209,15 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
                     <Globe size={14} />
                     Top Countries
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {stats.countries.map(([country, count]) => (
-                      <div key={country} className="flex items-center justify-between text-sm">
+                      <div
+                        key={country}
+                        onClick={() => country !== 'Unknown' && navigateToAnalytics('country', country)}
+                        className={`flex items-center justify-between text-sm p-1.5 -mx-1.5 rounded transition-colors ${
+                          country !== 'Unknown' ? 'cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/50' : ''
+                        }`}
+                      >
                         <span className="text-zinc-600 dark:text-zinc-300">{country}</span>
                         <span className="font-medium text-zinc-900 dark:text-white">{count}</span>
                       </div>
@@ -223,9 +233,13 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
                     <ArrowRight size={14} />
                     Top Referrers
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {stats.referrers.map(([referrer, count]) => (
-                      <div key={referrer} className="flex items-center justify-between text-sm">
+                      <div
+                        key={referrer}
+                        onClick={() => navigateToAnalytics('referrer', referrer)}
+                        className="flex items-center justify-between text-sm p-1.5 -mx-1.5 rounded cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors"
+                      >
                         <span className="text-zinc-600 dark:text-zinc-300 truncate max-w-[200px]">
                           {referrer}
                         </span>
@@ -247,7 +261,7 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
                   {views.slice(0, 20).map((view) => (
                     <div
                       key={view.id}
-                      onClick={() => viewVisitorHistory(view.ip_address)}
+                      onClick={() => navigateToAnalytics('ip', view.ip_address)}
                       className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors group"
                     >
                       <div className="flex items-center gap-3">
