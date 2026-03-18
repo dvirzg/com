@@ -29,13 +29,19 @@ export default async function handler(req, res) {
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
     if (action === 'enter') {
+      // Validate pageViewId is provided (generated client-side)
+      if (!pageViewId) {
+        return res.status(400).json({ error: 'Missing pageViewId' })
+      }
+
       // Extract visitor info from request headers (server-side)
       const visitorInfo = extractVisitorInfo(req)
       const parsedUA = parseUserAgent(visitorInfo.userAgent)
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('page_views')
         .insert({
+          id: pageViewId, // Use client-generated UUID
           session_id: sessionId,
           page_path: pagePath,
           referrer: referrer || null,
@@ -51,15 +57,13 @@ export default async function handler(req, res) {
           browser: parsedUA.browser,
           os: parsedUA.os,
         })
-        .select('id')
-        .single()
 
       if (error) {
         console.error('Error recording page enter:', error)
         return res.status(500).json({ error: 'Failed to record page view' })
       }
 
-      return res.status(200).json({ pageViewId: data.id })
+      return res.status(200).json({ success: true })
     }
 
     if (action === 'exit' || action === 'heartbeat') {

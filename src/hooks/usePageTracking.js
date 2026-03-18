@@ -6,6 +6,11 @@ const generateSessionId = () => {
   return 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36)
 }
 
+// Generate a UUID for page view ID
+const generatePageViewId = () => {
+  return crypto.randomUUID()
+}
+
 // Get or create session ID
 const getSessionId = () => {
   let sessionId = sessionStorage.getItem('analytics_session_id')
@@ -72,21 +77,20 @@ export const usePageTracking = () => {
   const recordEnter = useCallback(async () => {
     const sessionId = getSessionId()
     const isEntryPage = isFirstPageOfSession()
+    const pageViewId = generatePageViewId()
 
     enterTimeRef.current = Date.now()
+    pageViewIdRef.current = pageViewId
 
-    const result = await trackPage({
+    await trackPage({
       action: 'enter',
       sessionId,
       pagePath: location.pathname,
+      pageViewId,
       referrer: isEntryPage ? document.referrer : null,
       previousPage: previousPageRef.current,
       isEntryPage,
     })
-
-    if (result?.pageViewId) {
-      pageViewIdRef.current = result.pageViewId
-    }
 
     // Start heartbeat to periodically update time on page
     // This helps capture time even if the user closes the tab abruptly
