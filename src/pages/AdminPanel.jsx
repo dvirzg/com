@@ -5,7 +5,6 @@ import SublinksTab from '../components/admin/SublinksTab'
 import PagesTab from '../components/admin/PagesTab'
 import SettingsTab from '../components/admin/SettingsTab'
 import ActivityGraph from '../components/ActivityGraph'
-import ScrollToTop from '../components/ScrollToTop'
 
 const AdminPanel = () => {
   const navigate = useNavigate()
@@ -101,7 +100,6 @@ const AdminPanel = () => {
           )}
         </div>
       </div>
-      <ScrollToTop />
     </>
   )
 }
