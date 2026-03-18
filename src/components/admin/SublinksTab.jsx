@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload } from 'lucide-react'
+import { Plus, ExternalLink, Trash2, Edit2, Check, X, FileText, Upload, BarChart3 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import FileViewsAnalytics from '../FileViewsAnalytics'
 
 const SublinksTab = () => {
   const [sublinks, setSublinks] = useState([])
@@ -10,6 +11,7 @@ const SublinksTab = () => {
   const [formData, setFormData] = useState({ slug: '', url: '', type: 'url' })
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadProgress, setUploadProgress] = useState(false)
+  const [analyticsSlug, setAnalyticsSlug] = useState(null)
 
   useEffect(() => {
     fetchSublinks()
@@ -364,10 +366,19 @@ const SublinksTab = () => {
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={handleUpdate}
                 onDelete={handleDelete}
+                onShowAnalytics={() => setAnalyticsSlug(sublink.slug)}
               />
             ))}
           </div>
         )}
+
+      {/* Analytics Modal */}
+      {analyticsSlug && (
+        <FileViewsAnalytics
+          slug={analyticsSlug}
+          onClose={() => setAnalyticsSlug(null)}
+        />
+      )}
     </div>
   )
 }
@@ -379,6 +390,7 @@ const SublinkItem = ({
   onCancelEdit,
   onUpdate,
   onDelete,
+  onShowAnalytics,
 }) => {
   const [editSlug, setEditSlug] = useState(sublink.slug)
   const [editUrl, setEditUrl] = useState(sublink.url)
@@ -456,6 +468,14 @@ const SublinkItem = ({
         </a>
       </div>
       <div className="flex items-center gap-2 ml-4">
+        <button
+          onClick={onShowAnalytics}
+          className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-colors"
+          aria-label="View Analytics"
+          title="View Analytics"
+        >
+          <BarChart3 size={16} />
+        </button>
         <button
           onClick={onEdit}
           className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-900 rounded-lg transition-colors"

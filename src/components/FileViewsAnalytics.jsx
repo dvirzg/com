@@ -234,9 +234,13 @@ const FileViewsAnalytics = ({ slug, onClose }) => {
                           </div>
                           <div className="text-xs text-zinc-500 dark:text-zinc-400">
                             {view.browser} on {view.os}
-                            {view.referer && (
-                              <span> · from {new URL(view.referer).hostname}</span>
-                            )}
+                            {view.referer && (() => {
+                              try {
+                                return <span> · from {new URL(view.referer).hostname}</span>
+                              } catch {
+                                return null
+                              }
+                            })()}
                           </div>
                         </div>
                       </div>
