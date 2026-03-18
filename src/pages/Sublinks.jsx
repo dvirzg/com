@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { logger } from '../lib/logger'
 import ScrollToTop from '../components/ScrollToTop'
+import FileViewsAnalytics from '../components/FileViewsAnalytics'
+import { Plus, FileText, Upload, ExternalLink, Edit2, Trash2, Check, X, BarChart3 } from 'lucide-react'
 
 const Sublinks = () => {
   const navigate = useNavigate()
@@ -16,6 +18,7 @@ const Sublinks = () => {
   const [selectedFile, setSelectedFile] = useState(null)
   const [uploadProgress, setUploadProgress] = useState(false)
   const [showStickyTitle, setShowStickyTitle] = useState(false)
+  const [analyticsSlug, setAnalyticsSlug] = useState(null)
   const titleRef = useRef(null)
 
   useEffect(() => {
@@ -406,6 +409,7 @@ const Sublinks = () => {
                 onCancelEdit={() => setEditingId(null)}
                 onUpdate={handleUpdate}
                 onDelete={handleDelete}
+                onShowAnalytics={() => setAnalyticsSlug(sublink.slug)}
               />
             ))}
           </div>
@@ -413,6 +417,14 @@ const Sublinks = () => {
         </div>
       </div>
       <ScrollToTop />
+
+      {/* Analytics Modal */}
+      {analyticsSlug && (
+        <FileViewsAnalytics
+          slug={analyticsSlug}
+          onClose={() => setAnalyticsSlug(null)}
+        />
+      )}
     </>
   )
 }
@@ -424,6 +436,7 @@ const SublinkItem = ({
   onCancelEdit,
   onUpdate,
   onDelete,
+  onShowAnalytics,
 }) => {
   const [editSlug, setEditSlug] = useState(sublink.slug)
   const [editUrl, setEditUrl] = useState(sublink.url)
