@@ -37,15 +37,15 @@ export default async function handler(req, res) {
 
   const slug = requestPath.replace(/^\//, '') // Remove leading slash
 
-  // For automated requests (curl/wget), serve files directly
-  if (isAutomated && slug) {
+  // For ALL requests to file sublinks, serve the file directly (native browser viewer)
+  if (slug) {
     const { data: sublinkData, error: sublinkError } = await supabase
       .from('sublinks')
       .select('type, file_path')
       .eq('slug', slug)
       .single()
 
-    // If it's a file sublink, serve the file directly for automated requests
+    // If it's a file sublink, serve the file directly for ALL requests
     if (!sublinkError && sublinkData && sublinkData.type === 'file' && sublinkData.file_path) {
       try {
         // Track the file view (fire and forget - don't block the response)
@@ -95,7 +95,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // For browser requests, serve the SPA (FileViewer will handle file display with tracking)
+  // For browser requests (non-file sublinks), serve the SPA
   if (!isAutomated) {
     try {
       const indexPath = join(process.cwd(), 'dist', 'index.html')
