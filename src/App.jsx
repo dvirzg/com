@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
+
+const Admin = lazy(() => import('./Admin.jsx'))
 
 function App() {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'))
@@ -11,15 +13,29 @@ function App() {
     setIsDark(next)
   }
 
+  const themeButton = (
+    <button
+      onClick={toggleTheme}
+      className="fixed top-4 right-6 z-10 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+      aria-label="Toggle theme"
+    >
+      {isDark ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  )
+
+  // Hidden admin page, only reachable by URL
+  if (window.location.pathname.replace(/\/$/, '') === '/admin') {
+    return (
+      <Suspense fallback={null}>
+        {themeButton}
+        <Admin />
+      </Suspense>
+    )
+  }
+
   return (
     <main className="h-dvh flex flex-col items-center justify-center px-6 bg-white dark:bg-black text-zinc-900 dark:text-white transition-colors">
-      <button
-        onClick={toggleTheme}
-        className="fixed top-4 right-6 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-        aria-label="Toggle theme"
-      >
-        {isDark ? <Sun size={18} /> : <Moon size={18} />}
-      </button>
+      {themeButton}
 
       <div className="fade-in text-center max-w-3xl">
         <h1 className="text-5xl md:text-6xl font-bold mb-6">Hi, I'm Dvir</h1>

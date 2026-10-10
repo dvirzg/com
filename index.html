@@ -10,6 +10,10 @@
       const saved = localStorage.getItem('theme')
       const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
       document.documentElement.classList.toggle('dark', dark)
+      // Magic-link logins can land on the home page; forward them to the admin page
+      if (location.pathname === '/' && /access_token|error_description/.test(location.hash + location.search)) {
+        location.replace('/admin' + location.search + location.hash)
+      }
     </script>
   </head>
   <body>
