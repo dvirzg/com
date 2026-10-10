@@ -178,21 +178,18 @@ function AddLink({ existing, onSaved }) {
     if (!slug || slug === 'admin') return alert('Invalid slug')
     if (type === 'file' && !file) return alert('Please choose a file')
     const current = existing.find((l) => l.slug === slug)
-    if (current && !confirm(`/${slug} already exists. Replace it?`)) return
+    if (current && !confirm(`/${slug} already points to ${current.file_path || current.url}. Replace it?`)) return
 
     setSaving(true)
     let record = { slug, type, url, file_path: null }
     if (type === 'file') {
       const filePath = `files/${slug}.${file.name.split('.').pop().toLowerCase()}`
-      if (current?.file_path && current.file_path !== filePath) await supabase.storage.from('sublinks').remove([current.file_path])
       const { error } = await supabase.storage.from('sublinks').upload(filePath, file, { upsert: true })
       if (error) {
         setSaving(false)
         return alert(`Upload failed: ${error.message}`)
       }
       record = { ...record, url: `/${slug}`, file_path: filePath }
-    } else if (current?.file_path) {
-      await supabase.storage.from('sublinks').remove([current.file_path])
     }
 
     const { error } = current
@@ -200,6 +197,10 @@ function AddLink({ existing, onSaved }) {
       : await supabase.from('sublinks').insert(record)
     setSaving(false)
     if (error) return alert(error.message)
+    // Only remove the old file once the replacement is saved
+    if (current?.file_path && current.file_path !== record.file_path) {
+      await supabase.storage.from('sublinks').remove([current.file_path])
+    }
     setSlugInput('')
     setUrl('')
     setFile(null)
