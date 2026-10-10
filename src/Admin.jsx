@@ -161,11 +161,22 @@ function AddLink({ existing, onSaved }) {
   const [url, setUrl] = useState('')
   const [file, setFile] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [dragging, setDragging] = useState(false)
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setDragging(false)
+    const dropped = e.dataTransfer.files?.[0]
+    if (!dropped) return
+    if (!/^(application\/pdf|image\/|video\/)/.test(dropped.type)) return alert('Please drop a PDF, image, or video')
+    setFile(dropped)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     const slug = toSlug(slugInput)
     if (!slug || slug === 'admin') return alert('Invalid slug')
+    if (type === 'file' && !file) return alert('Please choose a file')
     const current = existing.find((l) => l.slug === slug)
     if (current && !confirm(`/${slug} already exists. Replace it?`)) return
 
@@ -210,10 +221,15 @@ function AddLink({ existing, onSaved }) {
       {type === 'url' ? (
         <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." required className={input} />
       ) : (
-        <label className="flex items-center justify-center gap-2 py-6 rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 cursor-pointer text-sm">
+        <label
+          onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          className={`flex items-center justify-center gap-2 py-6 rounded-lg border-2 border-dashed cursor-pointer text-sm transition-colors ${dragging ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900' : 'border-zinc-300 dark:border-zinc-700'}`}
+        >
           {file ? <FileText size={18} /> : <Upload size={18} />}
-          {file ? file.name : 'Choose a PDF, image, or video'}
-          <input type="file" accept="application/pdf,image/*,video/*" required onChange={(e) => setFile(e.target.files?.[0] || null)} className="sr-only" />
+          {file ? file.name : 'Drop a PDF, image, or video here, or click to choose'}
+          <input type="file" accept="application/pdf,image/*,video/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="sr-only" />
         </label>
       )}
       <button type="submit" disabled={saving} className={primary}>{saving ? 'Saving...' : 'Add link'}</button>
