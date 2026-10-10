@@ -1,19 +1,14 @@
-import { StrictMode, lazy, Suspense } from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import './index.css'
-import './fonts.css'
 import App from './App.jsx'
-
-// Lazy load Speed Insights to avoid blocking initial render
-const SpeedInsights = lazy(() =>
-  import("@vercel/speed-insights/react").then(module => ({ default: module.SpeedInsights }))
-)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
-    <Suspense fallback={null}>
-      <SpeedInsights />
-    </Suspense>
+    <Analytics />
+    <SpeedInsights />
   </StrictMode>,
 )

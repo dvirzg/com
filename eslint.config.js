@@ -44,18 +44,4 @@ export default defineConfig([
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
-  // Node.js globals for API routes and middleware
-  {
-    files: ['api/**/*.js', 'middleware.js'],
-    languageOptions: {
-      globals: globals.node,
-    },
-  },
-  // Disable fast refresh warnings for context files since they export hooks
-  {
-    files: ['src/contexts/**/*.{js,jsx}', 'src/components/TwitterEmbed.jsx'],
-    rules: {
-      'react-refresh/only-export-components': 'off',
-    },
-  },
 ])
