@@ -21,7 +21,7 @@ function Admin() {
 
   return (
     <div className="h-dvh overflow-y-auto bg-white dark:bg-black text-zinc-900 dark:text-white">
-      <div className="max-w-3xl mx-auto px-6 py-16">
+      <div className={`max-w-3xl mx-auto px-6 py-16 ${user?.user_metadata?.is_admin === true ? '' : 'min-h-full flex flex-col justify-center'}`}>
         {!user ? (
           <Login />
         ) : user.user_metadata?.is_admin !== true ? (
